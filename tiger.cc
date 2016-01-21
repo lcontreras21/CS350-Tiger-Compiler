@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 		filename = buf;
 	}
 
-	// open "fname" for reading by lexical scanner,
+	// open "filename" for reading by lexical scanner,
 	// give up after 8 errors,
 	// with compiler debugging ON if the "-d" flag was used when we started
 	EM_reset(filename, 8, debug);
