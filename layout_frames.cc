@@ -1,5 +1,4 @@
 #include "AST.h"
-#include "generate_HERA.h"
 
 void layout_frames(AST_node_ *root)
 {

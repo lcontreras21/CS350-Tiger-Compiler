@@ -10,7 +10,6 @@ using namespace std;
 #include "Debug/y.tab.h"
 #include "static_checks.h" // for AST attributes
 #include "typecheck.h"  // For labs with type checking
-#include "generate_HERA.h" // For labs with code generation
 #include "which_cs350_lab.h"
 
 // array of token number / token name pairs
