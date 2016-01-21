@@ -1,0 +1,37 @@
+/*
+ * Use "size" on an array ... see https://docs.google.com/a/haverford.edu/document/d/18mLIVGl8WDzVHFOdwguDPYku0dmcHpSg62npqPwnSQQ
+ */
+
+let
+  type ia = array of int
+
+  function longer(a1: ia, a2: ia): ia =
+    if size(a1)>size(a2) then a1 else a2
+  function shorter(a1: ia, a2: ia): ia =
+    if size(a1)>size(a2) then a1 else a2
+
+  var few_sevens : ia := ia[3] of 7
+  var many_twos  : ia := ia[42] of 2
+in
+  /* The following is optional:
+  let var answer : int := size(few_sevens) * longer(few_sevens, many_twos)[12] * shorter(few_sevens, many_twos)[1]
+  in  printint(answer)
+  end
+   */
+
+  let
+    var long   : ia  := longer(few_sevens, many_twos)
+    var short  : ia  := shorter(few_sevens, many_twos)
+    var sz     : int := size(few_sevens)
+    var answer : int := size(few_sevens) * long[12] *  short[1]
+  in
+    printint(long[12]);
+    print " ";
+    printint(short[1]);
+    print " ";
+    printint(sz);
+    print " ";
+    printint(answer)
+  end
+
+end

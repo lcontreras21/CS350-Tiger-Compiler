@@ -1,0 +1,16 @@
+This file describes the attributes defined on the AST, roughly in the
+order they would be defined.
+
+* my_reg (defined only for expresisons) is the HERA register into
+  which the expression's result will be placed.
+
+  Note that my_reg will only be computed once and then stored, so
+  calling my_reg() a whole bunch won't actually have much cost.
+
+
+* HERA_code (defined for all node types) is the HERA machine language
+  equivalent of the node (including its children).
+
+  Each time HERA_code() is called, it will traverse the tree.
+  It is meant to be called *once*, at the root, and not more.
+

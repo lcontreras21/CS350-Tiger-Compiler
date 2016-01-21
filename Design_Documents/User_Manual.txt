@@ -1,0 +1,7 @@
+This is the User Manual for the HaverTiger tiger compiler.
+
+It compiles the Haverford variant of the Tiger language,
+as per Appel's Appendix A and the CMSC 350 Lab 1 Description.
+
+Currently, it is a partial implementation, with only
+integer literals and + and * working.
