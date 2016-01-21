@@ -1,1 +1,5 @@
 *~
+Debug/*.o
+Debug/tiger
+Debug/y.output
+Debug/y.tab.h
