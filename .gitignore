@@ -1,5 +1,7 @@
 *~
-Debug/*.o
-Debug/tiger
+Debug/.depend
 Debug/y.output
 Debug/y.tab.h
+Debug/*.c
+Debug/*.o
+Debug/tiger
