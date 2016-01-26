@@ -17,7 +17,7 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 
 string A_root_::HERA_code()
 {
-	return main_expr->HERA_code();
+	return "SETCB()\n\n" + main_expr->HERA_code();
 }
 
 
