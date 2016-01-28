@@ -18,6 +18,45 @@
 
 void AST_examples()
 {
+	// Use the constructors of AST_appel.h, i.e. Appel's Figure 4.7, to create some example AST's
+	// 14+6
+	A_exp fourteen	= A_IntExp(Position::undefined(), 14);  // 14
+	A_exp six	= A_IntExp(Position::undefined(), 6);  // 6
+	A_exp twenty	= A_OpExp(Position::undefined(), A_plusOp, fourteen, six);  // 14+6
+
+	// "Some AST examples"
+	A_exp title	= A_StringExp(Position::undefined(), "Some AST\texamples\n");
+
+	// print("Some AST examples")
+	A_exp call1	= A_CallExp(Position::undefined(), to_Symbol("print"),
+				    A_ExpList(title, 0));  // 0 indicates end of list
+
+	// 36*2+14+6
+	Position undef	= Position::undefined();  // an abbreviation; I'm getting tired
+	A_exp exp_92	= A_OpExp(undef, A_plusOp,
+				  A_OpExp(undef, A_timesOp, A_IntExp(undef, 36), A_IntExp(undef, 2)),
+				  twenty);
+
+	// print("Some AST examples"); printint(mod(32*2+14+6, 50))
+	A_exp all	= A_SeqExp(undef,
+				   A_ExpList(call1,
+					     A_ExpList(A_CallExp(undef, to_Symbol("printint"),
+								 A_ExpList(A_CallExp(undef, to_Symbol("mod"),
+										     A_ExpList(exp_92,
+											       A_ExpList(A_IntExp(undef, 50),
+													 0))  // end of mod parameters
+										     ), // end of call to mod
+									   0) // end of printint parameters
+								 ), // end of call to printint
+						       0) // end of sublist with call to printint
+					     ) // end of main list of expressions with two calls
+				   ); // end of top A_SeqExp
+
+	EM_debug(repr(all), all->pos());
+}
+
+void AST_example_let()
+{
 /*
   Build (using the functions from AST_appel.h and Figure 4.7) and print
   the AST corresponding to the following tiger program:

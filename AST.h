@@ -207,7 +207,8 @@ public:
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
 	virtual String attributes_for_printing();
-	string __str__() { return this->print_rep(0, print_ASTs_with_attributes); }  // allow str(x), which is more familiar to Python programmers ... see also util.h
+	string __repr__() { return this->print_rep(0, print_ASTs_with_attributes); }  // allow repr(x), which is more familiar to Python programmers ... see also util.h
+	string __str__()  { return this->__repr__(); }
 
 	// And now, the attributes that exist in ALL kinds of AST nodes.
 	//  See Design_Documents/AST_Attributes.txt for details.

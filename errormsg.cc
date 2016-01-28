@@ -120,6 +120,19 @@ void EM_debug(string message, Position pos, int for_which_lab)
 		EM_core(message, pos);
 }
 
+Position Position::current() {
+	return Position();
+}
+Position Position::range(const Position &start, const Position &end) {
+	return Position(start, end);
+}
+Position Position::fromLex(int posAttributeInLex) {
+	Position it;  it.s = posAttributeInLex; it.e = -1; return it;
+}
+Position Position::undefined() {
+	Position it; it.s = it.e = -1; return it;
+}
+
 Position::Position()
 {
 	s=EM_tokPos;

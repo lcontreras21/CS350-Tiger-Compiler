@@ -63,4 +63,11 @@ static            string str(int x)  { return std::to_string(x); }
 static            string str(long x)  { return std::to_string(x); }
 static            string str(unsigned x)  { return std::to_string(x); }
 
+template<class T> string repr(T *p)   { return p->__repr__(); }
+template<class T> string repr(T &x)   { return x.__repr__(); }
+static            string repr(int x)  { return std::to_string(x); }
+static            string repr(long x)  { return std::to_string(x); }
+static            string repr(unsigned x)  { return std::to_string(x); }
+extern            string repr(string   s);  // non-trivial; in util.cc (changes non-printing characters into \x##)
+
 #endif
