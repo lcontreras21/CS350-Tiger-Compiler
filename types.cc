@@ -235,7 +235,7 @@ static string to_String_rec(Ty_ty t, list<Ty_ty> &types_done)
 	   	break;
 	case Ty_name:
 	   	result = result +
-				 "(to_Symbol(\"" + str(t->u.name.sym) + "\"), " +
+				 "(" + repr(str(t->u.name.sym)) + ", " +
 				   ( !repeated? to_String_rec(t->u.name.ty, types_done) : ("...") ) +
 				 ")";
 	   	break;
@@ -251,7 +251,7 @@ static string to_String_rec(Ty_fieldList fl, list<Ty_ty> &types_done)
 		return "0";
 	else
 		return ("Ty_FieldList(Ty_Field(" +
-				((fl->head->name) ? "to_Symbol(\"" + str(fl->head->name) + "\")" : "0") + ", " +
+				((fl->head->name) ? repr(fl->head->name) : "0") + ", " +
 			    to_String_rec(fl->head->ty, types_done) + "), " +
 			    to_String_rec(fl->tail, types_done) + ")");
 }
@@ -277,7 +277,7 @@ string to_String(Ty_ty t)
 		return "(*** WARNING --- NULL TYPE ***)";
 	}
 }
-string Ty_ty_::__str__() { return to_String(this); }
+string Ty_ty_::__repr__() { return to_String(this); }
 
 string to_String(Ty_fieldList fl)
 {

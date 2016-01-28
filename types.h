@@ -81,15 +81,15 @@ struct Ty_ty_ {
 		struct {Symbol sym; Ty_ty ty;} name;
 	} u;
 
-	string __str__();
-	
+	string __repr__();
+	string __str__()  { return this->__repr__(); }
 };
 
 struct Ty_tyList_ {Ty_ty head; Ty_tyList tail; string __str__();};
 struct Ty_field_  {Symbol name; Ty_ty ty;};
 struct Ty_fieldList_ {Ty_field head; Ty_fieldList tail; string __str__();};
 
-/* the following are like str(), but allow a null pointer, which is important for lists */
+/* the following are like repr(), but allow a null pointer, which is important for lists */
 string to_String(Ty_ty t);
 string to_String(Ty_fieldList fl);
 string to_String(Ty_tyList tl);

@@ -116,12 +116,12 @@ template <class symbol_info> const ST_node<symbol_info> *ST<symbol_info>::check_
 
 // PRINTING
 
-template <class symbol_info> string ST<symbol_info>::__str__()
+template <class symbol_info> string ST<symbol_info>::__repr__()
 {
 	String result = "ST(";
 	ST_node<symbol_info> *h = this->head;
 	while (h != 0) {
-		result = result + str(h->n) + "-->" + str(*h->iptr);
+		result = result + repr(h->n) + "-->" + repr(*h->iptr);
 		h = h->rest.head;
 		if (h) result = result + ", ";
 	}

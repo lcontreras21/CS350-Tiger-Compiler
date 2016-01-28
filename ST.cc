@@ -15,9 +15,10 @@ public:
 	int pos;
 	int whatever_else;		
 
-	string __str__()  {
-		return "position: "+str(pos)+", whatever else: " + str(whatever_else);
+	string __repr__()  {
+		return "position: "+repr(pos)+", whatever else: " + repr(whatever_else);
 	}
+	string __str__()  { return this->__repr__(); }
 
 };
 example_sym_info::example_sym_info(int the_pos, int the_whatever_else) : pos(the_pos)

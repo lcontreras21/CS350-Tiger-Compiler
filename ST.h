@@ -71,7 +71,8 @@ public:
 	// lookup(look, merge(in, out))	===    lookup(look, in), if is_name_there(look, T1),
 	//                                  or lookup(look, out), otherwise
 	friend symbol_info &lookup<symbol_info>(const nametype &must_find_this, const ST<symbol_info> &in_this_table);
-	string __str__();
+	string __repr__();
+	string __str__()  { return this->__repr__(); }
 	
 	class duplicate_symbol { // error type for exceptions
 	public:

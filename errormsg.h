@@ -13,6 +13,7 @@ public:
 	static Position fromLex(ScannerPosition posAttributeInLex);        // convert from a "lex" token position
 	static Position undefined();                                       // what if there isn't one, e.g. AST_example()
 
+	string __repr__();
 	string __str__();
 
 private: // actually, these are just 'discoraged' style; remove this line if you really want to call them rather than using the named static operations above

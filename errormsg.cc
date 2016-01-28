@@ -158,6 +158,11 @@ string Position::__str__()
 		return "[" + EM_intpos_to_string(s, sep) + ":" + EM_intpos_to_string(e, sep) + "]";
 }
 
+string Position::__repr__()
+{
+	return "Position::range(Position::fromLex(" + str(s) + "), Position::fromLex(" + str(e) + "))";
+}
+
 // we may want to skip this, e.g. in AST_examples
 #if ! defined ERRORMSG_SKIP_LEX
 // lex interface stuff, uses STDIO library rather than iostreams:

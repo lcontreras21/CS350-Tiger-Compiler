@@ -5,3 +5,4 @@ Debug/y.tab.h
 Debug/*.c
 Debug/*.o
 Debug/tiger
+AST_examples

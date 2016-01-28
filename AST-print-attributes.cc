@@ -11,7 +11,7 @@
 String AST_node_::attributes_for_printing()
 {
 	return (string("")
-		+ ("pos = "            + str(my_pos)      + "; ")
+		+ ("pos = "            + repr(my_pos)      + "; ")
 		// concatenate any other attributes here for printing
 		);
 }
