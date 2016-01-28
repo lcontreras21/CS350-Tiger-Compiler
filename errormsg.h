@@ -10,6 +10,10 @@ public:
 	{ return Position(); }
 	static Position range(const Position &start, const Position &end)
 	{ return Position(start, end); }
+	static Position fromLex(int posAttributeInLex)
+	{ Position it;  it.s = posAttributeInLex; it.e = -1; return it; }
+	static Position undefined()
+	{ Position it; it.s = it.e = -1; return it; }
 
 	string __str__();
 

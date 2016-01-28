@@ -46,7 +46,7 @@ void EM_reset(string fname, int max_errors, bool show_debug)
 	linePos=intList(0,NULL);
 #if ! defined ERRORMSG_SKIP_LEX
 	if (!set_lex_input((fname == "-" || fname == ""), fname.c_str())) {
-		EM_error("Cannot open file: " + fname, Position::current(), true);
+		EM_error("Cannot open file: " + fname, Position::undefined(), true);
 	}
 #endif
 }
@@ -137,7 +137,10 @@ string Position::__str__()
 {
 	string sep = "."; // separate line number from position on line
 	if (e < 0)
-		return EM_intpos_to_string(s, sep);
+		if (s<0)
+			return "--";
+		else
+			return EM_intpos_to_string(s, sep);
 	else 
 		return "[" + EM_intpos_to_string(s, sep) + ":" + EM_intpos_to_string(e, sep) + "]";
 }

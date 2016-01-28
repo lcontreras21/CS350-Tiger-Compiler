@@ -59,47 +59,47 @@ void AST_examples()
     This gets taught before types, so for the moment all types are just given as "0" (null pointer).
 */
 
-	A_exp fourteen = A_IntExp(Position::current(), 14);  // 14
-	A_exp six      = A_IntExp(Position::current(), 6);  // 6
-	A_exp twenty   = A_OpExp(Position::current(), A_plusOp, fourteen, six);  // 14+6
+	A_exp fourteen = A_IntExp(Position::undefined(), 14);  // 14
+	A_exp six      = A_IntExp(Position::undefined(), 6);  // 6
+	A_exp twenty   = A_OpExp(Position::undefined(), A_plusOp, fourteen, six);  // 14+6
 
-	A_dec wombat1  = A_VarDec(Position::current(), to_Symbol("wombat"), 0, twenty); // no type info given
-	A_dec arth1    = A_VarDec(Position::current(), to_Symbol("arthropod"), 0, A_IntExp(Position::current(), 2));
+	A_dec wombat1  = A_VarDec(Position::undefined(), to_Symbol("wombat"), 0, twenty); // no type info given
+	A_dec arth1    = A_VarDec(Position::undefined(), to_Symbol("arthropod"), 0, A_IntExp(Position::undefined(), 2));
 	A_decList let1_decs = A_DecList(wombat1, A_DecList(arth1, 0));  // that's the declarations for let #1
 
 
 	// *** Now the stuff for the 2nd let (the first one inside the outer let) ***
-	A_dec wombat2  = A_VarDec(Position::current(), to_Symbol("wombat"), 0, A_IntExp(Position::current(), 35));
+	A_dec wombat2  = A_VarDec(Position::undefined(), to_Symbol("wombat"), 0, A_IntExp(Position::undefined(), 35));
 	A_decList let2_decs = A_DecList(wombat2, 0);
 
 	// wombat + arthropod
-	A_var w_var2   = A_SimpleVar(Position::current(), to_Symbol("wombat"));
-	A_exp w_use2   = A_VarExp(Position::current(), w_var2);  // for the use of "wombat" in "wombat+arthropod"
-	A_exp a_use2   = A_VarExp(Position::current(), A_SimpleVar(Position::current(), to_Symbol("arthropod")));
-	A_exp sum2     = A_OpExp(Position::current(), A_plusOp, w_use2, a_use2);
+	A_var w_var2   = A_SimpleVar(Position::undefined(), to_Symbol("wombat"));
+	A_exp w_use2   = A_VarExp(Position::undefined(), w_var2);  // for the use of "wombat" in "wombat+arthropod"
+	A_exp a_use2   = A_VarExp(Position::undefined(), A_SimpleVar(Position::undefined(), to_Symbol("arthropod")));
+	A_exp sum2     = A_OpExp(Position::undefined(), A_plusOp, w_use2, a_use2);
 
 	// arthropod := 
-	A_var a_var2   = A_SimpleVar(Position::current(), to_Symbol("arthropod"));
+	A_var a_var2   = A_SimpleVar(Position::undefined(), to_Symbol("arthropod"));
 
 	// arthropod := wombat + arthropod
-	A_exp assign_a = A_AssignExp(Position::current(), a_var2, sum2);
+	A_exp assign_a = A_AssignExp(Position::undefined(), a_var2, sum2);
 
 	// now, build the node for "let2" from everything from "*** Now the stuff for the 2nd let" to here
-	A_exp let2     = A_LetExp(Position::current(), let2_decs, assign_a);
+	A_exp let2     = A_LetExp(Position::undefined(), let2_decs, assign_a);
 
 
 	// *** Now the stuff for the 3rd let (the 2nd one inside the outer let)
-	A_exp let3     = A_LetExp(Position::current(),
-				  A_DecList(A_VarDec(Position::current(), to_Symbol("arthropod"), 0, A_IntExp(Position::current(), 4)),
+	A_exp let3     = A_LetExp(Position::undefined(),
+				  A_DecList(A_VarDec(Position::undefined(), to_Symbol("arthropod"), 0, A_IntExp(Position::undefined(), 4)),
 					    0),
-				  A_OpExp(Position::current(), A_divideOp,
-					  A_VarExp(Position::current(), A_SimpleVar(Position::current(), to_Symbol("wombat"))),
-					  A_VarExp(Position::current(), A_SimpleVar(Position::current(), to_Symbol("arthropod")))));
+				  A_OpExp(Position::undefined(), A_divideOp,
+					  A_VarExp(Position::undefined(), A_SimpleVar(Position::undefined(), to_Symbol("wombat"))),
+					  A_VarExp(Position::undefined(), A_SimpleVar(Position::undefined(), to_Symbol("arthropod")))));
 
 	// *** At long last, we can build that "+" that sums the two inner lets, and the main let itself:
-	A_exp let1      = A_LetExp(Position::current(),
+	A_exp let1      = A_LetExp(Position::undefined(),
 				   let1_decs,
-				   A_OpExp(Position::current(), A_plusOp, let2, let3));
+				   A_OpExp(Position::undefined(), A_plusOp, let2, let3));
 
 	A_root_ *local_AST_root = new A_root_(let1);
 
