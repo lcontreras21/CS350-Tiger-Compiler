@@ -21,7 +21,7 @@
 //    "c++" is a string of length 3, and
 //    'c++' is something you probably should not use.
 
-string repr(string   s)
+string repr_for_std_string(const string  &s)
 {
 	string rep = "\"";
 	string hexdigits = "0123456789ABCDEF";

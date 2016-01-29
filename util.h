@@ -14,11 +14,15 @@ static            string str(int x)  { return std::to_string(x); }
 static            string str(long x)  { return std::to_string(x); }
 static            string str(unsigned x)  { return std::to_string(x); }
 
+string repr_for_std_string(const string &s);  // non-trivial; in util.cc (changes non-printing characters into \x##)
 template<class T> string repr(T *p)   { return p->__repr__(); }
 template<class T> string repr(T &x)   { return x.__repr__(); }
-template<>        string repr(string &s);  // non-trivial; in util.cc (changes non-printing characters into \x##)
-static            string repr(int x)  { return std::to_string(x); }
-static            string repr(long x)  { return std::to_string(x); }
+// template<>        string repr(string &s) { return repr_for_std_string(s); }
+// template<>        string repr(string s) { return repr_for_std_string(s); }
+static            string repr(string s)    { return repr_for_std_string(s); }
+static            string repr(int x)       { return std::to_string(x); }
+static            string repr(long x)      { return std::to_string(x); }
 static            string repr(unsigned x)  { return std::to_string(x); }
+
 
 #endif
