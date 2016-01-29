@@ -107,7 +107,7 @@ Ty_ty Ty_String() {return &tystring;}
 
 Ty_ty Ty_Record(Ty_fieldList fields)
 {
-	Ty_ty p = (Ty_ty) checked_malloc(sizeof(*p));
+	Ty_ty p = new Ty_ty_;
 	p->kind=Ty_record;
 	p->u.record=fields;
 	return p;
@@ -115,7 +115,7 @@ Ty_ty Ty_Record(Ty_fieldList fields)
 
 Ty_ty Ty_Array(Ty_ty ty)
 {
-	Ty_ty p = (Ty_ty) checked_malloc(sizeof(*p));
+	Ty_ty p = new Ty_ty_;
 	p->kind=Ty_array;
 	p->u.array=ty;
 	return p;
@@ -124,7 +124,7 @@ Ty_ty Ty_Array(Ty_ty ty)
 
 Ty_ty Ty_Function(Ty_ty the_return_type, Ty_fieldList the_parameters)
 {
-	Ty_ty p = (Ty_ty) checked_malloc(sizeof(*p));
+	Ty_ty p = new Ty_ty_;
 	p->kind=Ty_function;
 	p->u.function.return_type = the_return_type;
 	p->u.function.parameter_types = the_parameters;
@@ -133,7 +133,7 @@ Ty_ty Ty_Function(Ty_ty the_return_type, Ty_fieldList the_parameters)
 
 Ty_ty Ty_Name(Symbol sym, Ty_ty ty)
 {
-	Ty_ty p = (Ty_ty) checked_malloc(sizeof(*p));
+	Ty_ty p = new Ty_ty_;
 	p->kind=Ty_name;
 	p->u.name.sym=sym;
 	p->u.name.ty=ty;
@@ -143,7 +143,7 @@ Ty_ty Ty_Name(Symbol sym, Ty_ty ty)
 
 Ty_tyList Ty_TyList(Ty_ty head, Ty_tyList tail)
 {
-	Ty_tyList p = (Ty_tyList) checked_malloc(sizeof(*p));
+	Ty_tyList p = new Ty_tyList_;
 	p->head=head;
 	p->tail=tail;
 	return p;
@@ -151,7 +151,7 @@ Ty_tyList Ty_TyList(Ty_ty head, Ty_tyList tail)
 
 Ty_field Ty_Field(Symbol name, Ty_ty ty)
 {
-	Ty_field p = (Ty_field) checked_malloc(sizeof(*p));
+	Ty_field p = new Ty_field_;
 	p->name=name;
 	p->ty=ty;
 	return p;
@@ -159,7 +159,7 @@ Ty_field Ty_Field(Symbol name, Ty_ty ty)
 
 Ty_fieldList Ty_FieldList(Ty_field head, Ty_fieldList tail)
 {
-	Ty_fieldList p = (Ty_fieldList) checked_malloc(sizeof(*p));
+	Ty_fieldList p = new Ty_fieldList_;
 	p->head=head;
 	p->tail=tail;
 	return p;

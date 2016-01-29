@@ -109,4 +109,4 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 
 "<"[Ee][Oo][Ff]">"		{ return 0; /* Fake end-of-input for debugging in Eclipse */ }
 
-.			{ adjust(); String it = ""; appendchar(it, yytext[0]); EM_error("illegal token: " + it); }
+.			{ adjust(); String it = ""; it.append(1, yytext[0]); EM_error("illegal token: " + it); }

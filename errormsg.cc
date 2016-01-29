@@ -20,10 +20,10 @@ static bool EM_showingDebug;
 static string fileName;
 static int lineNum;
 
-typedef struct intList {int i; struct intList *rest;} *IntList;
+typedef struct intList_ {int i; struct intList_ *rest;} *IntList;
 static IntList intList(int i, IntList rest) 
 {
-	IntList l= (IntList) checked_malloc(sizeof *l);
+	IntList l= new intList_;
 	l->i=i; l->rest=rest;
 	return l;
 }

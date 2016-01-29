@@ -91,7 +91,7 @@ void lex_test()
 			cout << " \tvalue is: " << *(yylval.str_attrs.sval) << endl;
 			break;
 		case STRING:
-			cout << " \tvalue in printable form is: \"" << string_as_tiger_source_code(*(yylval.str_attrs.sval)) << "\"" <<
+			cout << " \tvalue in printable form is: " << repr(*(yylval.str_attrs.sval)) <<
 				" and in raw form is: " << *(yylval.str_attrs.sval) << endl;
 			break;
 		case INT:
@@ -156,7 +156,6 @@ int main(int argc, char **argv)
 	// with compiler debugging ON if the "-d" flag was used when we started
 	EM_reset(filename, 8, debug);
 
-	test_string_as_tiger_source_code(); // internal consistency check
 	ST_test();  // internal consistency check
   
 	if (just_do_lex_and_then_stop) {
