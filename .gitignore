@@ -6,3 +6,4 @@ Debug/*.c
 Debug/*.o
 Debug/tiger
 AST_examples
+util_examples

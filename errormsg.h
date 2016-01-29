@@ -2,6 +2,7 @@
 #define ERRORMSG_H
 
 #include "util.h"
+#include <logic.h>
 
 typedef int ScannerPosition;  // Appel's "pos" type was just one integer; corresponds to one *token*, not e.g. an *expression*
 

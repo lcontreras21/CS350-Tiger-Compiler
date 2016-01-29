@@ -14,10 +14,10 @@ YACC    = bison -y -d -v --warnings=error
 LEX     = flex
 
 CC      = g++
-CFLAGS  = -std=c++0x -pedantic -g ${FIND_HEADERS} -I${COURSES}/include -DYYMALLOC=malloc -DYYFREE=free -Dto_String_bad_brain=1
+C_CC_FLAGS  = -std=c++0x -pedantic -g ${FIND_HEADERS} -I${COURSES}/include -DYYMALLOC=malloc -DYYFREE=free
 # or, with bison++:
-# CFLAGS  = -pedantic -g ${FIND_HEADERS} -I${COURSES}/include -Dto_String_bad_brain=1
-CCFLAGS = -Wall -Werror -Wno-unused-function ${CFLAGS}
+CCFLAGS = -Wall -Werror -Wno-unused-function ${C_CC_FLAGS}
+CFLAGS  =  ${C_CC_FLAGS} -Wno-write-strings  # used only for tiger-grammar.c, which isn't careful about char* vs const char*, apparently?
 
 LINKER  = g++
 LDFLAGS = -L${COURSES}/lib -lcourses -lcourses -lstdc++ -lm

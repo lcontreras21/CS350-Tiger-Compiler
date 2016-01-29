@@ -1,12 +1,13 @@
 /*
  * util.c - commonly used utility functions.
- */
 
-#include <stdlib.h>
-#include <string.h>
+ To run the example/test of string printing, use the command
+	g++ -std=c++0x  -D UTIL_EXAMPLES_IS_MAIN=1 util.cc -o util_examples && ./util_examples
+
+*/
+
+#include <string>
 #include "util.h"
-#include <iostream>
-using namespace std;
 
 
 // Given a string s, what could we enter into a C++ (or HERA-C) file to put s into a program?
@@ -31,10 +32,35 @@ string repr(string   s)
 			rep.append(1, s[i]);
 		} else {
 			rep.append(1, '\\');  // that's one backslash character, of course
-			rep.append(1, hexdigits[s[i] % 16]);
 			rep.append(1, hexdigits[s[i] / 16]);
+			rep.append(1, hexdigits[s[i] % 16]);
 		}
 	}
 	rep.append(1, '\"');
 	return rep;
 }
+
+
+// useful for testing/demonstrating repr vs. plain strings
+string util_example_string_chars_1_through_7f()
+{
+	string example = "";
+	example.append(0x7f, 'x');
+	for (char c=1; c<=0x7e; c++) { // stop at 7e to avoid infinite loop
+		example[c-1] = c;
+	}
+	example[0x7e] = 0x7f;
+	return example;
+}
+
+
+#if defined UTIL_EXAMPLES_IS_MAIN && UTIL_EXAMPLES_IS_MAIN
+#include <iostream>
+using namespace std;
+int main(int argc, char *argv[])
+{
+	string example = util_example_string_chars_1_through_7f();
+	cout << "example.length() and repr(example) are: " << example.length() << " " << repr(example) << endl;
+	cout << "what happens if we just cout example?   " << example << endl;
+}
+#endif
