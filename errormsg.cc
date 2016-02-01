@@ -14,7 +14,7 @@ using namespace std;
 
 static int EM_errCount;
 static int EM_maxErrs;
-static int EM_tokPos;
+static ScannerPosition EM_tokPos;
 static bool EM_showingDebug;
 
 static string fileName;
@@ -51,11 +51,19 @@ void EM_reset(string fname, int max_errors, bool show_debug)
 #endif
 }
 
-void EM_set_currentPos(int new_pos)
+void EM_set_currentPos(ScannerPosition new_pos)
 {
 	EM_tokPos = new_pos;
 }
 
+ScannerPosition  EM_currentScannerPosition()
+{
+	return EM_tokPos;
+}
+ScannerPosition  EM_currentPos()
+{
+	return EM_currentScannerPosition();
+}
 
 void EM_newline(void)
 {

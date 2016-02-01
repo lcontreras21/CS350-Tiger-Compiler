@@ -50,5 +50,6 @@ bool EM_recorded_any_errors();
 // void EM_newline(void);
 // void EM_set_currentPos(ScannerPosition new_pos);  // CALL THIS ONLY FROM TIGER_LEX.L ... don't even declare it here
 // ScannerPosition  EM_currentPos();
+// ScannerPosition  EM_currentScannerPosition(); // same as above
 
 #endif
