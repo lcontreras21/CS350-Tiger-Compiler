@@ -24,5 +24,7 @@ static            string repr(int x)       { return std::to_string(x); }
 static            string repr(long x)      { return std::to_string(x); }
 static            string repr(unsigned x)  { return std::to_string(x); }
 
+// Restored for 2016, since it had been in the starter files:
+string appendchar(string, char);
 
 #endif

@@ -28,10 +28,12 @@ string repr_for_std_string(const string  &s)
 	for (unsigned int i=0; i<s.length(); i++) {
 		if (0 > s[i] || s[i] > 0x7F) { // non-ASCII
 			// for now, do nothing
-		} else if (32 <= s[i] && s[i] <= 0x7E) { // print these as they are
+		} else if (32 <= s[i] && s[i] <= 0x7E && s[i] != '\"' && s[i]!='\\') { // print these as they are
 			rep.append(1, s[i]);
 		} else {
+			// as per http://en.cppreference.com/w/cpp/language/escape
 			rep.append(1, '\\');  // that's one backslash character, of course
+			rep.append(1, 'x');  // that's one backslash character, of course
 			rep.append(1, hexdigits[s[i] / 16]);
 			rep.append(1, hexdigits[s[i] % 16]);
 		}
@@ -60,7 +62,30 @@ using namespace std;
 int main(int argc, char *argv[])
 {
 	string example = util_example_string_chars_1_through_7f();
+
 	cout << "example.length() and repr(example) are: " << example.length() << " " << repr(example) << endl;
 	cout << "what happens if we just cout example?   " << example << endl;
+
+	string example_copy_paste_from_output = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\x22#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\x5C]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F";
+
+	if (example == example_copy_paste_from_output) {
+		cout << "\n  check vs. copy-paste works :-)" << endl;
+	} else {
+		cout << "uh-oh ... copy-paste doesn't seem to agree.... lengths are " << example.length() << " and " << example_copy_paste_from_output.length() << " and the differ at:" << endl;
+		for (unsigned int i=0; i<=min(example.length(), example_copy_paste_from_output.length()); i++) {
+			if (example[i] != example_copy_paste_from_output[i]) {
+				cout << "character " << i << " is #" << (int(example[i])) << " and #" << int(example_copy_paste_from_output[i]) << endl;
+			}
+		}
+	}
 }
 #endif
+
+
+// Restored for 2016, since it had been in the starter files:
+string appendchar(string x, char c)
+{
+	string result = x;
+	x.append(1, c);
+	return x;
+}
