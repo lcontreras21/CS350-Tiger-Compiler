@@ -33,9 +33,16 @@ string repr_for_std_string(const string  &s)
 		} else {
 			// as per http://en.cppreference.com/w/cpp/language/escape
 			rep.append(1, '\\');  // that's one backslash character, of course
+#if 1
+			rep.append(1, hexdigits[s[i] / (8*8)]);
+			rep.append(1, hexdigits[(s[i] / 8) % 8]);
+			rep.append(1, hexdigits[s[i] % 8]);
+#else
+			// GCC bug give weird results for \x09DaveW
 			rep.append(1, 'x');  // that's one backslash character, of course
 			rep.append(1, hexdigits[s[i] / 16]);
 			rep.append(1, hexdigits[s[i] % 16]);
+#endif
 		}
 	}
 	rep.append(1, '\"');
@@ -66,7 +73,8 @@ int main(int argc, char *argv[])
 	cout << "example.length() and repr(example) are: " << example.length() << " " << repr(example) << endl;
 	cout << "what happens if we just cout example?   " << example << endl;
 
-	string example_copy_paste_from_output = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\x22#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\x5C]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F";
+	string example_copy_paste_from_output = "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037 !\042#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\134]^_`abcdefghijklmnopqrstuvwxyz{|}~\177";
+//	string example_copy_paste_from_output = "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\x22#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\x5C]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F";
 
 	if (example == example_copy_paste_from_output) {
 		cout << "\n  check vs. copy-paste works :-)" << endl;
