@@ -1,0 +1,12 @@
+========= Characters and Escape Sequences ========
+
+The ASCII table can be found in many places on the web, e.g. asciitable.com
+
+========= Info about Map and Reduce =======
+
+According to a reply to http://stackoverflow.com/questions/13795679/map-fold-operators-in-c by Jerry Coffin,
+there are C++ STL functions that are similar to map and fold/reduce:
+
+      At least if my memory for the terminology serves correctly,
+      map is essentially std::transform, and fold is std::accumulate.
+
