@@ -126,6 +126,10 @@ String A_nilExp_::print_rep(int indent, bool with_attributes)
 {
 	return "A_NilExp(" + print_pos_rep(pos(),"") + (with_attributes?linebreak(indent+tab)+as_comment(attributes_for_printing()):"") + ")";
 }
+String A_boolExp_::print_rep(int indent, bool with_attributes)
+{
+	return "A_BoolExp(" + print_pos_rep(pos(), ", ") + repr(value) + (with_attributes?linebreak(indent+tab)+as_comment(attributes_for_printing()):"") + ")";
+}
 String A_intExp_::print_rep(int indent, bool with_attributes)
 {
 	return "A_IntExp(" + print_pos_rep(pos(), ", ") + repr(value) + (with_attributes?linebreak(indent+tab)+as_comment(attributes_for_printing()):"") + ")";
