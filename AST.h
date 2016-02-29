@@ -598,8 +598,8 @@ private:
 };
 
 
-extern A_root_ *AST_root;
-extern bool have_AST_attrs;  // can be set to true in tiger.cc, to print attributes
+extern A_root_ *AST_root;	// Global variable ... this will be set at then end of parsing
+extern bool have_AST_attrs;	// can be set to true with command-line arguments in tiger.cc, to print attributes
 const bool AST_print_positions=false;
 
 

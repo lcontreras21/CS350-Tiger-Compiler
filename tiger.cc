@@ -167,7 +167,7 @@ int main(int argc, char **argv)
 			if (AST_root == 0) {
 				EM_error("Internal compiler error: no AST produced in AST_root", Position::current(), true);
 			}
-			if (show_ast) cerr << "Printing AST due to -a or -A flag:" << endl << repr(AST_root) << endl;
+			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(AST_root) << endl;
 			String code = AST_root->HERA_code();
 			if (!EM_recorded_any_errors()) cout << code;
 		}

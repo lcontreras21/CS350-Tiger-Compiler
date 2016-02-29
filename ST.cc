@@ -5,30 +5,52 @@
 
 /* Note that this is just some examples, since most C++ compilers require that the implementation of template functions be #included and thus I put it in ST.t */
 
+// NOTE: Normally this 'struct' would be in a .h file, but we only need it within ST.cc, for examples,
+//       so I'm putting it here.
+
 struct example_sym_info { // what do we know about a symbol?
 public:
 	example_sym_info(int the_pos,  // record the place it was declared, for error messages
 					  // other attributes could go here, e.g.
 			  int the_whatever_else
 		);
-  // leave data public
+  // leave data public, which is the default for 'struct'
 	int pos;
 	int whatever_else;		
 
-	string __repr__()  {
-		return "position: "+repr(pos)+", whatever else: " + repr(whatever_else);
-	}
-	string __str__()  { return this->__repr__(); }
+	string __repr__();
+	string __str__();
 
 };
+// make an abbreviation "ST_example" for a symbol table with the example sym info
+//   (also would be in a .h, usually)
+typedef ST<example_sym_info> ST_example;
+
+
+// Now, the methods of struct example_sym_info ... these would be in a .cc file
+
 example_sym_info::example_sym_info(int the_pos, int the_whatever_else) : pos(the_pos)
 {
 	// The bit after the single ":" above initializes "pos" with the value "the_pos".
 	// It's a lot like putting "pos = the_pos;" in the body,
 	//  but the latter would first build a null "pos" and then re-define it.
 
-	whatever_else = the_whatever_else < 0 ? 0 : the_whatever_else;
+	// Just to do something in the example, we'll ensure that whatever_else isn't negative:
+	if (the_whatever_else < 0) {
+		whatever_else = 0;
+	} else {
+		whatever_else = the_whatever_else;
+	}
 }
+string example_sym_info::__repr__()
+{
+	return "position: "+repr(pos)+", whatever else: " + repr(whatever_else);
+}
+string example_sym_info::__str__()
+{
+	return this->__repr__();
+}
+
 
 
 
@@ -38,8 +60,7 @@ static int length(const char *c_style_string)
 	return string(c_style_string).length();
 }
 
-// make an abbreviation "ST_example" for a symbol table with the example sym info
-typedef ST<example_sym_info> ST_example;
+
 
 void ST_examples()
 {
