@@ -194,7 +194,7 @@ extern bool print_ASTs_with_attributes;  // defaults to false; can be overridden
 
 class AST_node_ {  // abstract class with some common data
 public:
-	AST_node_(A_pos pos) : my_parent(0), my_pos(pos) { }  // concise initialization of data fields
+	AST_node_(A_pos pos);
 	virtual ~AST_node_();
 
 	A_pos pos() { return my_pos; }
@@ -223,7 +223,7 @@ private:
 
 class A_exp_ : public AST_node_ {
 public:
-	A_exp_(A_pos p) : AST_node_(p), stored_my_reg(-1) { }
+	A_exp_(A_pos p);
 
 	// Attributes for all expressions: my_reg() is the register number to use
 	int    my_reg() {
@@ -245,9 +245,7 @@ private:
 
 class A_root_ : public AST_node_ {
 public:
-	A_root_(A_exp main_exp) : AST_node_(main_exp->pos()), main_expr(main_exp) {
-		main_exp->set_parent_pointers_for_me_and_my_decendents(0);
-	}   // concise constructor --- initialize main with main_exp
+	A_root_(A_exp main_exp);
 	A_exp *main();
 
 	string HERA_code();
@@ -262,7 +260,7 @@ private:
 
 class A_literal_ : public A_exp_ {
 public:
-	A_literal_(A_pos p) : A_exp_(p) {}
+	A_literal_(A_pos p);
 };
 
 class A_nilExp_ : public A_literal_ {
@@ -367,7 +365,7 @@ private:
 
 class A_controlExp_ : public A_exp_ {
 public:
-	A_controlExp_(A_pos p) : A_exp_(p) {}
+	A_controlExp_(A_pos p);
 };
 
 class A_ifExp_ : public A_controlExp_ {
@@ -410,7 +408,7 @@ private:
 
 class A_var_ : public AST_node_ {
 public:
-	A_var_(A_pos p) : AST_node_(p) {}
+	A_var_(A_pos p);
 };
 
 class A_simpleVar_ : public A_var_ {
@@ -473,7 +471,7 @@ private:
 
 class A_dec_ : public AST_node_ {
 public:
-	A_dec_(A_pos p) : AST_node_(p) {}
+	A_dec_(A_pos p);
 };
 
 class A_decList_ : public A_dec_ {
@@ -568,7 +566,7 @@ private:
 
 class A_ty_ : public AST_node_ {
 public:
-	A_ty_(A_pos p) : AST_node_(p) {}
+	A_ty_(A_pos p);
 };
 
 //  Using the name of a type to declare a variable with NameTy -- this is a use of a type

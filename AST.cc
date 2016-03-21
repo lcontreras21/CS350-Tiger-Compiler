@@ -168,8 +168,21 @@ int main()
 				  
 // Now, the functions for the actual AST classes...
 
+AST_node_::AST_node_(A_pos pos) : my_parent(0), my_pos(pos)  // concise initialization of data fields
+{
+}
+
 AST_node_::~AST_node_()
 {
+}
+
+A_root_::A_root_(A_exp main_exp) : AST_node_(main_exp->pos()), main_expr(main_exp) {
+	// We'd *like* to call
+	//     this->set_parent_pointers_for_me_and_my_decendents(0);
+	// HOWEVER, the type of "this" is still AST_Node_, until the end of the constructor when it's a full-formed A_root_.
+	//          Thus, we'll write the code that would have been in that function:
+	this->my_parent = 0;
+	main_exp->set_parent_pointers_for_me_and_my_decendents(this);
 }
 
 String to_String(AST_node_ *n)
@@ -177,6 +190,13 @@ String to_String(AST_node_ *n)
 	return n->print_rep(0, have_AST_attrs);
 }
 
+A_exp_::A_exp_(A_pos p) : AST_node_(p), stored_my_reg(-1)
+{
+}
+
+A_literal_::A_literal_(A_pos p) : A_exp_(p)
+{
+}
 
 A_nilExp_::A_nilExp_(A_pos pos) :  A_literal_(pos)
 {
@@ -226,6 +246,10 @@ A_callExp_::A_callExp_(A_pos pos, Symbol func, A_expList args) :  A_exp_(pos), _
 	precondition(func != 0);
 }
 
+A_controlExp_::A_controlExp_(A_pos p) : A_exp_(p)
+{
+}
+
 A_ifExp_::A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp elsee) :  A_controlExp_(pos), _test(test), _then(then), _elsee(elsee)
 {
 	precondition(test != 0 && then != 0);
@@ -242,6 +266,12 @@ A_breakExp_::A_breakExp_(A_pos pos) :  A_controlExp_(pos)
 }
 
 A_seqExp_::A_seqExp_(A_pos pos, A_expList seq) :  A_controlExp_(pos), _seq(seq)
+{
+}
+
+
+
+A_var_::A_var_(A_pos p) : AST_node_(p)
 {
 }
 
@@ -289,6 +319,11 @@ A_efieldList_::A_efieldList_(A_efield head, A_efieldList tail) :  AST_node_(head
 }
 
 
+
+A_dec_::A_dec_(A_pos p) : AST_node_(p)
+{
+}
+
 A_decList_::A_decList_(A_dec head, A_decList tail) :  A_dec_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
@@ -309,6 +344,12 @@ A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result, 
 	precondition(name != 0 && body != 0);
 }
 
+
+
+
+A_ty_::A_ty_(A_pos p) : AST_node_(p)
+{
+}
 
 A_nametyList_::A_nametyList_(A_namety head, A_nametyList tail) :  A_dec_(head->pos()), _head(head), _tail(tail)
 {
@@ -350,8 +391,17 @@ bool have_AST_attrs = false;
 
 void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
-	my_parent = my_parent_or_null_if_i_am_the_root;
-	main_expr->set_parent_pointers_for_me_and_my_decendents(this);
+	// This has been inlined into the root expression constructor,
+	//   so it shouldn't actually be needed again...
+	if (main_expr->my_parent == this) {
+		EM_warning("Strange ... called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor", Position::undefined());
+	} else {
+		EM_error("Called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor, AND NOTICED AN INCONSISTENCY!", Position::undefined());
+	}
+	// otherwise, we would have done this:
+	// assert(my_parent_or_null_if_i_am_the_root == 0);
+	// my_parent = my_parent_or_null_if_i_am_the_root;
+	// main_expr->set_parent_pointers_for_me_and_my_decendents(this);
 }
 
 void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
