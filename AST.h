@@ -204,6 +204,7 @@ public:
 	// At best it would involve pointer casting (shudder), RTTI, or wasting space with an unused pointer, I think.
 	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root);
 	virtual AST_node_ *parent();	// get the parent node, after the 'set all parent nodes' pass
+	virtual AST_node_ *get_parent_without_checking();	// get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
 	virtual String attributes_for_printing();

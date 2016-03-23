@@ -393,7 +393,7 @@ void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_
 {
 	// This has been inlined into the root expression constructor,
 	//   so it shouldn't actually be needed again...
-	if (main_expr->my_parent == this) {
+	if (main_expr->get_parent_without_checking() == this) {
 		EM_warning("Strange ... called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor", Position::undefined());
 	} else {
 		EM_error("Called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor, AND NOTICED AN INCONSISTENCY!", Position::undefined());
@@ -410,6 +410,10 @@ void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_paren
 	EM_debug("Uh-oh, better set the parent pointhers for *each*class* ... there's just this hack there at the moment");
 }
 
+AST_node_ *AST_node_::get_parent_without_checking()
+{
+	return my_parent;
+}
 AST_node_ *AST_node_::parent()	// get the parent node, after the 'set parent pointers' pass
 {
 	assert("parent pointers have been set" && my_parent);
