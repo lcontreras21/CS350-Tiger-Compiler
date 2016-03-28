@@ -9,6 +9,7 @@
 using namespace std;
 #include <hc_list.h>  // Haverford "list" class
 #include <hc_list_helpers.h>  // and associated extra functionality
+using namespace HaverfordCS;
 #include "errormsg.h"
 #include "util.h"
 #include "types.h"

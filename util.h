@@ -2,6 +2,12 @@
 #define UTIL_H
 
 #include <string>
+#include <logic.h>
+using HaverfordCS::precondition_failed;
+using HaverfordCS::postcondition_failed;
+using HaverfordCS::assert_failed;
+// add others here if needed
+
 typedef std::string String;  // for compatibility with some old code
 typedef std::string string;  // like 'using namespace std', but doesn't pull in the whole namespace, just 'string'
 
