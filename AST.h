@@ -171,21 +171,21 @@ void AST_examples();  // Examples, to help understand what't going on here ... s
   I've introduced C++ classes instead of Appel's C structs, and use an "_" at the end of each class name.
  */
 
-typedef struct A_var_ *A_var;
-typedef struct A_exp_ *A_exp;
-typedef struct A_dec_ *A_dec;
-typedef struct A_ty_ *A_ty;
+typedef class A_var_ *A_var;
+typedef class A_exp_ *A_exp;
+typedef class A_dec_ *A_dec;
+typedef class A_ty_ *A_ty;
 
-typedef struct A_decList_ *A_decList;
-typedef struct A_expList_ *A_expList;
-typedef struct A_field_ *A_field;
-typedef struct A_fieldList_ *A_fieldList;
-typedef struct A_fundec_ *A_fundec;
-typedef struct A_fundecList_ *A_fundecList;
-typedef struct A_namety_ *A_namety;
-typedef struct A_nametyList_ *A_nametyList;
-typedef struct A_efield_ *A_efield;
-typedef struct A_efieldList_ *A_efieldList;
+typedef class A_decList_ *A_decList;
+typedef class A_expList_ *A_expList;
+typedef class A_field_ *A_field;
+typedef class A_fieldList_ *A_fieldList;
+typedef class A_fundec_ *A_fundec;
+typedef class A_fundecList_ *A_fundecList;
+typedef class A_namety_ *A_namety;
+typedef class A_nametyList_ *A_nametyList;
+typedef class A_efield_ *A_efield;
+typedef class A_efieldList_ *A_efieldList;
 
 // #include "AST_attribute_types.h"   // This is for the old (non-lazy) attribute system
 

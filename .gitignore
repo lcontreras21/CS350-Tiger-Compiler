@@ -5,5 +5,8 @@ Debug/y.tab.h
 Debug/*.c
 Debug/*.o
 Debug/tiger
+Debug/*.tig
+Debug/*.tiger
+Debug/*.hera
 AST_examples
 util_examples
