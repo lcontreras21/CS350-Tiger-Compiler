@@ -1,9 +1,8 @@
 // Note: to learn how to invoke bison/flex in Eclipse, see https://www.eclipse.org/forums/index.php/t/1075215/
 // And refer to the example at https://www.gnu.org/software/bison/manual/html_node/A-Complete-C_002b_002b-Example.html#A-Complete-C_002b_002b-Example
 
-
-%language "C++"
-
+%skeleton "lalr1.cc" /* -*- C++ -*- */
+%require "3.0.4"
 %defines
 %define parser_class_name {tigerParser}
 
@@ -11,21 +10,17 @@
 %define api.value.type variant
 %define api.token.constructor
 
-%define api.token.prefix {TOK_}
-
 %code requires
 {
-class tigerParser;
+class tigerParseDriver;
 }
-%param { tigerParser& parser }
+%param { tigerParseDriver& driver }
 
 // According to the Example, this turns on "location tracking"
 %locations
 
 
 %{
-#include "util.h"
-#include "errormsg.h"
 #include "tigerParseDriver.h"
 %}
 
@@ -65,17 +60,21 @@ class tigerParser;
 %%
 
 program: exp	{ EM_debug("Got one expression.");
-		  		  AST_root = new A_root_($1.AST);  }
+		  		  AST_root = new A_root_($1);  }
 	;
 
 exp:  INT			{ $$ /* .type = Ty_Int();
-		  			  $$.AST */ = A_IntExp(Position::current(), $1.ival); }
+		  			  $$.AST */ = A_IntExp(Position::current(), $1); }
 	| exp PLUS exp	{ $$  /* .type = Ty_Int();
-					  $$.AST */ = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
+					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
 					  				   A_plusOp,$1.AST,$3.AST); }
+					  $$.AST */ = A_OpExp(Position::current(),
+					  				   A_plusOp,$1,$3); }
 	| exp TIMES exp	{ $$ /* .type = Ty_Int();
-					  $$.AST */ = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
+					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
 					  				   A_timesOp,$1.AST,$3.AST); }
+					  $$.AST */ = A_OpExp(Position::current(),
+					  				   A_timesOp,$1,$3); }
 
 	;
 

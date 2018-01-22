@@ -1,18 +1,24 @@
 #include <stdio.h>
 #include <iostream>
-using namespace std;
+using std::cout;
+using std::cerr;
+using std::endl;
+
 #include "util.h"
 #include "errormsg.h"
 #include "ST.h"
 #include "types.h"
 #include "AST.h"
+#include "tigerParseDriver.h"
 /* The auto-generated y.tab.h is in the Debug folder */
 // #include "Debug/y.tab.h"
-#include "Debug/tiger-grammar.tab.h"
+#include "tiger-grammar.tab.hh"
 #include "static_checks.h" // for AST attributes
 #include "typecheck.h"  // For labs with type checking
 #include "which_cs350_lab.h"
 
+/* Turned this off while having trouble switching to C++ approach; this used to work in C version */
+#if defined COMPILE_LEX_TEST
 // array of token number / token name pairs
 static struct {
 	int number;
@@ -74,10 +80,8 @@ String tokname(int tok) {
 }
 
 
-
 extern YYSTYPE yylval;  // global variable set by lexical analyzer
 
-#if defined COMPILE_LEX_TEST
 void lex_test()
 {
 	extern int yylex(void); /* prototype for the lexing function, C style with no parameters */

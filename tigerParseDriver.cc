@@ -1,6 +1,7 @@
-
 // The tigerParseDriver class is closely based on the example from the documentation (i.e., copied and edited)
 // https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Parsing-Driver.html#Calc_002b_002b-Parsing-Driver
+
+#include "tigerParseDriver.h"
 
 tigerParseDriver::tigerParseDriver()
 {

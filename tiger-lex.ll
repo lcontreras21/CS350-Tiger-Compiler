@@ -1,4 +1,5 @@
 %{
+
 /* In this first section of the lex file (between %{ and %}),
    we define C++ functions that will be used later in the actions of part 3 */
    
@@ -86,11 +87,11 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 /* Surrounding four lines, and other things involving "loc", are from
    https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Scanner.html#Calc_002b_002b-Scanner */
   // Code run each time yylex is called.
-  loc.step ();
+  loc.step();
 %}
 
 [ \t]	loc.step();
-[\n\r]	loc.lines(yyleng);
+[\n\r]	loc.lines(yyleng); loc.step();
 
 "+"	return yy::tigerParser::make_PLUS(loc);
 "*"	return yy::tigerParser::make_TIMES(loc);
@@ -102,6 +103,7 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
    }
 
 "<"[Ee][Oo][Ff]">"	return yy::tigerParser::make_END(loc);
+<<EOF>>    return yy::tigerParser::make_END(loc);
 
 .	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
 %%
