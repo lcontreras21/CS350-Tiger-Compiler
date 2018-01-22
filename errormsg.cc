@@ -30,9 +30,10 @@ static IntList intList(int i, IntList rest)
 
 static IntList linePos=NULL;
 
-
+#if 0  /* cutting this out since it's now in tigerParseDriver */
 #if ! defined ERRORMSG_SKIP_LEX
 static bool set_lex_input(bool use_stdin, const char *fname);  // set stuff for lex -- see below
+#endif
 #endif
 
 void EM_reset(string fname, int max_errors, bool show_debug)
@@ -44,10 +45,12 @@ void EM_reset(string fname, int max_errors, bool show_debug)
 	fileName=fname;
 	lineNum=1;
 	linePos=intList(0,NULL);
+#if 0  /* cutting this out since it's now in tigerParseDriver */
 #if ! defined ERRORMSG_SKIP_LEX
 	if (!set_lex_input((fname == "-" || fname == ""), fname.c_str())) {
 		EM_error("Cannot open file: " + fname, Position::undefined(), true);
 	}
+#endif
 #endif
 }
 
@@ -171,6 +174,7 @@ string Position::__repr__()
 	return "Position::range(Position::fromLex(" + str(s) + "), Position::fromLex(" + str(e) + "))";
 }
 
+#if 0  /* cutting this out since it's now in tigerParseDriver */
 // we may want to skip this, e.g. in AST_examples
 #if ! defined ERRORMSG_SKIP_LEX
 // lex interface stuff, uses STDIO library rather than iostreams:
@@ -187,4 +191,5 @@ static bool set_lex_input(bool use_stdin, const char *fname)
 		return yyin;
 	}
 }
+#endif
 #endif

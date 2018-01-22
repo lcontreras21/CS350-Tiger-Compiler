@@ -113,7 +113,9 @@ void lex_test()
 int main(int argc, char **argv)
 {
 	bool debug = false, show_ast = false;
+#if defined COMPILE_LEX_TEST
 	bool just_do_lex_and_then_stop = false;
+#endif
 	String filename;
 	int arg_consumed = 0;
   
@@ -124,8 +126,10 @@ int main(int argc, char **argv)
 			show_ast = true;
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'A')
 			print_ASTs_with_attributes = show_ast = true;
+#if defined COMPILE_LEX_TEST
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'l')
 			just_do_lex_and_then_stop = true;
+#endif
 	}
 
 
@@ -146,7 +150,7 @@ int main(int argc, char **argv)
 	// open "filename" for reading by lexical scanner,
 	// give up after 8 errors,
 	// with compiler debugging ON if the "-d" flag was used when we started
-	// EM_reset(filename, 8, debug);
+	EM_reset(filename, 8, debug);
 
 	ST_test();  // internal consistency check
 
