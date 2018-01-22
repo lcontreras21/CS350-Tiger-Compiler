@@ -1,4 +1,10 @@
 *~
+lex.yy.cc
+stack.hh
+location.hh
+position.hh
+tiger-grammar.tab.cc
+tiger-grammar.tab.hh
 Debug/.depend
 Debug/y.output
 Debug/y.tab.h

@@ -89,11 +89,15 @@ int main(int argc, char *argv[])
 }
 #endif
 
+string repr(string s)    { return repr_for_std_string(s); }
+string repr(bool b)      { return (b ? "true" : "false"); }
+string repr(int x)       { return std::to_string(x); }
+string repr(long x)      { return std::to_string(x); }
+string repr(unsigned x)  { return std::to_string(x); }
 
-// Restored for 2016, since it had been in the starter files:
-string appendchar(string x, char c)
-{
-	string result = x;
-	x.append(1, c);
-	return x;
-}
+// template<class T> string str(T *p)   { return p->__str__(); }
+// template<class T> string str(T &x)   { return x.__str__(); }
+string str(bool b) { return repr(b); }
+string str(int x)  { return repr(x); }
+string str(long x)  { return repr(x); }
+string str(unsigned x)  { return repr(x); }

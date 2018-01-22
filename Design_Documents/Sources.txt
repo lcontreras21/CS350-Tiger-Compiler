@@ -2,6 +2,19 @@
 
 The ASCII table can be found in many places on the web, e.g. asciitable.com
 
+========= Bison and Flex, especially with respect to C++ usage =======
+
+Dave uses these sources (please send email if you find an error in one):
+ http://www.jonathanbeard.io/tutorials/FlexBisonC++
+ http://dinosaur.compilertools.net/flex/flex_19.html
+ 
+These in particular were consulted when trying to deal with %token, %type, etc.
+ https://www.gnu.org/software/bison/manual/html_node/Split-Symbols.html
+ https://www.gnu.org/software/bison/manual/html_node/C_002b_002b-Variants.html
+ 
+For general information about bison/yacc, the O'Reilly book is good though (at least for the copy in the lab) somewhat dated
+
+
 ========= Info about Functional Programming, Map and Reduce =======
 
 General-purpose stuff can be found at http://en.cppreference.com/w/cpp/utility/functional;

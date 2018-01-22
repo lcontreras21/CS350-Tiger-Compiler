@@ -7,7 +7,8 @@ using namespace std;
 #include "types.h"
 #include "AST.h"
 /* The auto-generated y.tab.h is in the Debug folder */
-#include "Debug/y.tab.h"
+// #include "Debug/y.tab.h"
+#include "Debug/tiger-grammar.tab.h"
 #include "static_checks.h" // for AST attributes
 #include "typecheck.h"  // For labs with type checking
 #include "which_cs350_lab.h"

@@ -1,3 +1,5 @@
+#if defined COMPILE_SYNTHESIZE
+
 #include "AST.h"
 
 // WARNING:  since we're using #define rather than a reasonable language mechanism,
@@ -19,5 +21,4 @@
 #include "synthesize-implementation.h"
 #undef some_type
 
-
-
+#endif

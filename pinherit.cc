@@ -1,3 +1,5 @@
+#if defined COMPILE_PINHERIT
+
 #include "AST.h"
 
 // WARNING:  since we're using #define rather than a reasonable language mechanism,
@@ -23,7 +25,4 @@
 #include "pinherit-implementation.h"
 #undef some_type
 
-
-
-
-
+#endif

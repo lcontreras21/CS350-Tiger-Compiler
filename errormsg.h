@@ -16,7 +16,7 @@ public:
 	string __repr__();
 	string __str__();
 
-private: // actually, these are just 'discoraged' style; remove this line if you really want to call them rather than using the named static operations above
+private: // actually, these are just 'discouraged' style; remove this line if you really want to call them rather than using the named static operations above
 	Position();
 	Position(const Position &start, const Position &end);
 private:
