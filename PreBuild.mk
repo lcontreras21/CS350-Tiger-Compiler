@@ -9,5 +9,18 @@ lex.yy.cc: tiger-lex.ll
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc
 
+# Something weird is causing Eclipse to be sad after a clean, but a 2nd build does the trick
+# Possibly this has to do with renaming lex.yy.c, but I can't figure it out tonight.
+# Cleaning here, then "Project -> Clean", does a build that doesn't compile lex.yy.cc
+#  (the second build does just that, then succeeds.)
+# Thus, tried a bogus line:
+#  	touch -d"Jan 1 1970" lex.yy.cc
+#  but no luck, it just got weirder.
+
 clean:
-	-rm stack.hh tiger-grammar.tab.hh tiger-grammar.tab.cc lex.yy.cc lex.yy.c
+	-rm stack.hh tiger-grammar.tab.hh tiger-grammar.tab.cc lex.yy.cc lex.yy.c *~
+	@echo " "
+	@echo " "
+	@echo " ===> CAUTION: First Eclipse build may fail; just do a second <==="
+	@echo " "
+	@echo " "

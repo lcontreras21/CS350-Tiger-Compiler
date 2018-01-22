@@ -107,3 +107,22 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 
 .	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
 %%
+
+int
+tigerParseDriver::parse (const std::string &f)
+{
+	fileName = f;
+
+	if (fileName == "" || fileName == "-") {
+		yyin = stdin;
+	} else if (!(yyin = fopen (fileName.c_str (), "r"))) {
+		error ("cannot open " + fileName + ".");
+		exit (EXIT_FAILURE);
+	}
+
+	yy::tigerParser parser (*this);
+	int res = parser.parse ();  // sets this->AST_root
+
+	fclose (yyin);
+	return res;
+}

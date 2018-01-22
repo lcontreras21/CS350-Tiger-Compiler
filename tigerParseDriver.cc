@@ -9,25 +9,7 @@ tigerParseDriver::tigerParseDriver()
 
 #include <stdio.h>
 
-int
-tigerParseDriver::parse (const std::string &f)
-{
-	fileName = f;
-	extern FILE *yyin;
-
-	if (fileName == "" || fileName == "-") {
-		yyin = stdin;
-	} else if (!(yyin = fopen (fileName.c_str (), "r"))) {
-		error ("cannot open " + fileName + ".");
-		exit (EXIT_FAILURE);
-	}
-
-	yy::tigerParser parser (*this);
-	int res = parser.parse ();  // sets this->AST_root
-
-	fclose (yyin);
-	return res;
-}
+// Parse method is in the .ll file to get access to YYIN
 
 void
 tigerParseDriver::error (const yy::location& l, const std::string& m)

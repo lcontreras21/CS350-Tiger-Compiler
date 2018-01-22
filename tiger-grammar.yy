@@ -78,3 +78,11 @@ exp:  INT			{ $$ /* .type = Ty_Int();
 
 	;
 
+%%
+
+void
+yy::tigerParser::error(const location_type& l,
+          	       const std::string& m)
+  {
+	  EM_error(m, Position::current());  // ToDo: convert flex locations into tiger Positions
+  }
