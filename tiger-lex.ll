@@ -63,7 +63,8 @@ static int textToInt(std::string the_text)  // a C-style array of char will be c
    C-style comments (like this one) are also legal. */
 
 /* options from the example */
-%option noyywrap nounput batch debug noinput
+%option noyywrap nounput
+/* Not using these: batch debug noinput */
 
 
 integer	[0-9]+

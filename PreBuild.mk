@@ -1,11 +1,13 @@
 all: lex.yy.cc tiger-grammar.tab.cc
 
 tiger-grammar.tab.cc: tiger-grammar.yy
+	@rm tiger-grammar.tab.cc tiger-grammar.tab.hh 2>/dev/null || true
 	bison tiger-grammar.yy
 
 # I could get a .cc by using "%option c++", but that isn't what's done in the example
 #  and it breaks a bunch of other stuff that I can't fix tonight :-(
 lex.yy.cc: tiger-lex.ll
+	@rm lex.yy.c lex.yy.cc 2>/dev/null || true
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc
 

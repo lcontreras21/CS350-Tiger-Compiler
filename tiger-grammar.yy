@@ -54,27 +54,21 @@ class tigerParseDriver;
 %expect 0
 
 
-
-%start program
-
 %%
 
+%start program;
 program: exp	{ EM_debug("Got one expression.");
-		  		  AST_root = new A_root_($1);  }
+		  		  driver.AST = AST_root = new A_root_($1);  /* ToDo: just have one */ }
 	;
 
-exp:  INT			{ $$ /* .type = Ty_Int();
-		  			  $$.AST */ = A_IntExp(Position::current(), $1); }
-	| exp PLUS exp	{ $$  /* .type = Ty_Int();
-					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
-					  				   A_plusOp,$1.AST,$3.AST); }
-					  $$.AST */ = A_OpExp(Position::current(),
-					  				   A_plusOp,$1,$3); }
-	| exp TIMES exp	{ $$ /* .type = Ty_Int();
-					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
-					  				   A_timesOp,$1.AST,$3.AST); }
-					  $$.AST */ = A_OpExp(Position::current(),
-					  				   A_timesOp,$1,$3); }
+exp:  INT			{ EM_debug("Got int " + str($1));
+					  $$ = A_IntExp(Position::current(), $1); }
+	| exp PLUS exp	{ EM_debug("Got plus expression.");
+					  $$ = A_OpExp(Position::range($1->pos(), $3->pos()),
+					  			   A_plusOp,$1,$3); }
+	| exp TIMES exp	{ EM_debug("Got times expression.");
+					  $$ = A_OpExp(Position::range($1->pos(), $3->pos()),
+					  			   A_timesOp,$1,$3); }
 
 	;
 

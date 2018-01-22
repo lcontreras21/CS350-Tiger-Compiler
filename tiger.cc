@@ -161,17 +161,19 @@ int main(int argc, char **argv)
 	} else
 #endif
 	{
-		tigerParseDriver parser;
-		if (parser.parse(filename) != 0) {
-			EM_error("Parsing failed");
-		} else if (parser.AST == 0) {
-			EM_warning("Parsing Successful, but no AST_root created.");
+		tigerParseDriver driver;
+		int result = driver.parse(filename);
+			// if result != 0 ...  EM_error("Parsing failed");
+			//		} else
+		if (driver.AST == 0) {
+			EM_warning("AST_root created.");
 		} else {
+			assert(driver.AST == AST_root); // ToDo: eliminate the latter
 			EM_debug("Parsing Successful", AST_root->pos(), 2);
 
 			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(AST_root) << endl;
 			String code = AST_root->HERA_code();
-			if (!EM_recorded_any_errors()) cout << code;
+			cout << code;
 		}
 		return EM_recorded_any_errors();
 	}
