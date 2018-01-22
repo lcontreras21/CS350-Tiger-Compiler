@@ -77,6 +77,7 @@ String tokname(int tok) {
 
 extern YYSTYPE yylval;  // global variable set by lexical analyzer
 
+#if defined COMPILE_LEX_TEST
 void lex_test()
 {
 	extern int yylex(void); /* prototype for the lexing function, C style with no parameters */
@@ -103,21 +104,7 @@ void lex_test()
 		}
 	}
 }
-
-
-void parse_test() 
-{
-	extern int yyparse(void);
-
-	if (yyparse() == 0) /* parsing worked */
-		if (AST_root != 0) 
-			EM_debug("Parsing Successful", AST_root->pos(), 2);
-		else
-			EM_warning("Parsing Successful, but no AST_root created.");
-	else
-		EM_error("Parsing failed");
-}
-
+#endif
 
 int main(int argc, char **argv)
 {
@@ -155,19 +142,25 @@ int main(int argc, char **argv)
 	// open "filename" for reading by lexical scanner,
 	// give up after 8 errors,
 	// with compiler debugging ON if the "-d" flag was used when we started
-	EM_reset(filename, 8, debug);
+	// EM_reset(filename, 8, debug);
 
 	ST_test();  // internal consistency check
-  
+
+#if defined COMPILE_LEX_TEST
 	if (just_do_lex_and_then_stop) {
 		lex_test();
 		return 0;
-	} else {
-		parse_test();
-		if (!EM_recorded_any_errors()) {
-			if (AST_root == 0) {
-				EM_error("Internal compiler error: no AST produced in AST_root", Position::current(), true);
-			}
+	} else
+#endif
+	{
+		tigerParser parser;
+		if (parser.parse(filename) != 0) {
+			EM_error("Parsing failed");
+		} else if (parser.AST == 0) {
+			EM_warning("Parsing Successful, but no AST_root created.");
+		} else {
+			EM_debug("Parsing Successful", AST_root->pos(), 2);
+
 			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(AST_root) << endl;
 			String code = AST_root->HERA_code();
 			if (!EM_recorded_any_errors()) cout << code;

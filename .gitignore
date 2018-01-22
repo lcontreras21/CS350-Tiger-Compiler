@@ -5,14 +5,6 @@ location.hh
 position.hh
 tiger-grammar.tab.cc
 tiger-grammar.tab.hh
-Debug/.depend
-Debug/y.output
-Debug/y.tab.h
-Debug/*.c
-Debug/*.o
-Debug/tiger
-Debug/*.tig
-Debug/*.tiger
-Debug/*.hera
+Debug
 AST_examples
 util_examples
