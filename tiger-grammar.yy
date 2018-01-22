@@ -13,6 +13,12 @@
 
 %define api.token.prefix {TOK_}
 
+%code requires
+{
+class tigerParser;
+}
+%param { tigerParser& parser }
+
 // According to the Example, this turns on "location tracking"
 %locations
 
@@ -20,7 +26,7 @@
 %{
 #include "util.h"
 #include "errormsg.h"
-#include "PT-types.h"
+#include "tigerParseDriver.h"
 %}
 
 %token <bool> BOOL

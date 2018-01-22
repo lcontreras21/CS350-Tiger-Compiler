@@ -8,8 +8,7 @@
  //  https://www.gnu.org/software/bison/manual/html_node/Split-Symbols.html
 
 #include <stdlib.h>
-#include "util.h"
-#include "PT-types.h"
+#include "tigerParseDriver.h"
 #include "tiger-grammar.tab.hh"
 
 // next line from https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Scanner.html#Calc_002b_002b-Scanner
@@ -20,7 +19,7 @@ static yy::location loc;
 //  (a) calling a C function to process something from lex (see the "INT" pattern below), and
 //  (b) processing a collection of characters one at a time, relying on their ASCII values
 
-static int textToInt(String the_text)  // a C-style array of char will be converted to a String
+static int textToInt(std::string the_text)  // a C-style array of char will be converted to a String
 {
 	// here's a C-language way of doing this
 	char zero = '0';  // the character 0
@@ -62,7 +61,8 @@ static int textToInt(String the_text)  // a C-style array of char will be conver
    A few other things, like %option, can also be used here.
    C-style comments (like this one) are also legal. */
 
-%option c++
+/* options from the example */
+%option noyywrap nounput batch debug noinput
 
 
 integer	[0-9]+
@@ -96,11 +96,12 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 "*"	return yy::tigerParser::make_TIMES(loc);
 
 {integer}	{
-   return yy::tigerParser::make_INT(textToInt(YYText()), loc);
+   return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
 
 "<"[Ee][Oo][Ff]">"	return yy::tigerParser::make_END(loc);
 
-.	{ string it = "?"; it[0] = YYText()[0]; EM_error("illegal token: " + it); }
+.	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
+%%

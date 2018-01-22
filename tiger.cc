@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 	} else
 #endif
 	{
-		tigerParser parser;
+		tigerParseDriver parser;
 		if (parser.parse(filename) != 0) {
 			EM_error("Parsing failed");
 		} else if (parser.AST == 0) {

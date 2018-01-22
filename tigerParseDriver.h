@@ -1,13 +1,15 @@
-#if ! defined TIGER_PARSER_H
-#define TIGER_PARSER_H
+#if ! defined TIGER_PARSE_DRIVER_H
+#define TIGER_PARSE_DRIVER_H
 
-class A_root_;
+#include "AST.h"
+#include "types.h"
+#include "tiger-grammar.tab.hh"
 
-// The tigerParser class is closely based on the example from the documentation (i.e., copied and edited)
+// The tigerParseDriver class is closely based on the example from the documentation (i.e., copied and edited)
 // https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Parsing-Driver.html#Calc_002b_002b-Parsing-Driver
-class tigerParser {
+class tigerParseDriver {
 public:
-	tigerParser();
+	tigerParseDriver();
 
 	A_root_ *AST;  // parsing will set this to the root of the AST, if it succeeds
 
@@ -22,16 +24,13 @@ public:
 	void error (const std::string& m);
 };
 
-
-#include "AST.h"
-#include "types.h"
-#include "tiger-grammar.tab.hh"
-
 // Tell Flex the lexer's prototype ...
 # define YY_DECL \
-	yy::tigerParser::symbol_type yylex (tigerParser &)
+	yy::tigerParser::symbol_type yylex (tigerParseDriver &)
 // ... and declare it for the parser's sake.
 YY_DECL;
+
+
 
 // Define the types of the attributes of various kinds of nodes in the parse tree
 struct {
