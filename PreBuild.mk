@@ -1,3 +1,5 @@
+# Note there are some "sleep" commands here because otherwise Eclipse sometimes doesn't realize the files are there
+
 all: lex.yy.cc tiger-grammar.tab.cc
 
 tiger-grammar.tab.cc: tiger-grammar.yy
