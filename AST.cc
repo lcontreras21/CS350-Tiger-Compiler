@@ -386,7 +386,6 @@ A_arrayty_::A_arrayty_(A_pos pos, Symbol array) :  A_ty_(pos), _array(array)
 	precondition(array != 0);
 }
 
-A_root_ *AST_root = 0; // initialize global variables in the .cc (without the word "extern")
 bool have_AST_attrs = false;
 
 void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)

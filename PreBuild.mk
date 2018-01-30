@@ -26,7 +26,7 @@ lex.yy.cc: tiger-lex.ll
 #  but no luck, it just got weirder.
 
 clean:
-	-rm stack.hh tiger-grammar.tab.hh tiger-grammar.tab.cc lex.yy.cc lex.yy.c *~
+	rm stack.hh tiger-grammar.tab.hh tiger-grammar.tab.cc lex.yy.cc lex.yy.c *~ 2>/dev/null  || true
 	@echo " "
 	@echo " "
 	@echo " ===> CAUTION: First Eclipse build may fail; just do a second <==="
@@ -34,7 +34,7 @@ clean:
 	@echo " "
 
 cleaner: clean
-	rm Debug/*.o Debug/tiger
+	rm Debug/*.o Debug/tiger 2>/dev/null || true
 
 # This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
 #  but it should consistently work, works from the command line, and is very simple.

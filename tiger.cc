@@ -163,18 +163,15 @@ int main(int argc, char **argv)
 	{
 		tigerParseDriver driver;
 		int result = driver.parse(filename);
-			// if result != 0 ...  EM_error("Parsing failed");
-			//		} else
-		if (driver.AST == 0) {
-			EM_warning("AST_root created.");
-		} else {
-			assert(driver.AST == AST_root); // ToDo: eliminate the latter
-			EM_debug("Parsing Successful", AST_root->pos(), 2);
-
-			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(AST_root) << endl;
-			String code = AST_root->HERA_code();
-			cout << code;
+		if (result != 0) {
+			EM_error("Parsing failed", Position::current(), true); // true = fatal error
 		}
+
+		EM_debug("Parsing Successful", driver.AST->pos(), 2);
+
+		if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
+		String code = driver.AST->HERA_code();
+		cout << code;
 		return EM_recorded_any_errors();
 	}
 }

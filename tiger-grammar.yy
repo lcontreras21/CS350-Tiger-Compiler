@@ -59,7 +59,7 @@ class tigerParseDriver;
 
 %start program;
 program: exp	{ EM_debug("Got one expression.");
-		  		  driver.AST = AST_root = new A_root_($1);  /* ToDo: just have one */ }
+		  		  driver.AST = new A_root_($1); }
 	;
 
 exp:  INT			{ EM_debug("Got int " + str($1));
