@@ -1,5 +1,9 @@
 # Note there are some "sleep" commands here because otherwise Eclipse sometimes doesn't realize the files are there
 
+CC=g++
+CFLAGS=--std=c++1y -Wall -I/home/courses/include
+LDFLAGS=-L/home/courses/lib -lcourses
+
 all: lex.yy.cc tiger-grammar.tab.cc
 
 tiger-grammar.tab.cc: tiger-grammar.yy
@@ -28,3 +32,15 @@ clean:
 	@echo " ===> CAUTION: First Eclipse build may fail; just do a second <==="
 	@echo " "
 	@echo " "
+
+cleaner: clean
+	rm Debug/*.o Debug/tiger
+
+# This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
+#  but it should consistently work, works from the command line, and is very simple.
+rebuilt:
+	bison tiger-grammar.yy
+	flex tiger-lex.ll
+	mv lex.yy.c lex.yy.cc
+	rm Debug/*.o 2>/dev/null || true
+	${CC} ${CFLAGS} *.cc ${LDFLAGS} -o Debug/tiger
