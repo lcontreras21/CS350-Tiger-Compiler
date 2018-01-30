@@ -1,10 +1,10 @@
 # Note there are some "sleep" commands here because otherwise Eclipse sometimes doesn't realize the files are there
 
 CC=g++
-CFLAGS=--std=c++1y -Wall -I/home/courses/include
+CFLAGS=--std=c++1y -I/home/courses/include -Wall -Wno-sign-compare #that last due to auto-generated code from flex
 LDFLAGS=-L/home/courses/lib -lcourses
 
-all: lex.yy.cc tiger-grammar.tab.cc
+tiger-pre-build: lex.yy.cc tiger-grammar.tab.cc
 
 tiger-grammar.tab.cc: tiger-grammar.yy
 	@rm tiger-grammar.tab.cc tiger-grammar.tab.hh 2>/dev/null || true

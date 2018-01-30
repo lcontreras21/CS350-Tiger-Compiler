@@ -55,6 +55,25 @@ static int textToInt(std::string the_text)  // a C-style array of char will be c
 }
 
 
+// This uses some stuff created by flex, so it's easiest to just put it here.
+int tigerParseDriver::parse (const std::string &f)
+{
+	fileName = f;
+
+	if (fileName == "" || fileName == "-") {
+		yyin = stdin;
+	} else if (!(yyin = fopen (fileName.c_str (), "r"))) {
+		error ("cannot open " + fileName + ".");
+		exit (EXIT_FAILURE);
+	}
+
+	yy::tigerParser parser (*this);
+	int res = parser.parse ();  // sets this->AST_root
+
+	fclose (yyin);
+	return res;
+}
+
 %}
 
 /* In this second section of the lex file (after the %}),
@@ -91,11 +110,11 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
   loc.step();
 %}
 
-[ \t]	loc.step();
-[\n\r]	loc.lines(yyleng); loc.step();
+[ \t]	{ loc.step(); }
+[\n\r]	{ loc.lines(yyleng); loc.step(); }
 
-"+"	return yy::tigerParser::make_PLUS(loc);
-"*"	return yy::tigerParser::make_TIMES(loc);
+"+"		{ return yy::tigerParser::make_PLUS(loc); }
+"*"		{ return yy::tigerParser::make_TIMES(loc); }
 
 {integer}	{
    return yy::tigerParser::make_INT(textToInt(yytext), loc);
@@ -103,27 +122,8 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
 
-"<"[Ee][Oo][Ff]">"	return yy::tigerParser::make_END(loc);
-<<EOF>>    return yy::tigerParser::make_END(loc);
+"<"[Ee][Oo][Ff]">"		{ return yy::tigerParser::make_END(loc); /* this RE matches the literal five characters <EOF>, regardless of upper/lower case   */ }
+<<EOF>>					{ return yy::tigerParser::make_END(loc); /* <<EOF>> is a flex built-in for an actual end of a file, when there is no more input */ }
 
 .	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
 %%
-
-int
-tigerParseDriver::parse (const std::string &f)
-{
-	fileName = f;
-
-	if (fileName == "" || fileName == "-") {
-		yyin = stdin;
-	} else if (!(yyin = fopen (fileName.c_str (), "r"))) {
-		error ("cannot open " + fileName + ".");
-		exit (EXIT_FAILURE);
-	}
-
-	yy::tigerParser parser (*this);
-	int res = parser.parse ();  // sets this->AST_root
-
-	fclose (yyin);
-	return res;
-}

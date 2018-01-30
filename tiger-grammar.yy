@@ -65,7 +65,7 @@ program: exp	{ EM_debug("Got one expression.");
 exp:  INT			{ EM_debug("Got int " + str($1));
 					  $$ = A_IntExp(Position::current(), $1); }
 	| exp PLUS exp	{ EM_debug("Got plus expression.");
-					  $$ = A_OpExp(Position::range($1->pos(), $3->pos()),
+					  $$ = A_OpExp(/* */ Position::range($1->pos(), $3->pos()),
 					  			   A_plusOp,$1,$3); }
 	| exp TIMES exp	{ EM_debug("Got times expression.");
 					  $$ = A_OpExp(Position::range($1->pos(), $3->pos()),
