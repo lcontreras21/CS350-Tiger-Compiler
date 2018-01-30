@@ -154,7 +154,7 @@ Position::Position(const Position &start, const Position &end)
 {
 	s=start.s;
 	e=max(max(start.s, end.s), end.e);
-	assert("to be a valid position range, " && s>=0 && e>=0);
+	//	assert("to be a valid position range, " && s>=0 && e>=0);
 }
 
 string Position::__str__()

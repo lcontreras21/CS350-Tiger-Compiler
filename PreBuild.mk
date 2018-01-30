@@ -36,9 +36,12 @@ clean:
 cleaner: clean
 	rm Debug/*.o Debug/tiger 2>/dev/null || true
 
+Debug:
+	mkdir Debug
+
 # This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
 #  but it should consistently work, works from the command line, and is very simple.
-rebuilt:
+rebuilt: Debug
 	bison tiger-grammar.yy
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc

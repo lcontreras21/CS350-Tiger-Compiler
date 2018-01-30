@@ -2,7 +2,13 @@
 #define TIGER_PARSE_DRIVER_H
 
 #include "AST.h"
+// Define the types of the attributes of various kinds of nodes in the parse tree
+struct expAttrs {
+		Ty_ty type;
+		A_exp AST;
+};
 #include "tiger-grammar.tab.hh"
+
 
 // The tigerParseDriver class is closely based on the example from the documentation (i.e., copied and edited)
 // https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Parsing-Driver.html#Calc_002b_002b-Parsing-Driver
@@ -30,12 +36,5 @@ public:
 YY_DECL;
 
 
-/* ToDo: maybe someday reinstate this and do Bison attributes again?
-// Define the types of the attributes of various kinds of nodes in the parse tree
-struct {
-		Ty_ty type;
-		A_exp AST;
-} expAttrs;
- */
 
 #endif

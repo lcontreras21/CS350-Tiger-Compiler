@@ -47,7 +47,7 @@ class tigerParseDriver;
 %left TIMES
 
 /* Attributes types for nonterminals are next */
-%type <A_exp>  exp
+%type <expAttrs>  exp
 
 
 // The line below means our grammar must not have conflicts
@@ -59,17 +59,17 @@ class tigerParseDriver;
 
 %start program;
 program: exp	{ EM_debug("Got one expression.");
-		  		  driver.AST = new A_root_($1); }
+		  		  driver.AST = new A_root_($1.AST); }
 	;
 
 exp:  INT			{ EM_debug("Got int " + str($1));
-					  $$ = A_IntExp(Position::current(), $1); }
+					  $$.AST = A_IntExp(Position::undefined(), $1); }
 	| exp PLUS exp	{ EM_debug("Got plus expression.");
-					  $$ = A_OpExp(/* */ Position::range($1->pos(), $3->pos()),
-					  			   A_plusOp,$1,$3); }
+					  $$.AST = A_OpExp(/* */ Position::range($1.AST->pos(), $3.AST->pos()),
+					  			   A_plusOp,$1.AST,$3.AST); }
 	| exp TIMES exp	{ EM_debug("Got times expression.");
-					  $$ = A_OpExp(Position::range($1->pos(), $3->pos()),
-					  			   A_timesOp,$1,$3); }
+					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
+					  			   A_timesOp,$1.AST,$3.AST); }
 
 	;
 
