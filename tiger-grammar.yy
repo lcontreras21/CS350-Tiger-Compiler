@@ -70,7 +70,6 @@ exp:  INT			{ EM_debug("Got int " + str($1));
 	| exp TIMES exp	{ EM_debug("Got times expression.");
 					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
 					  			   A_timesOp,$1.AST,$3.AST); }
-
 	;
 
 %%

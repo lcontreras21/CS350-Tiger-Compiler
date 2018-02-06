@@ -170,8 +170,13 @@ int main(int argc, char **argv)
 		EM_debug("Parsing Successful", driver.AST->pos(), 2);
 
 		if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
-		String code = driver.AST->HERA_code();
-		cout << code;
+
+		if (! EM_recorded_any_errors()) {
+			String code = driver.AST->HERA_code();
+			cout << code;
+		} else {
+			EM_warning("Not generating HERA code due to above errors.");
+		}
 		return EM_recorded_any_errors();
 	}
 }
