@@ -3,7 +3,14 @@
 
 #include "util.h"
 
+#define USING_LOCATION_FROM_BISON 1
+
+#if USING_LOCATION_FROM_BISON
+#include "location.hh"  // auto-built by bison, when used with the location option turned on
+typedef yy::location ScannerPosition;
+#else
 typedef int ScannerPosition;  // Appel's "pos" type was just one integer; corresponds to one *token*, not e.g. an *expression*
+#endif
 
 class Position {
 public:
@@ -20,7 +27,12 @@ private: // actually, these are just 'discouraged' style; remove this line if yo
 	Position();
 	Position(const Position &start, const Position &end);
 private:
+#if USING_LOCATION_FROM_BISON
+	ScannerPosition l;
+	bool undef;
+#else
 	ScannerPosition s, e;   // use e==-1 for 'only one position, not a range'
+#endif
 };
 
 

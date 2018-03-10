@@ -59,17 +59,19 @@ class tigerParseDriver;
 
 %start program;
 program: exp	{ EM_debug("Got one expression.");
-		  		  driver.AST = new A_root_($1.AST); }
+		 		  driver.AST = new A_root_($1.AST); }
 	;
 
-exp:  INT			{ EM_debug("Got int " + str($1));
-					  $$.AST = A_IntExp(Position::undefined(), $1); }
-	| exp PLUS exp	{ EM_debug("Got plus expression.");
-					  $$.AST = A_OpExp(/* */ Position::range($1.AST->pos(), $3.AST->pos()),
-					  			   A_plusOp,$1.AST,$3.AST); }
-	| exp TIMES exp	{ EM_debug("Got times expression.");
-					  $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
-					  			   A_timesOp,$1.AST,$3.AST); }
+exp:  INT			{ $$.AST = A_IntExp(Position::fromLex(@1), $1);
+					EM_debug("Got int " + str($1), $$.AST->pos());}
+	| exp PLUS exp	{ $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
+			                   A_plusOp,  $1.AST,$3.AST);
+			  EM_debug("Got plus expression.", $$.AST->pos()); }
+	| exp TIMES exp	{ 
+//					  $$.AST = A_OpExp(Position::range(@1.begin,@3.end), A_timesOp, $1.AST,$3.AST);
+					  $$.AST = A_OpExp(Position::range(Position::fromLex(@1), Position::fromLex(@3)),
+							   A_timesOp, $1.AST,$3.AST);
+				   EM_debug("Got times expression.", $$.AST->pos());}
 	;
 
 %%
@@ -78,5 +80,5 @@ void
 yy::tigerParser::error(const location_type& l,
           	       const std::string& m)
   {
-	  EM_error(m, Position::current());  // ToDo: convert flex locations into tiger Positions
+	  EM_error(m, Position::fromLex(l), true);
   }

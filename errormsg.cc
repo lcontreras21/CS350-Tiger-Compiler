@@ -14,7 +14,7 @@ using namespace std;
 
 static int EM_errCount;
 static int EM_maxErrs;
-static ScannerPosition EM_tokPos;
+// static ScannerPosition EM_tokPos; not needed with location.hh, I hope...
 static bool EM_showingDebug;
 
 static string fileName;
@@ -41,7 +41,7 @@ void EM_reset(string fname, int max_errors, bool show_debug)
 	EM_errCount = 0;
 	EM_maxErrs  = max_errors;
 	EM_showingDebug = show_debug;
-	EM_tokPos = 1;
+	//	EM_tokPos = 1;  not needed with location.hh, I hope...
 	fileName=fname;
 	lineNum=1;
 	linePos=intList(0,NULL);
@@ -54,6 +54,7 @@ void EM_reset(string fname, int max_errors, bool show_debug)
 #endif
 }
 
+#if ! USING_LOCATION_FROM_BISON
 void EM_set_currentPos(ScannerPosition new_pos)
 {
 	EM_tokPos = new_pos;
@@ -73,12 +74,15 @@ void EM_newline(void)
 	lineNum++;
 	linePos = intList(EM_tokPos, linePos);
 }
+#endif
 
 bool EM_recorded_any_errors()
 {
 	return EM_errCount > 0;
 }
 
+#if USING_LOCATION_FROM_BISON
+#else
 static string EM_intpos_to_string(int position, const string &divider)
 {
 	if (linePos == 0) {
@@ -94,6 +98,7 @@ static string EM_intpos_to_string(int position, const string &divider)
 		return std::to_string(num) + divider + std::to_string(position-lines->i);
 	}
 }
+#endif
 
 static void EM_core(string message, Position pos)
 {
@@ -132,33 +137,52 @@ void EM_debug(string message, Position pos, int for_which_lab)
 }
 
 Position Position::current() {
-	return Position();
+	EM_warning("Warning: Position::current no longer works, using undefined instead");
+	return Position(); // returns "undefined" for now
 }
 Position Position::range(const Position &start, const Position &end) {
 	return Position(start, end);
 }
-Position Position::fromLex(int posAttributeInLex) {
-	Position it;  it.s = posAttributeInLex; it.e = -1; return it;
+Position Position::fromLex(ScannerPosition posAttributeInLex) {
+	Position it; it.undef=false; it.l = posAttributeInLex; return it;
 }
 Position Position::undefined() {
-	Position it; it.s = it.e = -1; return it;
+	return Position();
 }
 
 Position::Position()
 {
-	s=EM_tokPos;
-	e=-1;
+	undef = true;
 }
 
 Position::Position(const Position &start, const Position &end)
 {
+#if USING_LOCATION_FROM_BISON
+	undef = false;
+	l = start.l;
+	l.end = end.l.end;
+#else
 	s=start.s;
 	e=max(max(start.s, end.s), end.e);
 	//	assert("to be a valid position range, " && s>=0 && e>=0);
+#endif
 }
+
+#if USING_LOCATION_FROM_BISON
+#include <sstream>
+#endif
 
 string Position::__str__()
 {
+#if USING_LOCATION_FROM_BISON
+	if (!undef) {
+		std::stringstream result;
+		result << l;
+		return result.str();
+	} else {
+		return "?? ?.?:";
+	}
+#else
 	string sep = "."; // separate line number from position on line
 	if (e < 0)
 		if (s<0)
@@ -167,11 +191,16 @@ string Position::__str__()
 			return EM_intpos_to_string(s, sep);
 	else 
 		return "[" + EM_intpos_to_string(s, sep) + ":" + EM_intpos_to_string(e, sep) + "]";
+#endif
 }
 
 string Position::__repr__()
 {
+#if USING_LOCATION_FROM_BISON
+	return "<Position corresponding to " + str(*this) + ">";
+#else
 	return "Position::range(Position::fromLex(" + str(s) + "), Position::fromLex(" + str(e) + "))";
+#endif
 }
 
 #if 0  /* cutting this out since it's now in tigerParseDriver */

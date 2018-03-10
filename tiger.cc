@@ -164,7 +164,7 @@ int main(int argc, char **argv)
 		tigerParseDriver driver;
 		int result = driver.parse(filename);
 		if (result != 0) {
-			EM_error("Parsing failed", Position::current(), true); // true = fatal error
+			EM_error("Parsing failed", Position::undefined(), true); // true = fatal error
 		}
 
 		EM_debug("Parsing Successful", driver.AST->pos(), 2);
