@@ -67,10 +67,10 @@ exp:  INT			{ $$.AST = A_IntExp(Position::fromLex(@1), $1);
 					EM_debug("Got int " + str($1), $$.AST->pos());}
 	| exp PLUS exp	{ $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
 			                   A_plusOp,  $1.AST,$3.AST);
+// another option for positions on operations:
+// 	   	      	  $$.AST = A_OpExp(Position::range(Position::fromLex(@1), Position::fromLex(@3)),
 			  EM_debug("Got plus expression.", $$.AST->pos()); }
-	| exp TIMES exp	{ 
-//					  $$.AST = A_OpExp(Position::range(@1.begin,@3.end), A_timesOp, $1.AST,$3.AST);
-					  $$.AST = A_OpExp(Position::range(Position::fromLex(@1), Position::fromLex(@3)),
+	| exp TIMES exp	{ $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
 							   A_timesOp, $1.AST,$3.AST);
 				   EM_debug("Got times expression.", $$.AST->pos());}
 	;
