@@ -1,7 +1,6 @@
 /*
  * errormsg.c - functions used in all phases of the compiler to give
  *              error messages about the Tiger program.
- *
  */
 
 #include <cstdlib>
@@ -16,6 +15,7 @@ static int EM_errCount;
 static int EM_maxErrs;
 // static ScannerPosition EM_tokPos; not needed with location.hh, I hope...
 static bool EM_showingDebug;
+static bool EM_crashOnFatal;
 
 static string fileName;
 static int lineNum;
@@ -36,11 +36,12 @@ static bool set_lex_input(bool use_stdin, const char *fname);  // set stuff for 
 #endif
 #endif
 
-void EM_reset(string fname, int max_errors, bool show_debug)
+void EM_reset(string fname, int max_errors, bool show_debug, bool crash_compiler_on_fatal_error)
 {
 	EM_errCount = 0;
 	EM_maxErrs  = max_errors;
 	EM_showingDebug = show_debug;
+	EM_crashOnFatal = crash_compiler_on_fatal_error;
 	//	EM_tokPos = 1;  not needed with location.hh, I hope...
 	fileName=fname;
 	lineNum=1;
@@ -102,7 +103,11 @@ static string EM_intpos_to_string(int position, const string &divider)
 
 static void EM_core(string message, Position pos)
 {
+#if USING_LOCATION_FROM_BISON
+	cerr << str(pos) << ": " << message << endl;
+#else
 	cerr << fileName << " " << str(pos) << ": " << message << endl;
+#endif
 }
 
 void EM_error(string message, Position position, bool fatal)
@@ -113,7 +118,7 @@ void EM_error(string message, Position position, bool fatal)
 	EM_core(message, position);
 	if (fatal || (EM_maxErrs > 0 && EM_errCount >= EM_maxErrs)) {
 		fprintf(stderr, "Giving up due to fatal error or too many errors\n");
-		if (EM_showingDebug)
+		if (fatal && EM_crashOnFatal)
 			abort(); // get into the debugger, I hope
 		else
 			exit(2);
@@ -144,7 +149,25 @@ Position Position::range(const Position &start, const Position &end) {
 	return Position(start, end);
 }
 Position Position::fromLex(ScannerPosition posAttributeInLex) {
-	Position it; it.undef=false; it.l = posAttributeInLex; return it;
+	Position it;
+	it.undef=false;
+	it.l = posAttributeInLex;
+	if (it.l.begin.filename == 0 && it.l.end.filename == 0) {
+		it.l.begin.filename = &fileName; // use the one from EM_reset ...
+		it.l.end.filename   = &fileName; // @TODO: figure out why flex doesn't give this
+		static bool whinedAlready = false;
+		if (!whinedAlready) {
+			EM_debug("Huh, had to build Position from flex info that lacked file name, by using hack", it);
+			whinedAlready=true;
+		}
+	} else if (it.l.end.filename == 0) {
+		it.l.end.filename   = it.l.begin.filename;
+		EM_debug("Curiouser and curiouser ...  had to build Position from flex info that lacked file name BUT ONLY IN THE END", it);
+	} else if (it.l.begin.filename == 0) {
+		it.l.begin.filename = it.l.end.filename; 
+		EM_debug("Curiouser and curiouser! ... had to build Position from flex info that lacked file name BUT ONLY IN THE BEGIN", it);
+	}
+	return it;
 }
 Position Position::undefined() {
 	return Position();
@@ -180,7 +203,7 @@ string Position::__str__()
 		result << l;
 		return result.str();
 	} else {
-		return "?? ?.?:";
+		return "-.-:";
 	}
 #else
 	string sep = "."; // separate line number from position on line

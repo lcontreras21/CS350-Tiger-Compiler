@@ -406,7 +406,8 @@ void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_
 void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
 	my_parent = my_parent_or_null_if_i_am_the_root;
-	EM_debug("Uh-oh, better set the parent pointhers for *each*class* ... there's just this hack there at the moment");
+	EM_debug("Uh-oh, need to make set_parent_pointers_for_me_and_my_descendents actually do its full job...", pos());
+	EM_debug(" rewrite or overrride it, instead of running this hack that's in the AST_node_ class now.", pos());
 }
 
 AST_node_ *AST_node_::get_parent_without_checking()

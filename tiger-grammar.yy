@@ -18,6 +18,7 @@ class tigerParseDriver;
 
 // According to the Example, this turns on "location tracking"
 %locations
+// Thanks to Ian Fisher HC '19 for explaining the details of the parts I'd failed to get working
 
 
 %{
@@ -58,7 +59,7 @@ class tigerParseDriver;
 %%
 
 %start program;
-program: exp	{ EM_debug("Got one expression.");
+program: exp	{ EM_debug("Got one expression.", $1.AST->pos());
 		 		  driver.AST = new A_root_($1.AST); }
 	;
 
@@ -80,5 +81,6 @@ void
 yy::tigerParser::error(const location_type& l,
           	       const std::string& m)
   {
+	  EM_debug("In yy::tigerParser::error");
 	  EM_error(m, Position::fromLex(l), true);
   }

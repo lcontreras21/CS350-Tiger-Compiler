@@ -112,7 +112,7 @@ void lex_test()
 
 int main(int argc, char **argv)
 {
-	bool debug = false, show_ast = false;
+	bool debug = false, show_ast = false, crash_on_fatal;
 #if defined COMPILE_LEX_TEST
 	bool just_do_lex_and_then_stop = false;
 #endif
@@ -126,6 +126,8 @@ int main(int argc, char **argv)
 			show_ast = true;
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'A')
 			print_ASTs_with_attributes = show_ast = true;
+		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'c')
+			crash_on_fatal = true;
 #if defined COMPILE_LEX_TEST
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'l')
 			just_do_lex_and_then_stop = true;
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
 	// open "filename" for reading by lexical scanner,
 	// give up after 8 errors,
 	// with compiler debugging ON if the "-d" flag was used when we started
-	EM_reset(filename, 8, debug);
+	EM_reset(filename, 8, debug, crash_on_fatal);
 
 	ST_test();  // internal consistency check
 
@@ -163,20 +165,28 @@ int main(int argc, char **argv)
 	{
 		tigerParseDriver driver;
 		int result = driver.parse(filename);
-		if (result != 0) {
-			EM_error("Parsing failed", Position::undefined(), true); // true = fatal error
-		}
+		if (EM_recorded_any_errors()) {
+			if (result != 0) {
+				EM_error("Strange result in tiger.cc: parser failed but EM module reported no errors",
+					 Position::undefined(), true); // true = fatal error
+			}
 
-		EM_debug("Parsing Successful", driver.AST->pos(), 2);
+			EM_debug("Parsing Successful", driver.AST->pos(), 2);
 
-		if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
 
-		if (! EM_recorded_any_errors()) {
-			String code = driver.AST->HERA_code();
-			cout << code;
-		} else {
+			// Could do static checks, e.g. type checking, here if we want to do them all before any code generation
+
+			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
+
+			if (! EM_recorded_any_errors()) {
+				String code = driver.AST->HERA_code();
+				if (! EM_recorded_any_errors()) {
+					cout << code;
+					return 0; // no errors
+				}
+			}
 			EM_warning("Not generating HERA code due to above errors.");
+			return EM_recorded_any_errors(); // got errors somewhere, or would have returned 0 above
 		}
-		return EM_recorded_any_errors();
 	}
 }

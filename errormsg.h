@@ -49,8 +49,9 @@ bool EM_recorded_any_errors();
 // Reset to start parsing a new file, count lines from 1
 //  max_errors is max # of errors to allow (or negative for never give up)
 //  show_debug controls printing of EM_debug messages
+//  crash_compiler_on_fatal_error can be turned on to cause fatal errors to call "abort", hopefully triggering debugger at that point
 
- void EM_reset(string filename, int max_errors=-1, bool show_debug=false);
+void EM_reset(string filename, int max_errors=-1, bool show_debug=false, bool crash_compiler_on_fatal_error=false);
 
 //
 // These should ONLY be called from the lexical scanner, so we just declare them there
