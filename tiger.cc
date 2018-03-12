@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 	{
 		tigerParseDriver driver;
 		int result = driver.parse(filename);
-		if (EM_recorded_any_errors()) {
+		if (!EM_recorded_any_errors()) {
 			if (result != 0) {
 				EM_error("Strange result in tiger.cc: parser failed but EM module reported no errors",
 					 Position::undefined(), true); // true = fatal error
@@ -185,8 +185,8 @@ int main(int argc, char **argv)
 					return 0; // no errors
 				}
 			}
-			EM_warning("Not generating HERA code due to above errors.");
-			return EM_recorded_any_errors(); // got errors somewhere, or would have returned 0 above
 		}
+		EM_warning("Not generating HERA code due to above errors.");
+		return EM_recorded_any_errors(); // got errors somewhere, or would have returned 0 above
 	}
 }
