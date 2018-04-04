@@ -376,7 +376,7 @@ public:
 private:
 	A_exp _test;
 	A_exp _then;
-	A_exp _elsee;
+	A_exp _else_or_null;
 };
 
 

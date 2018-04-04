@@ -250,7 +250,7 @@ A_controlExp_::A_controlExp_(A_pos p) : A_exp_(p)
 {
 }
 
-A_ifExp_::A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp elsee) :  A_controlExp_(pos), _test(test), _then(then), _elsee(elsee)
+A_ifExp_::A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_for_no_else) :  A_controlExp_(pos), _test(test), _then(then), _else_or_null(else_or_0_pointer_for_no_else)
 {
 	precondition(test != 0 && then != 0);
 }

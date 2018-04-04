@@ -48,7 +48,7 @@ inline A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_
 	return new A_ifExp_(pos, test, then, else_or_0_pointer_for_no_else);
 }
 /*
-// UNCOMMENT THE FUNCTION BELOW TO HAVE A_ForExp THATS COMPATIBLE WITH APPEL's BOOK
+// UNCOMMENT THE FUNCTION BELOW TO HAVE A_WhileExp THATS COMPATIBLE WITH APPEL's BOOK
 inline A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body)
 {
 	return new A_whileExp_(pos, test, body);
