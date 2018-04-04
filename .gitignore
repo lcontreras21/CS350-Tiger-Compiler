@@ -1,10 +1,11 @@
 *~
+Debug
+AST_examples
+util_examples
 lex.yy.cc
 stack.hh
 location.hh
 position.hh
 tiger-grammar.tab.cc
 tiger-grammar.tab.hh
-Debug
-AST_examples
-util_examples
+tiger-grammar.output

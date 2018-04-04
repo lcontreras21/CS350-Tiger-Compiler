@@ -39,7 +39,7 @@ class tigerParseDriver;
   ARRAY IF THEN ELSE WHILE FOR TO DO LET IN END_LET OF 
   BREAK NIL
   FUNCTION VAR TYPE DOT
-  PLUS MINUS TIMES DIVIDE ASSIGN EQ NEQ LT LE GT GE OR AND
+  PLUS MINUS TIMES DIVIDE ASSIGN EQ NEQ LT LE GT GE OR AND NOT
 ;
 
 /* precedence (stickiness) ... put the stickiest stuff at the bottom of the list */
@@ -52,27 +52,40 @@ class tigerParseDriver;
 
 
 // The line below means our grammar must not have conflicts
-//  (no conflicts means it must be unambiguous, and some other things too)
+//  (no conflicts means it is "an LALR(1) grammar",
+//   meaning it must be unambiguous and have some other properties).
 %expect 0
 
 
 %%
 
 %start program;
-program: exp	{ EM_debug("Got one expression.", $1.AST->pos());
-		 		  driver.AST = new A_root_($1.AST); }
+program: exp[main]	{ EM_debug("Got the main expression of our tiger program.", $main.AST->pos());
+		 			  driver.AST = new A_root_($main.AST);
+		 			}
 	;
 
-exp:  INT			{ $$.AST = A_IntExp(Position::fromLex(@1), $1);
-					EM_debug("Got int " + str($1), $$.AST->pos());}
-	| exp PLUS exp	{ $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
-			                   A_plusOp,  $1.AST,$3.AST);
-// another option for positions on operations:
-// 	   	      	  $$.AST = A_OpExp(Position::range(Position::fromLex(@1), Position::fromLex(@3)),
-			  EM_debug("Got plus expression.", $$.AST->pos()); }
-	| exp TIMES exp	{ $$.AST = A_OpExp(Position::range($1.AST->pos(), $3.AST->pos()),
-							   A_timesOp, $1.AST,$3.AST);
-				   EM_debug("Got times expression.", $$.AST->pos());}
+exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
+								  EM_debug("Got int " + str($i), $$.AST->pos());
+								}
+	| exp[exp1] PLUS exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_plusOp,  $exp1.AST,$exp2.AST);
+								  EM_debug("Got plus expression.", $$.AST->pos());
+								}
+	| exp[exp1] TIMES exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_timesOp, $exp1.AST,$exp2.AST);
+								  EM_debug("Got times expression.", $$.AST->pos());
+//
+// Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
+//        to refer to the first and third elements on the right-hand-side of the production.
+//        We can still use this notation (and note that Appel uses it in his book), e.g. the above is like
+//					$$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+//									 A_timesOp, $1.AST,$3.AST);
+// Also: Bison's location system produces information about nonterminals as well as terminals,
+//        so we could use @exp1 to get it's information about the locations of exp1
+//        writing, e.g., Position::fromLex(@exp1) or instead of $exp1.AST->pos()
+//
+			  					}
 	;
 
 %%

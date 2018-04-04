@@ -4,18 +4,10 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "util.h"
 #include "errormsg.h"
-#include "ST.h"
-#include "types.h"
 #include "AST.h"
+#include "ST.h"  /* to run ST_test */
 #include "tigerParseDriver.h"
-/* The auto-generated y.tab.h is in the Debug folder */
-// #include "Debug/y.tab.h"
-#include "tiger-grammar.tab.hh"
-#include "static_checks.h" // for AST attributes
-#include "typecheck.h"  // For labs with type checking
-#include "which_cs350_lab.h"
 
 /* Turned this off while having trouble switching to C++ approach; this used to work in C version */
 #if defined COMPILE_LEX_TEST
@@ -171,7 +163,7 @@ int main(int argc, char **argv)
 					 Position::undefined(), true); // true = fatal error
 			}
 
-			EM_debug("Parsing Successful", driver.AST->pos(), 2);
+			EM_debug("Parsing Successful", driver.AST->pos());
 
 
 			// Could do static checks, e.g. type checking, here if we want to do them all before any code generation

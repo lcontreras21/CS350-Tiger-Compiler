@@ -202,6 +202,10 @@ A_nilExp_::A_nilExp_(A_pos pos) :  A_literal_(pos)
 {
 }
 
+A_boolExp_::A_boolExp_(A_pos pos, bool init) :  A_literal_(pos), value(init)
+{
+}
+
 A_intExp_::A_intExp_(A_pos pos, int i) :  A_literal_(pos), value(i)
 {
 }

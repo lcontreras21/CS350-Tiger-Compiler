@@ -154,8 +154,6 @@
 #if ! defined _AST_H
 #define _AST_H
 
-#include "which_cs350_lab.h"  // to know if we should be trying to do attributes
-
 #include "errormsg.h"
 typedef Position A_pos;
 #include "symbol.h"

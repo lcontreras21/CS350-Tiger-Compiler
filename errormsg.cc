@@ -9,8 +9,6 @@ using namespace std;
 #include "util.h"
 #include "errormsg.h"
 
-#include "which_cs350_lab.h"
-
 static int EM_errCount;
 static int EM_maxErrs;
 // static ScannerPosition EM_tokPos; not needed with location.hh, I hope...
@@ -132,12 +130,9 @@ void EM_warning(string message, Position pos)
 	EM_core(message, pos);
 }
 
-void EM_debug(string message, Position pos, int for_which_lab)
+void EM_debug(string message, Position pos)
 {
-	//	if (position < 0)
-	//		position = EM_tokPos;
-	
-	if (EM_showingDebug && for_which_lab >= which_cs350_lab)
+	if (EM_showingDebug)
 		EM_core(message, pos);
 }
 
