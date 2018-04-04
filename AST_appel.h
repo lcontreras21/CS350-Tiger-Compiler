@@ -43,9 +43,9 @@ inline A_exp A_CallExp(A_pos pos, Symbol func, A_expList args)
 {
 	return new A_callExp_(pos, func, args);
 }
-inline A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp elsee)
+inline A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_for_no_else)
 {
-	return new A_ifExp_(pos, test, then, elsee);
+	return new A_ifExp_(pos, test, then, else_or_0_pointer_for_no_else);
 }
 /*
 // UNCOMMENT THE FUNCTION BELOW TO HAVE A_ForExp THATS COMPATIBLE WITH APPEL's BOOK
@@ -105,9 +105,9 @@ inline A_fundecList A_FundecList(A_fundec head, A_fundecList tail)
 {
 	return new A_fundecList_(head, tail);
 }
-inline A_fundec A_Fundec(A_pos pos, Symbol name, A_fieldList params, Symbol result,  A_exp body)
+inline A_fundec A_Fundec(A_pos pos, Symbol name, A_fieldList params, Symbol result_type_or_0_pointer_for_no_result_type_in_declaration,  A_exp body)
 {
-	return new A_fundec_(pos, name, params, result, body);
+	return new A_fundec_(pos, name, params, result_type_or_0_pointer_for_no_result_type_in_declaration, body);
 }
 inline A_dec A_FunctionDec(A_pos pos, A_fundecList function)
 {
@@ -149,7 +149,7 @@ inline A_fieldList A_FieldList(A_field head, A_fieldList tail)
 {
 	return new A_fieldList_(head, tail);
 }
-inline A_field A_Field(A_pos pos, Symbol name, Symbol typ)
+inline A_field A_Field(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration)
 {
-	return new A_field_(pos, name, typ);
+	return new A_field_(pos, name, type_or_0_pointer_for_no_type_in_declaration);
 }

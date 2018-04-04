@@ -371,7 +371,7 @@ public:
 
 class A_ifExp_ : public A_controlExp_ {
 public:
-	A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp elsee);
+	A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_for_no_else);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
 	A_exp _test;
@@ -511,7 +511,7 @@ private:
 
 class A_fundec_ : public A_dec_ {
 public:
-	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result,  A_exp body);
+	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type_or_0_pointer_for_no_result_type_in_declaration,  A_exp body);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
 	Symbol _name;
@@ -557,7 +557,7 @@ private:
 
 class A_field_ : public A_dec_ {
 public:
-	A_field_(A_pos pos, Symbol name, Symbol typ);
+	A_field_(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
 	Symbol _name;

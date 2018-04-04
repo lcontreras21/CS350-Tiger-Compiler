@@ -1,7 +1,19 @@
-WHERE=${HOME}/cs350-b/
+#!/bin/sh
+WHERE=${HOME}/cs350/
 WHAT=${WHERE}/tiger/Debug/tiger
-TWHERE="$WHERE/Examples/Tiger-tests/davew $WHERE/Examples/Tiger-tests/others "
+export TIGER_TEST_THERE=${WHERE}/A-folder-of-examples/Tiger-tests
 
-echo "Running $WHAT on all tests in $TWHERE"
-$WHERE/Examples/Tiger-tests/Run-tests.sh `echo "$TWHERE" | sed -e 's/ /\/*.tig /g'`
+for d in davew others
+do
+    cd $TIGER_TEST_THERE/$d
+    if test "${#}" -eq 0
+    then
+	TESTS=*.tig
+    else
+	TESTS=${*}*.tig
+    fi
+
+    $WHERE/A-folder-of-examples/Tiger-tests/Run-tests.sh ${TESTS}
+done
+
 
