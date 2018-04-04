@@ -190,7 +190,7 @@ String A_ifExp_::print_rep(int indent, bool with_attributes)
 	return "A_IfExp(" + print_pos_rep(pos(), ", ") + 
 		linebreak(indent+tab) + _test->print_rep(indent+tab, with_attributes) + ", " + 
 		linebreak(indent+tab) + _then->print_rep(indent+tab, with_attributes) + ", " +
-		print_rep_or_zero(_elsee, indent+tab, with_attributes) + 
+		print_rep_or_zero(_else_or_null, indent+tab, with_attributes) +
 		(with_attributes?linebreak(indent+tab)+as_comment(attributes_for_printing()):"") + ")";
 }
 String A_forExp_::print_rep(int indent, bool with_attributes)
