@@ -4,7 +4,7 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "3.0.4"
 %defines
-%define parser_class_name {tigerParser}
+%define api.parser.class {tigerParser}
 
 /* next two from https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */
 %define api.value.type variant
