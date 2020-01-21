@@ -215,13 +215,6 @@ AST_node_::AST_node_(A_pos pos) : stored_pos(pos)  // concise initialization of 
 {
 }
 
-// the following should be "= 0" in the AST_node_ class, and this function removed,
-//   except that we want to leave the bulk of the work for the labs...
-void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent)
-{
-	EM_warning("set_parent_pointers_for_me_and_my_decendents called for a node type that doesn't yet have it defined ... this will have to be fixed before Milestone 5");
-}
-
 AST_node_::~AST_node_()
 {
 }
@@ -233,11 +226,6 @@ A_root_::A_root_(A_exp main_exp) : AST_node_(main_exp->pos()), main_expr(main_ex
 	//          Thus, we'll write the code that would have been in that function:
 	this->stored_parent = 0;
 	main_exp->set_parent_pointers_for_me_and_my_decendents(this);
-}
-AST_node_ *A_root_::parent()
-{
-	EM_error("Called parent() for root node. This typically happens when A_root has not defined a method for some inherited attribute.", true);
-	throw "Oops, shouldn't get here, if 'true' is on for 'is this error fatal";
 }
 
 
@@ -398,11 +386,14 @@ A_varDec_::A_varDec_(A_pos pos, Symbol var, Symbol typ, A_exp init) :  A_dec_(po
 	precondition(var != 0 && init != 0);
 }
 
+A_functionDec_::A_functionDec_(A_pos pos, A_fundecList functions_that_might_call_each_other) : A_dec_(pos), theFunctions(functions_that_might_call_each_other)
+{
+	precondition(functions_that_might_call_each_other != 0);
+}
 A_fundecList_::A_fundecList_(A_fundec head, A_fundecList tail) :  AST_node_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
 }
-
 A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result,  A_exp body) :  AST_node_(pos), _name(name), _params(params), _result(result), _body(body)
 {
 	precondition(name != 0 && body != 0);
@@ -410,16 +401,13 @@ A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result, 
 
 
 
-
 A_ty_::A_ty_(A_pos p) : AST_node_(p)
 {
 }
-
 A_nametyList_::A_nametyList_(A_namety head, A_nametyList tail) :  AST_node_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
 }
-
 A_namety_::A_namety_(A_pos pos, Symbol name, A_ty ty) :  AST_node_(pos), _name(name), _ty(ty)
 {
 	precondition(name != 0 && ty != 0);
@@ -429,7 +417,6 @@ A_fieldList_::A_fieldList_(A_field head, A_fieldList tail) :  AST_node_(head->po
 {
 	precondition(head != 0);
 }
-
 A_field_::A_field_(A_pos pos, Symbol name, Symbol typ) :  AST_node_(pos), _name(name), _typ(typ)
 {
 	precondition(name != 0 && typ != 0);

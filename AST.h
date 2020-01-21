@@ -226,6 +226,11 @@ public:
 	//  See Design_Documents/AST_Attributes.txt for details.
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
 
+	int height();  // example we'll play with in class, not actually needed to compile
+	virtual int compute_height();  // just for an example, not needed to compile
+	int depth();   // example we'll play with in class, not actually needed to compile
+	virtual int compute_depth();   // just for an example, not needed to compile
+
 protected:  // every derived class's set_parent should be able to get at stored_parent for "this" object
 	AST_node_ *stored_parent = 0;
 
@@ -251,11 +256,6 @@ public:
 
 	// we'll need to print the register number attribute for exp's
 	virtual String attributes_for_printing();
-
-	int height();  // example we'll play with in class, not actually needed to compile
-	virtual int compute_height();  // just for an example, not needed to compile
-	int depth();   // example we'll play with in class, not actually needed to compile
-	virtual int compute_depth();   // just for an example, not needed to compile
 
 private:
 	int stored_result_reg = -1;  // Initialize to -1 to be sure it gets replaced by "if" in result_reg() above

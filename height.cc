@@ -1,6 +1,6 @@
 #include "AST.h"
 
-int A_exp_::compute_height(){
+int AST_node_::compute_height(){
 	EM_error("Sorry, no height method for this node");
 	return -666;
 }

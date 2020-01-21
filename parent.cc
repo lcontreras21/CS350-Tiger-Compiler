@@ -29,8 +29,11 @@ void A_opExp_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent
 
 // The following should never be called, but this "general" version
 //   lets us compile and test some things without having to fill in the set_parent_pointers stuff first
+// Better design would use "= 0" in the AST_node_ class, and not have this function body,
+//   except that we want to leave the bulk of the work for the labs...
 
-void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
+
+void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent)
 {
 	EM_warning("Uh-oh, need to make set_parent_pointers_for_me_and_my_descendents actually do its full job...");
 	EM_warning(" rewrite or overrride it, instead of running this code the AST_node_ class.");
@@ -48,7 +51,8 @@ AST_node_ *AST_node_::parent()	// get the parent node, after the 'set parent poi
 	return stored_parent;
 }
 
-AST_node_ *A_root_::parent() {
-	assert("Uh-oh ... called A_root_::parent() :-(" && false);
-	return stored_parent;  // shuts up compiler warnings, handles case when assertions are off
+AST_node_ *A_root_::parent()
+{
+	EM_error("Called parent() for root node. This typically happens when A_root has not defined a method for some inherited attribute.", true);
+	throw "Oops, shouldn't get here, if 'true' is on for 'is this error fatal";
 }

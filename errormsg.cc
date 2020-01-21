@@ -108,7 +108,7 @@ static void EM_core(string message, Position pos)
 #endif
 }
 
-void EM_error(string message, Position position, bool fatal)
+void EM_error(string message, bool fatal, Position position)
 {
 	//	if (position < 0)
 	//		position = EM_tokPos;
