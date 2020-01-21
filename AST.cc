@@ -13,7 +13,7 @@
 // After that come the class declarations
 
 // To run the examples, use the command
-//	g++ -std=c++0x -I/home/courses/include -D AST_EXAMPLES_IS_MAIN=1 -D ERRORMSG_SKIP_LEX=1 AST.cc AST-print.cc AST-print-attributes.cc HERA_code.cc my_reg.cc util.cc errormsg.cc -L/home/courses/lib -lcourses -o AST_examples && ./AST_examples
+//	g++ -std=c++0x -I/home/courses/include -D AST_EXAMPLES_IS_MAIN=1 -D ERRORMSG_SKIP_LEX=1 AST.cc AST-print.cc AST-print-attributes.cc HERA_code.cc result_reg.cc util.cc errormsg.cc -L/home/courses/lib -lcourses -o AST_examples && ./AST_examples
 
 
 void AST_examples()
@@ -154,11 +154,54 @@ void AST_example_let()
 	EM_debug(str(local_AST_root));
 }
 
+
+void AST_example_functions()
+{
+/*
+  Build (using the functions from AST_appel.h and Figure 4.7) and print
+  the AST corresponding to the following tiger program:
+
+    let
+        var two : int := 2
+	function half_answer(): int = 21
+	function get_two(): int = two  /* Note ... can't use "answer" here * /
+	function answer() : int = half_answer() * get_two()
+	var it : int := answer()
+    in
+	printint(it)
+    end
+
+    Note that tiger "sees" this as a three-element let, with a variable,
+         a collection of potentially-recursive functions, and another variable.
+	 The FunctionDec holds the list of functions.
+  */
+
+
+	Position u = Position::undefined();
+	Symbol tig_int = to_Symbol("int");
+	A_root_ *r = A_RootExp(A_LetExp(u, A_DecList(A_VarDec(u, to_Symbol("two"), tig_int, A_IntExp(u, 2)),
+					       A_DecList(A_FunctionDec(u, A_FundecList(A_Fundec(u, to_Symbol("half_answer"), 0, tig_int, A_IntExp(u, 21)),
+										       A_FundecList(A_Fundec(u, to_Symbol("get_two"),     0, tig_int, A_VarExp(u, A_SimpleVar(u, to_Symbol("two")))),
+												 A_FundecList(A_Fundec(u, to_Symbol("answer"),      0, tig_int, A_OpExp(u, A_timesOp,
+																    A_CallExp(u, to_Symbol("half_answer"), 0),
+																    A_CallExp(u, to_Symbol("get_two"), 0))),
+							     0)))),
+				     A_DecList(A_VarDec(u, to_Symbol("it"), tig_int, A_CallExp(u, to_Symbol("answer"), 0)),
+				     0))),
+				     
+				     A_CallExp(u, to_Symbol("printint"),
+					       A_ExpList(A_VarExp(u, A_SimpleVar(u, to_Symbol("it"))), 0))));
+	
+	EM_debug("Here's the example from AST_example_functions:");
+	EM_debug(str(r));
+}
+
 #if defined(AST_EXAMPLES_IS_MAIN) && AST_EXAMPLES_IS_MAIN
 int main()
 {
 	EM_reset("Examples in AST_examples() in AST.cc", -1, true);
 	AST_examples();
+	AST_example_functions();
 	return 0;
 }
 #endif
@@ -168,8 +211,15 @@ int main()
 				  
 // Now, the functions for the actual AST classes...
 
-AST_node_::AST_node_(A_pos pos) : my_parent(0), my_pos(pos)  // concise initialization of data fields
+AST_node_::AST_node_(A_pos pos) : stored_pos(pos)  // concise initialization of "pos" data field
 {
+}
+
+// the following should be "= 0" in the AST_node_ class, and this function removed,
+//   except that we want to leave the bulk of the work for the labs...
+void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent)
+{
+	EM_warning("set_parent_pointers_for_me_and_my_decendents called for a node type that doesn't yet have it defined ... this will have to be fixed before Milestone 5");
 }
 
 AST_node_::~AST_node_()
@@ -181,44 +231,54 @@ A_root_::A_root_(A_exp main_exp) : AST_node_(main_exp->pos()), main_expr(main_ex
 	//     this->set_parent_pointers_for_me_and_my_decendents(0);
 	// HOWEVER, the type of "this" is still AST_Node_, until the end of the constructor when it's a full-formed A_root_.
 	//          Thus, we'll write the code that would have been in that function:
-	this->my_parent = 0;
+	this->stored_parent = 0;
 	main_exp->set_parent_pointers_for_me_and_my_decendents(this);
 }
+AST_node_ *A_root_::parent()
+{
+	EM_error("Called parent() for root node. This typically happens when A_root has not defined a method for some inherited attribute.", true);
+	throw "Oops, shouldn't get here, if 'true' is on for 'is this error fatal";
+}
+
 
 String to_String(AST_node_ *n)
 {
 	return n->print_rep(0, have_AST_attrs);
 }
 
-A_exp_::A_exp_(A_pos p) : AST_node_(p), stored_my_reg(-1)
+A_exp_::A_exp_(A_pos p) : AST_node_(p)
 {
 }
 
-A_literal_::A_literal_(A_pos p) : A_exp_(p)
+A_literalExp_::A_literalExp_(A_pos p) : A_exp_(p)
 {
 }
 
-A_nilExp_::A_nilExp_(A_pos pos) :  A_literal_(pos)
+A_leafExp_::A_leafExp_(A_pos p) : A_literalExp_(p)
 {
 }
 
-A_boolExp_::A_boolExp_(A_pos pos, bool init) :  A_literal_(pos), value(init)
+A_nilExp_::A_nilExp_(A_pos pos) :  A_leafExp_(pos)
 {
 }
 
-A_intExp_::A_intExp_(A_pos pos, int i) :  A_literal_(pos), value(i)
+A_boolExp_::A_boolExp_(A_pos pos, bool init) :  A_leafExp_(pos), value(init)
 {
 }
 
-A_stringExp_::A_stringExp_(A_pos pos, String s) :  A_literal_(pos), value(s)
+A_intExp_::A_intExp_(A_pos pos, int i) :  A_leafExp_(pos), value(i)
 {
 }
-A_recordExp_::A_recordExp_(A_pos pos, Symbol typ, A_efieldList fields) :  A_literal_(pos), _typ(typ), _fields(fields)
+
+A_stringExp_::A_stringExp_(A_pos pos, String s) : A_leafExp_(pos), value(s)
+{
+}
+A_recordExp_::A_recordExp_(A_pos pos, Symbol typ, A_efieldList fields) :  A_literalExp_(pos), _typ(typ), _fields(fields)
 {
 	precondition(typ != 0);
 }
 
-A_arrayExp_::A_arrayExp_(A_pos pos, Symbol typ, A_exp size, A_exp init) :  A_literal_(pos), _typ(typ), _size(size), _init(init)
+A_arrayExp_::A_arrayExp_(A_pos pos, Symbol typ, A_exp size, A_exp init) :  A_literalExp_(pos), _typ(typ), _size(size), _init(init)
 {
 	precondition(typ!=0 && size!=0 && init!=0);
 }
@@ -338,12 +398,12 @@ A_varDec_::A_varDec_(A_pos pos, Symbol var, Symbol typ, A_exp init) :  A_dec_(po
 	precondition(var != 0 && init != 0);
 }
 
-A_fundecList_::A_fundecList_(A_fundec head, A_fundecList tail) :  A_dec_(head->pos()), _head(head), _tail(tail)
+A_fundecList_::A_fundecList_(A_fundec head, A_fundecList tail) :  AST_node_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
 }
 
-A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result,  A_exp body) :  A_dec_(pos), _name(name), _params(params), _result(result), _body(body)
+A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result,  A_exp body) :  AST_node_(pos), _name(name), _params(params), _result(result), _body(body)
 {
 	precondition(name != 0 && body != 0);
 }
@@ -355,22 +415,22 @@ A_ty_::A_ty_(A_pos p) : AST_node_(p)
 {
 }
 
-A_nametyList_::A_nametyList_(A_namety head, A_nametyList tail) :  A_dec_(head->pos()), _head(head), _tail(tail)
+A_nametyList_::A_nametyList_(A_namety head, A_nametyList tail) :  AST_node_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
 }
 
-A_namety_::A_namety_(A_pos pos, Symbol name, A_ty ty) :  A_dec_(pos), _name(name), _ty(ty)
+A_namety_::A_namety_(A_pos pos, Symbol name, A_ty ty) :  AST_node_(pos), _name(name), _ty(ty)
 {
 	precondition(name != 0 && ty != 0);
 }
 
-A_fieldList_::A_fieldList_(A_field head, A_fieldList tail) :  A_dec_(head->pos()), _head(head), _tail(tail)
+A_fieldList_::A_fieldList_(A_field head, A_fieldList tail) :  AST_node_(head->pos()), _head(head), _tail(tail)
 {
 	precondition(head != 0);
 }
 
-A_field_::A_field_(A_pos pos, Symbol name, Symbol typ) :  A_dec_(pos), _name(name), _typ(typ)
+A_field_::A_field_(A_pos pos, Symbol name, Symbol typ) :  AST_node_(pos), _name(name), _typ(typ)
 {
 	precondition(name != 0 && typ != 0);
 }
@@ -392,39 +452,3 @@ A_arrayty_::A_arrayty_(A_pos pos, Symbol array) :  A_ty_(pos), _array(array)
 
 bool have_AST_attrs = false;
 
-void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
-{
-	// This has been inlined into the root expression constructor,
-	//   so it shouldn't actually be needed again...
-	if (main_expr->get_parent_without_checking() == this) {
-		EM_warning("Strange ... called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor", Position::undefined());
-	} else {
-		EM_error("Called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor, AND NOTICED AN INCONSISTENCY!", Position::undefined());
-	}
-	// otherwise, we would have done this:
-	// assert(my_parent_or_null_if_i_am_the_root == 0);
-	// my_parent = my_parent_or_null_if_i_am_the_root;
-	// main_expr->set_parent_pointers_for_me_and_my_decendents(this);
-}
-
-void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
-{
-	my_parent = my_parent_or_null_if_i_am_the_root;
-	EM_debug("Uh-oh, need to make set_parent_pointers_for_me_and_my_descendents actually do its full job...", pos());
-	EM_debug(" rewrite or overrride it, instead of running this hack that's in the AST_node_ class now.", pos());
-}
-
-AST_node_ *AST_node_::get_parent_without_checking()
-{
-	return my_parent;
-}
-AST_node_ *AST_node_::parent()	// get the parent node, after the 'set parent pointers' pass
-{
-	assert("parent pointers have been set" && my_parent);
-	return my_parent;
-}
-
-AST_node_ *A_root_::parent() {
-	assert("Uh-oh ... called A_root_::parent() :-(" && false);
-	return my_parent;  // shuts up compiler warnings, handles case when assertions are off
-}

@@ -5,6 +5,22 @@ CFLAGS=--std=c++1y -g -I/home/courses/include -Wall -Wno-sign-compare #that last
 LDFLAGS=-L/home/courses/lib -lcourses
 REBUILD_AFTER_CLEAN=Debug/util.o
 
+# This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
+#  but it should consistently work, works from the command line, and is very simple.
+#
+# Note that this is what will run by default when you type "make",
+#  but Eclipse is configured to use 'make tiger-pre-build',
+#  and then be smart about the rest (except for the bug causing us to run "build" up to 3x)
+#
+rebuilt: Debug
+	bison tiger-grammar.yy
+	flex tiger-lex.ll
+	mv lex.yy.c lex.yy.cc
+	rm Debug/*.o 2>/dev/null || true
+	${CC} ${CFLAGS} *.cc ${LDFLAGS} -o Debug/tiger
+
+
+
 tiger-pre-build: lex.yy.cc tiger-grammar.tab.cc
 
 tiger-grammar.tab.cc: tiger-grammar.yy ${REBUILD_AFTER_CLEAN}
@@ -51,12 +67,3 @@ cleaner: clean
 
 Debug:
 	mkdir Debug
-
-# This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
-#  but it should consistently work, works from the command line, and is very simple.
-rebuilt: Debug
-	bison tiger-grammar.yy
-	flex tiger-lex.ll
-	mv lex.yy.c lex.yy.cc
-	rm Debug/*.o 2>/dev/null || true
-	${CC} ${CFLAGS} *.cc ${LDFLAGS} -o Debug/tiger

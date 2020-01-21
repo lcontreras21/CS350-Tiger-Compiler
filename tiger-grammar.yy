@@ -95,5 +95,5 @@ yy::tigerParser::error(const location_type& l,
           	       const std::string& m)
   {
 	  EM_debug("In yy::tigerParser::error");
-	  EM_error(m, Position::fromLex(l), true);
+	  EM_error(m, true, Position::fromLex(l));
   }

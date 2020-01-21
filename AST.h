@@ -38,11 +38,12 @@
 //
 //	AST_node_
 //		A_exp_
-//			A_literal_
-//				A_nilExp_
-//				A_intExp_
-//				A_boolExp_
-//				A_stringExp_
+//			A_literalExp_
+//				A_leafExp_
+//					A_nilExp_
+//					A_intExp_
+//					A_boolExp_
+//					A_stringExp_
 //				A_recordExp_
 //				A_arrayExp_
 //			A_varExp_	(variable use, e.g. "d" in the expression "d+1", but not "a" in "a := 2")
@@ -56,27 +57,39 @@
 //				A_forExp_
 //				A_breakExp_
 //				A_seqExp_	(Like {} In C++)
-//		A_var_              (various lvalues)
+//
+//  NOTE: A_var (below) is used in assignment operations and A_VarExp nodes,
+//   but NOT used in declarations, i.e., the header of A_ForExp or A_VarDec
+//
+//		A_var_              (various lvalues, i.e., occurrances of variables on the _left_ of a :=, like the following)
 //			A_simpleVar_    (simple variable, e.g. "a" in a := 2 or "b" in b[3] := 4 or "c" in r.real := 5)
 //			A_fieldVar_     (a field of a record, e.g. "c.real" in c.real := 5)
 //			A_subscriptVar_ (a subscripted array, e.g. "b[3]" in b[3] := 4
-//		A_expList_	    (E.G. List Of Function Arguments In A Call)
-//		A_efield_		(One Field In A RecordExp)
-//		A_efieldList_ (List Of Fields In A RecordExp)
-//  See the end of Appel's Chapter 4 for information about declarations
-//		A_dec_
-//			A_decList_	(List Of A_dec: -- this is what we find in a "let"
-//			A_varDec_		(Single Variable Declaration)
-//			A_fundecList_	(List Of Fundec)
-//			A_nametyList_	(List Of Type Declarations)
-//			A_fundec_		(Function Declaration With Parameters And Body)
-//			A_namety_		(Single Type name Declaration with the type it names)
-//			A_fieldList_	(List Of Function Parameters Or Record Fields in a declaration)
-//			A_field_		(One Function Parameter Or Record Field in a declaration)
-//		A_ty_
-//			A_nameTy_
-//			A_recordTy_
-//			A_arrayTy_
+//
+//  See the end of Appel's Chapter 4 for information about declarations; these are important in "let"
+//		A_dec_ ... one _unit_ of scope's declaration(s), specifically
+//			A_varDec_		(Variable Declaration, e.g. var a : int := 42)
+//			A_functionDec_		(A COLLECTION OF Potentially-Recursive Functions, e.g. function f(i: int): int = 2*g(i-1) function g(a: int) = if a<1 then 1 else f(x-1)+1)
+//			A_typeDec_		(A COLLECTION OF Potentially-Recursive Types, e.g., type trees = array of tree    type tree  = {val: string, kids: trees} )
+
+//
+//		// In modern C++, these would just be list<whatever>, but Appel's C code defines them each a types ... FEEL FREE TO UPDATE THIS IF YOU WISH
+//		    A_expList_		(e.g., List Of Function Arguments In A Call, Or Of Expressions In A Sequence)
+//		    (an A_expList has A_exp entries, as above)
+//		    A_decList_		(List Of A_dec: -- this is what we find in a "let"
+//		    (has A_dec, as above)
+//		    A_efieldList_	(List Of Fields In A RecordExp, e.g. within the { } of point {x=12, y=30} )
+//		    (has A_efield_'s)	(One Field In A RecordExp, e.g. the "x=12" above)
+//		    A_fundecList_	(List Of Function Declarations, as below ... this exists only within A_FunctionDec)
+//		    (has A_fundec_'s)	(One Function Declaration With Parameters And Body, e.g., function answer(): int = 42)
+//		    A_nametyList_	(List Of Type Declarations, as below ... this exists only within A_TypeDec)
+//		    (has A_namety_'s)	(Single Type Name Declaration, with the type it names, e.g. the connection of the name "point" to the type it names in type point = {x: int, y:int})
+//		    A_fieldList_	(List Of Function Parameters Or Record Fields in a declaration)
+//		    (has A_field_'s)	(One Function Parameter Or Record Field in a declaration, e.g.,the "x: int" in the type 'point' above, or as a function parameter)
+//		A_ty_			(Type Declarations, used only when we're naming a type via a_namety (note lower-case t), i.e. after the "=" in type t = ...)
+//			A_arrayTy_	(Array  type, e.g., "array of int" in type ia = array of int)
+//			A_recordTy_	(Record type, e.g., "{x: int, y:int}" in type point = {x: int, y:int})
+//			A_nameTy_	(a type that's been named already, e.g., "point" in type point2d = point)
 //
 //
 //  It is ok to use a null pointer (i.e. 0) as a parameter in the following
@@ -91,24 +104,17 @@
 //     (and likewise for namety, nametyList, and typeDec?)
 //
 //  A: These are used to collect/organize declarations of functions (and likewise types).
-//	   Each individual function declaration, e.g. "function two(): int = 2" should be
-//      represented as a fundec (note the parameters to the A_Fundec constructor match the example above).
+//     Each individual function declaration, e.g. "function two(): int = 2" should be
+//      represented as an A_fundec_ (note the parameters to the A_Fundec constructor match the example above).
 //     However, we don't want each _individual_ declaration to appear in the list of declarations
 //      below a "let", because we can simplify the process of following Tiger's scope rules
 //      by collecting a set of potentially-mutually-recursive functions (consecutive functions
 //      without type or variable declarations between them). The name for this collection is
-//      fundecList, since it's just a list of fundec's. But then we need to put this fundecList
-//      into a list of declarations, so Appel provides the A_FunctionDec constructor to ensure that
-//      you can put the fundecList, as a unit, into the main list of variable/function/type declarations
-//      inside a let.
-//     Note that in my C++ implementation, the C++ type system (unlike the C type system) already
-//      understands that a fundecList _is_ a kind of A_dec, so you can get it to compile and run
-//		even if you ignore the A_FunctionDec ... however, it may be useful later to have that
-//		extra node identifying the top of a fundecList, since you can then perform various functions
-//		there by overloading that function for A_functionDec_ to be different from A_fundecList_.
-//     Likewise for namety (a type declaration in a let), nametyList (a list of namety), and typeDec
-//      (which allows a nametyList to appear as an A_dec).
-//     But note nameTy is entirely different from namety.
+//      A_fundecList_, since it's just a list of A_fundec_'s. The A_functionDec_ identifies the top of
+//	an A_fundecList_, and lets you perform various functions there by overloading that function
+//	for A_functionDec_ to be different from A_varDec_ (or A_fundecList_).
+//     Likewise for A_namety_ (a type declaration in a let), A_nametyList (a list of A_namety_), and A_typeDec_.
+//      But, note nameTy is entirely different from namety.
 //
 //
 //  Q: OK, so what are namety and nameTy and why does capitalization matter so much?
@@ -195,13 +201,14 @@ public:
 	AST_node_(A_pos pos);
 	virtual ~AST_node_();
 
-	A_pos pos() { return my_pos; }
+	A_pos pos() { return stored_pos; }
 
-	// Each node will know its parent, except for the root whose parent is 0
-	// Interesting question --- can e.g. VarDec say the parent is DecList?
-	// At best it would involve pointer casting (shudder), RTTI, or wasting space with an unused pointer, I think.
-	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root);
+	// Each node will know its parent, except the root node (on which this is an error):
 	virtual AST_node_ *parent();	// get the parent node, after the 'set all parent nodes' pass
+	// Those parent pointers are set by the set_parent... function below,
+	//    WHICH MUST ONLY BE CALLED FROM THE ROOT CONSTRUCTOR AND THEN RECURSIVELY
+	// (I don't know how to say that in C++ without a zillion "friend" definitions, though.)
+	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);
 	virtual AST_node_ *get_parent_without_checking();	// get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
@@ -209,37 +216,49 @@ public:
 	string __repr__() { return this->print_rep(0, print_ASTs_with_attributes); }  // allow repr(x), which is more familiar to Python programmers ... see also util.h
 	string __str__()  { return this->__repr__(); }
 
+	// Shadow the default EM_error, etc., so that it automatically uses this->pos by default
+	void EM_error  (string message, bool fatal=false) {   ::EM_error(message, fatal, this->pos()); }
+	void EM_warning(string message, bool fatal=false) { ::EM_warning(message, this->pos()); }
+	void EM_debug  (string message, bool fatal=false) {   ::EM_debug(message, this->pos()); }
+
+	
 	// And now, the attributes that exist in ALL kinds of AST nodes.
 	//  See Design_Documents/AST_Attributes.txt for details.
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
 
-protected:  // every derived class's set_parent should be able to get at this...
-	AST_node_ *my_parent;
+protected:  // every derived class's set_parent should be able to get at stored_parent for "this" object
+	AST_node_ *stored_parent = 0;
 
 private:
-	A_pos my_pos;
+	A_pos stored_pos;
 };
 
 class A_exp_ : public AST_node_ {
 public:
 	A_exp_(A_pos p);
 
-	// Attributes for all expressions: my_reg() is the register number to use
-	int    my_reg() {
-		if (this->stored_my_reg < 0) this->stored_my_reg = this->init_my_reg();
-		return stored_my_reg;
+	// Attributes for all expressions: result_reg() is the register number to use;
+	//  in the first call, it is defined by the init_result_reg for the class,
+	//  and then reused each time we ask for it.
+	int    result_reg() {
+		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
+		return stored_result_reg;
 	}
-	string my_reg_s() { // return in string form, e.g. "R2"
-		return "R" + std::to_string(this->my_reg());
+	string result_reg_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->result_reg());
 	}
-	virtual int init_my_reg();
+	virtual int init_result_reg();
 
 	// we'll need to print the register number attribute for exp's
 	virtual String attributes_for_printing();
 
+	int height();  // example we'll play with in class, not actually needed to compile
+	virtual int compute_height();  // just for an example, not needed to compile
+	int depth();   // example we'll play with in class, not actually needed to compile
+	virtual int compute_depth();   // just for an example, not needed to compile
 
 private:
-	int stored_my_reg;
+	int stored_result_reg = -1;  // Initialize to -1 to be sure it gets replaced by "if" in result_reg() above
 };
 
 class A_root_ : public AST_node_ {
@@ -250,26 +269,36 @@ public:
 	string HERA_code();
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
+
+	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
+	virtual int compute_depth();  // just for an example, not needed to compile
 private:
 
-	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root);
 	A_exp main_expr;
 };
 
 
-class A_literal_ : public A_exp_ {
+class A_literalExp_ : public A_exp_ {
 public:
-	A_literal_(A_pos p);
+	A_literalExp_(A_pos p);
 };
 
-class A_nilExp_ : public A_literal_ {
+class A_leafExp_ : public A_literalExp_ {
+public:
+	A_leafExp_(A_pos p);
+
+	void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);  // this one's easy, by definition :-)
+	virtual int compute_height();  // just for an example, not needed to compile
+};
+
+class A_nilExp_ : public A_leafExp_ {
 public:
 	A_nilExp_(A_pos p);
 	virtual string print_rep(int indent, bool with_attributes);
 };
 
 
-class A_boolExp_ : public A_literal_ {
+class A_boolExp_ : public A_leafExp_ {
 public:
 	A_boolExp_(A_pos pos, bool b);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -277,7 +306,7 @@ private:
   bool value;
 };
 
-class A_intExp_ : public A_literal_ {
+class A_intExp_ : public A_leafExp_ {
 public:
 	A_intExp_(A_pos pos, int i);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -287,7 +316,7 @@ private:
 	int value;
 };
 
-class A_stringExp_ : public A_literal_ {
+class A_stringExp_ : public A_leafExp_ {
 public:
 	A_stringExp_(A_pos pos, String s);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -295,18 +324,20 @@ private:
 	String value;
 };
 
-class A_recordExp_ : public A_literal_ {
+class A_recordExp_ : public A_literalExp_ {
 public:
 	A_recordExp_(A_pos pos, Symbol typ, A_efieldList fields);
 	virtual string print_rep(int indent, bool with_attributes);
+private:
 	Symbol _typ;
 	A_efieldList _fields;
 };
 
-class A_arrayExp_ : public A_literal_ {
+class A_arrayExp_ : public A_literalExp_ {
 public:
 	A_arrayExp_(A_pos pos, Symbol typ, A_exp size, A_exp init);
 	virtual string print_rep(int indent, bool with_attributes);
+private:
 	Symbol _typ;
 	A_exp _size;
 	A_exp _init;
@@ -329,6 +360,9 @@ public:
 	A_opExp_(A_pos pos, A_oper oper, A_exp left, A_exp right);
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
+
+	void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);
+	virtual int compute_height();  // just for an example, not needed to compile
 private:
 	A_oper _oper;
 	A_exp _left;
@@ -492,22 +526,28 @@ private:
 	A_exp _init;
 	// Appel had this here:
 	//	bool escape;
-	// but it's really just an inherited attribute set during
-	// escape analysis, and you may want to set it here or in
-	// the symbol table...
+	// but it's really just an inherited attribute set during escape analysis,
+	// which is not necessary in the Haverford version of the labs,
+	// where we conservatively assume all variables escape
 };
 
-class A_fundec_;
-class A_fundecList_ : public A_dec_ {
+class A_functionDec_: public A_dec_ {
 public:
-	A_fundecList_(A_fundec head, A_fundecList tail);
+	A_functionDec_(A_pos pos, A_fundecList functions_that_might_call_each_other);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
-	A_fundec _head;
-	A_fundecList _tail;
+	A_fundecList theFunctions;
 };
 
-class A_fundec_ : public A_dec_ {
+class A_typeDec_: public A_dec_ {
+public:
+	A_typeDec_(A_pos pos, A_nametyList types_that_might_refer_to_each_other);
+	virtual string print_rep(int indent, bool with_attributes);
+private:
+	A_nametyList theTypes;
+};
+
+class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
 public:
 	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type_or_0_pointer_for_no_result_type_in_declaration,  A_exp body);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -517,10 +557,26 @@ private:
 	Symbol _result;
 	A_exp _body;
 };
+class A_fundecList_ : public AST_node_ {
+public:
+	A_fundecList_(A_fundec head, A_fundecList tail);
+	virtual string print_rep(int indent, bool with_attributes);
+private:
+	A_fundec _head;
+	A_fundecList _tail;
+};
 
 
-class A_namety_;
-class A_nametyList_ : public A_dec_ {
+//  Giving a name to a type with Namety -- this is a declaration of a type
+class A_namety_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
+public:
+	A_namety_(A_pos pos, Symbol name, A_ty ty);
+	virtual string print_rep(int indent, bool with_attributes);
+private:
+	Symbol _name;
+	A_ty _ty;
+};
+class A_nametyList_ : public AST_node_ {   // possibly this would be happier as a subclass of "A_dec_"?
 public:
 	A_nametyList_(A_namety head, A_nametyList tail);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -529,22 +585,12 @@ private:
 	A_nametyList _tail;
 };
 
-//  Giving a name to a type with Namety -- this is a declaration of a type
-
-class A_namety_ : public A_dec_ {
-public:
-	A_namety_(A_pos pos, Symbol name, A_ty ty);
-	virtual string print_rep(int indent, bool with_attributes);
-private:
-	Symbol _name;
-	A_ty _ty;
-};
 
 // List of fields in a declaration, either
 //  the function parameters: function power(B: INT, E: INT)
 //  or record fields:        type point = {X: INT, Y: INT)
 
-class A_fieldList_ : public A_dec_ {
+class A_fieldList_ : public AST_node_ {
 public:
 	A_fieldList_(A_field head, A_fieldList tail);
 	virtual string print_rep(int indent, bool with_attributes);
@@ -553,7 +599,7 @@ private:
 	A_fieldList _tail;
 };
 
-class A_field_ : public A_dec_ {
+class A_field_ : public AST_node_ {
 public:
 	A_field_(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration);
 	virtual string print_rep(int indent, bool with_attributes);

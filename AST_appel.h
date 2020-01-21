@@ -52,7 +52,9 @@ inline A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_
 	return new A_ifExp_(pos, test, then, else_or_0_pointer_for_no_else);
 }
 /*
-// UNCOMMENT THE FUNCTION BELOW TO HAVE A_WhileExp THATS COMPATIBLE WITH APPEL's BOOK
+UNCOMMENT THE FUNCTION BELOW TO HAVE A_WhileExp THATS COMPATIBLE WITH APPEL's BOOK
+Note that you'll also need to have the A_whileExp_ class, of course...
+
 inline A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body)
 {
 	return new A_whileExp_(pos, test, body);
@@ -97,6 +99,8 @@ inline A_efieldList A_EfieldList(A_efield head, A_efieldList tail)
 	return new A_efieldList_(head, tail);
 }
 
+
+// Declarationlists, and the things that live in them...
 inline A_decList A_DecList(A_dec head, A_decList tail)
 {
 	return new A_decList_(head, tail);
@@ -104,6 +108,11 @@ inline A_decList A_DecList(A_dec head, A_decList tail)
 inline A_dec A_VarDec(A_pos pos, Symbol var, Symbol typ, A_exp init)
 {
 	return new A_varDec_(pos, var, typ, init);
+}
+
+inline A_dec A_FunctionDec(A_pos pos, A_fundecList functions_that_might_call_each_other)
+{
+	return new A_functionDec_(pos, functions_that_might_call_each_other);
 }
 inline A_fundecList A_FundecList(A_fundec head, A_fundecList tail)
 {
@@ -113,11 +122,10 @@ inline A_fundec A_Fundec(A_pos pos, Symbol name, A_fieldList params, Symbol resu
 {
 	return new A_fundec_(pos, name, params, result_type_or_0_pointer_for_no_result_type_in_declaration, body);
 }
-inline A_dec A_FunctionDec(A_pos pos, A_fundecList function)
+
+inline A_dec A_TypeDec(A_pos pos, A_nametyList types_that_might_refer_to_each_other)
 {
-	return function;
-	// just cast up the type hierarchy --
-	// this was slightly less trivial in Appel's C code
+	return new A_typeDec_(pos, types_that_might_refer_to_each_other);
 }
 inline A_nametyList A_NametyList(A_namety head, A_nametyList tail)
 {
@@ -127,19 +135,9 @@ inline A_namety A_Namety(Symbol name, A_ty ty)
 {
 	return new A_namety_(ty->pos(), name, ty);
 }
-inline A_dec A_TypeDec(A_pos pos, A_nametyList type)
-{
-	return type;
-	// just cast up the type hierarchy --
-	// this was slightly less trivial in Appel's C code
-}
 
-//  Using the name of a type to declare a variable with NameTy -- this is a use of a type
 
-inline A_ty A_NameTy(A_pos pos, Symbol name)
-{
-	return new A_nameTy_(pos, name);
-}
+// Types, which can be used in the declarations of variables:
 inline A_ty A_RecordTy(A_pos pos, A_fieldList record)
 {
 	return new A_recordty_(pos, record);
@@ -147,6 +145,11 @@ inline A_ty A_RecordTy(A_pos pos, A_fieldList record)
 inline A_ty A_ArrayTy(A_pos pos, Symbol array)
 {
 	return new A_arrayty_(pos, array);
+}
+//  Using the name of a type to declare a variable with NameTy -- this is a use of a type
+inline A_ty A_NameTy(A_pos pos, Symbol name)
+{
+	return new A_nameTy_(pos, name);
 }
 
 inline A_fieldList A_FieldList(A_field head, A_fieldList tail)
@@ -156,4 +159,11 @@ inline A_fieldList A_FieldList(A_field head, A_fieldList tail)
 inline A_field A_Field(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration)
 {
 	return new A_field_(pos, name, type_or_0_pointer_for_no_type_in_declaration);
+}
+
+
+// Not part of Appel.s absyn.h, but still here for consistency:
+inline A_root_ *A_RootExp(A_exp the_program)
+{
+	return new A_root_(the_program);
 }

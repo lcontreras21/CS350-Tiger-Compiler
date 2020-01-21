@@ -45,7 +45,7 @@ String print_rep(const A_oper &o) {
 		if (opnames[i].op == o)
 			return opnames[i].name;
 	}
-	EM_error("Internal compiler bug detected in opnames array in AST.cc", Position::current(), true);
+	EM_error("Internal compiler bug detected in opnames array in AST.cc", true);
 	return "Bug detected in opnames array in AST.cc";
 }
 

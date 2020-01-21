@@ -1,11 +1,11 @@
 This file describes the attributes defined on the AST, roughly in the
 order they would be defined.
 
-* my_reg (defined only for expressions) is the HERA register into
+* result_reg (defined only for expressions) is the HERA register into
   which the expression's result will be placed.
 
-  Note that my_reg will only be computed once and then stored, so
-  calling my_reg() a whole bunch won't actually have much cost.
+  Note that result_reg will only be computed once and then stored, so
+  calling result_reg() a whole bunch won't actually have much cost.
 
 
 * HERA_code (defined for all node types) is the HERA machine language
@@ -14,3 +14,10 @@ order they would be defined.
   Each time HERA_code() is called, it will traverse the tree.
   It is meant to be called *once*, at the root, and not more.
 
+
+Examples not actually needed for code generation:
+* height --- a synthesized attribute giving the height of a node (length of path from most-distant leaf)
+  [we'll play with memoizing the result of compute_height, to improve performance].
+
+* depth --- an inherited attribute giving the depth of a node (length of path from the root)
+  [this won't work until we get parent pointers working]

@@ -104,6 +104,7 @@ void lex_test()
 
 int main(int argc, char **argv)
 {
+  try {
 	bool debug = false, show_ast = false, crash_on_fatal;
 #if defined COMPILE_LEX_TEST
 	bool just_do_lex_and_then_stop = false;
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
 		if (!EM_recorded_any_errors()) {
 			if (result != 0) {
 				EM_error("Strange result in tiger.cc: parser failed but EM module reported no errors",
-					 Position::undefined(), true); // true = fatal error
+					 true, Position::undefined()); // true = fatal error
 			}
 
 			EM_debug("Parsing Successful", driver.AST->pos());
@@ -181,4 +182,15 @@ int main(int argc, char **argv)
 		EM_warning("Not generating HERA code due to above errors.");
 		return EM_recorded_any_errors(); // got errors somewhere, or would have returned 0 above
 	}
+
+  } catch (const char *message) {
+	  cerr << "Compiler exception (this should not happen): " << message << endl;
+	  return 4;
+  } catch (std::string message) {
+	  cerr << "Compiler exception (this should not happen): " << message << endl;
+	  return 4;
+  } catch (...) {
+	  cerr << "Yikes! Uncaught compiler exception (this REALLY should not happen)" << endl;
+	  return 66;
+  }
 }
