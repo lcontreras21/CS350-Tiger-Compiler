@@ -113,8 +113,8 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 [ \t]	{ loc.step(); }
 [\n\r]	{ loc.lines(yyleng); loc.step(); }
 
-"+"		{ return yy::tigerParser::make_PLUS(loc); }
-"*"		{ return yy::tigerParser::make_TIMES(loc); }
+\+		{ return yy::tigerParser::make_PLUS(loc); }
+\*		{ return yy::tigerParser::make_TIMES(loc); }
 
 {integer}	{
    return yy::tigerParser::make_INT(textToInt(yytext), loc);
@@ -122,7 +122,7 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
 
-"<"[Ee][Oo][Ff]">"		{ return yy::tigerParser::make_END(loc); /* this RE matches the literal five characters <EOF>, regardless of upper/lower case   */ }
+\<[Ee][Oo][Ff]\>		{ return yy::tigerParser::make_END(loc); /* this RE matches the literal five characters <EOF>, regardless of upper/lower case   */ }
 <<EOF>>					{ return yy::tigerParser::make_END(loc); /* <<EOF>> is a flex built-in for an actual end of a file, when there is no more input */ }
 
 .	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
