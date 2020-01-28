@@ -17,7 +17,7 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 
 string A_root_::HERA_code()
 {
-	return "SETCB()\n\n" + main_expr->HERA_code();
+	return "CBON()\n\n" + main_expr->HERA_code();
 }
 
 
@@ -35,7 +35,7 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 	case A_plusOp:
 		return "ADD";
 	case A_timesOp:
-		return "MULT";
+		return "MUL";
 	default:
 		EM_error("Unhandled case in HERA_math_op", false, p);
 		return "Oops_unhandled_hera_math_op";
