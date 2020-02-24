@@ -9,7 +9,7 @@ inline A_exp A_NilExp(A_pos pos)
 }
 inline A_exp A_BoolExp(A_pos pos, bool init)
 {
-	return new A_intExp_(pos, init);
+	return new A_boolExp_(pos, init);
 }
 inline A_exp A_IntExp(A_pos pos, int i)
 {
