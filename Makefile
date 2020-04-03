@@ -13,7 +13,7 @@ REBUILD_AFTER_CLEAN=Debug/util.o
 #  and then be smart about the rest (except for the bug causing us to run "build" up to 3x)
 #
 rebuilt: Debug
-	bison tiger-grammar.yy
+	bison -v tiger-grammar.yy
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc
 	rm Debug/*.o 2>/dev/null || true
