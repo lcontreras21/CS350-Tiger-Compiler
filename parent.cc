@@ -1,28 +1,28 @@
 #include "AST.h"
 
-void A_leafExp_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
+void A_leafExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
 	stored_parent = my_parent_or_null_if_i_am_the_root;
 }
 
-void A_root_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
+void A_root_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
 	// This has been inlined into the root expression constructor,
 	//   so it shouldn't actually be needed again...
-	EM_error("Strange ... called set_parent_pointers_for_me_and_my_decendents for A_root, rather than relying on constructor");
+	EM_error("Strange ... called set_parent_pointers_for_me_and_my_descendants for A_root, rather than relying on constructor");
 	// otherwise, we would have done this:
 	// assert(my_parent_or_null_if_i_am_the_root == 0);
 	// stored_parent = my_parent_or_null_if_i_am_the_root;
-	// main_expr->set_parent_pointers_for_me_and_my_decendents(this);
+	// main_expr->set_parent_pointers_for_me_and_my_descendants(this);
 }
 
-void A_opExp_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent_or_null_if_i_am_the_root)
+void A_opExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
 	// record my parent
 	stored_parent = my_parent_or_null_if_i_am_the_root;
 	// now, tell my children to record me as theirs... they'll tell the grandkids
-	_right->set_parent_pointers_for_me_and_my_decendents(this);
-	 _left->set_parent_pointers_for_me_and_my_decendents(this);
+	_right->set_parent_pointers_for_me_and_my_descendants(this);
+	 _left->set_parent_pointers_for_me_and_my_descendants(this);
 }
 
 
@@ -33,9 +33,9 @@ void A_opExp_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent
 //   except that we want to leave the bulk of the work for the labs...
 
 
-void AST_node_::set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent)
+void AST_node_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent)
 {
-	EM_warning("Uh-oh, need to make set_parent_pointers_for_me_and_my_descendents actually do its full job...");
+	EM_warning("Uh-oh, need to make set_parent_pointers_for_me_and_my_descendants actually do its full job...");
 	EM_warning(" rewrite or overrride it, instead of running this code the AST_node_ class.");
 }
 

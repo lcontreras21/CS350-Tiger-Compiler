@@ -47,7 +47,7 @@ class tigerParseDriver;
 %left PLUS 
 %left TIMES
 
-/* Attributes types for nonterminals are next */
+/* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
 
 

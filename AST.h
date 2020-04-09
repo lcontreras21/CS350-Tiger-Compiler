@@ -208,7 +208,7 @@ public:
 	// Those parent pointers are set by the set_parent... function below,
 	//    WHICH MUST ONLY BE CALLED FROM THE ROOT CONSTRUCTOR AND THEN RECURSIVELY
 	// (I don't know how to say that in C++ without a zillion "friend" definitions, though.)
-	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);
+	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual AST_node_ *get_parent_without_checking();	// get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
@@ -270,7 +270,7 @@ public:
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
-	virtual void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
+	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
 	virtual int compute_depth();  // just for an example, not needed to compile
 private:
 
@@ -287,7 +287,7 @@ class A_leafExp_ : public A_literalExp_ {
 public:
 	A_leafExp_(A_pos p);
 
-	void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);  // this one's easy, by definition :-)
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // this one's easy, by definition :-)
 	virtual int compute_height();  // just for an example, not needed to compile
 };
 
@@ -361,7 +361,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
 
-	void set_parent_pointers_for_me_and_my_decendents(AST_node_ *my_parent);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int compute_height();  // just for an example, not needed to compile
 private:
 	A_oper _oper;

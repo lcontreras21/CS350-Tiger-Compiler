@@ -221,11 +221,11 @@ AST_node_::~AST_node_()
 
 A_root_::A_root_(A_exp main_exp) : AST_node_(main_exp->pos()), main_expr(main_exp) {
 	// We'd *like* to call
-	//     this->set_parent_pointers_for_me_and_my_decendents(0);
+	//     this->set_parent_pointers_for_me_and_my_descendants(0);
 	// HOWEVER, the type of "this" is still AST_Node_, until the end of the constructor when it's a full-formed A_root_.
 	//          Thus, we'll write the code that would have been in that function:
 	this->stored_parent = 0;
-	main_exp->set_parent_pointers_for_me_and_my_decendents(this);
+	main_exp->set_parent_pointers_for_me_and_my_descendants(this);
 }
 
 
