@@ -399,6 +399,10 @@ A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result, 
 	precondition(name != 0 && body != 0);
 }
 
+A_typeDec_::A_typeDec_(A_pos pos, A_nametyList types_that_might_refer_to_each_other): AST_node_(pos), theTypes(types_that_might_refer_to_each_other)
+{
+	// lists can be null (empty-list), so it's possibly that theTypes could be 0
+}
 
 
 A_ty_::A_ty_(A_pos p) : AST_node_(p)
