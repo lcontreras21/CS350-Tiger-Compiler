@@ -66,14 +66,13 @@
 //			A_fieldVar_     (a field of a record, e.g. "c.real" in c.real := 5)
 //			A_subscriptVar_ (a subscripted array, e.g. "b[3]" in b[3] := 4
 //
-//  See the end of Appel's Chapter 4 for information about declarations; these are important in "let"
+//  See the end of Appel's Chapter 4, and the examples in AST.cc, for information about declarations; these are important in "let"
 //		A_dec_ ... one _unit_ of scope's declaration(s), specifically
 //			A_varDec_		(Variable Declaration, e.g. var a : int := 42)
 //			A_functionDec_		(A COLLECTION OF Potentially-Recursive Functions, e.g. function f(i: int): int = 2*g(i-1) function g(a: int) = if a<1 then 1 else f(x-1)+1)
 //			A_typeDec_		(A COLLECTION OF Potentially-Recursive Types, e.g., type trees = array of tree    type tree  = {val: string, kids: trees} )
-
 //
-//		// In modern C++, these would just be list<whatever>, but Appel's C code defines them each a types ... FEEL FREE TO UPDATE THIS IF YOU WISH
+//		// In modern C++, the following would just be list<whatever>, but Appel's C code defines them each a types ... FEEL FREE TO UPDATE THIS IF YOU WISH
 //		    A_expList_		(e.g., List Of Function Arguments In A Call, Or Of Expressions In A Sequence)
 //		    (an A_expList has A_exp entries, as above)
 //		    A_decList_		(List Of A_dec: -- this is what we find in a "let"
@@ -91,13 +90,11 @@
 //			A_recordTy_	(Record type, e.g., "{x: int, y:int}" in type point = {x: int, y:int})
 //			A_nameTy_	(a type that's been named already, e.g., "point" in type point2d = point)
 //
-//
 //  It is ok to use a null pointer (i.e. 0) as a parameter in the following
 //
 //   - any "list" parameter
 //   - the "else" statement in an if/then/else
 //   - the "typ" parameter when creating an A_VarDec
-//   - the "result" parameter when creating an A_Fundec
 //
 //
 //  Q: What's the deal with fundec, and fundecList, and functionDec?
@@ -209,7 +206,6 @@ public:
 	//    WHICH MUST ONLY BE CALLED FROM THE ROOT CONSTRUCTOR AND THEN RECURSIVELY
 	// (I don't know how to say that in C++ without a zillion "friend" definitions, though.)
 	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	virtual AST_node_ *get_parent_without_checking();	// get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
 	virtual String attributes_for_printing();
@@ -231,10 +227,11 @@ public:
 	int depth();   // example we'll play with in class, not actually needed to compile
 	virtual int compute_depth();   // just for an example, not needed to compile
 
-protected:  // every derived class's set_parent should be able to get at stored_parent for "this" object
+protected:  // so that derived class's set_parent should be able to get at stored_parent for "this" object ... Smalltalk allows this by default
 	AST_node_ *stored_parent = 0;
 
 private:
+	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
 };
 
@@ -549,7 +546,7 @@ private:
 
 class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
 public:
-	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type_or_0_pointer_for_no_result_type_in_declaration,  A_exp body);
+	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type,  A_exp body);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
 	Symbol _name;

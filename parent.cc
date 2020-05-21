@@ -41,7 +41,7 @@ void AST_node_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_pare
 
 
 
-AST_node_ *AST_node_::get_parent_without_checking()
+AST_node_ *AST_node_::get_parent_without_checking()  // NOT FOR GENERAL USE ... this is only for things like checking assertions
 {
 	return stored_parent;
 }

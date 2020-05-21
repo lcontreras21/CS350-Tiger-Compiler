@@ -164,33 +164,41 @@ void AST_example_functions()
     let
         var two : int := 2
 	function half_answer(): int = 21
-	function get_two(): int = two  /* Note ... can't use "answer" here * /
-	function answer() : int = half_answer() * get_two()
+	function answer() : int = ( print("Note that we can forward-ref 'get_two', in same group:"),  half_answer() * get_two() )
+	function get_two(): int = ( print("Note that can't forward-ref 'it'' or functions after this group"), two )
 	var it : int := answer()
     in
 	printint(it)
     end
 
-    Note that tiger "sees" this as a three-element let, with a variable,
-         a collection of potentially-recursive functions, and another variable.
-	 The FunctionDec holds the list of functions.
+
+  Note that tiger "sees" this as a three-element let, with
+       * a variable "two"
+       * a collection of potentially-recursive functions (half_answer, answer, and two)
+       * and another variable.
+
+       The FunctionDec holds the list of functions, as shown in the code below.
+       Building this abstract syntax could be annoying during parsing,
+       but it should make variable scoping much easier to figure out later.
+	 
   */
 
 
 	Position u = Position::undefined();
 	Symbol tig_int = to_Symbol("int");
-	A_root_ *r = A_RootExp(A_LetExp(u, A_DecList(A_VarDec(u, to_Symbol("two"), tig_int, A_IntExp(u, 2)),
-					       A_DecList(A_FunctionDec(u, A_FundecList(A_Fundec(u, to_Symbol("half_answer"), 0, tig_int, A_IntExp(u, 21)),
-										       A_FundecList(A_Fundec(u, to_Symbol("get_two"),     0, tig_int, A_VarExp(u, A_SimpleVar(u, to_Symbol("two")))),
-												 A_FundecList(A_Fundec(u, to_Symbol("answer"),      0, tig_int, A_OpExp(u, A_timesOp,
-																    A_CallExp(u, to_Symbol("half_answer"), 0),
-																    A_CallExp(u, to_Symbol("get_two"), 0))),
-							     0)))),
-				     A_DecList(A_VarDec(u, to_Symbol("it"), tig_int, A_CallExp(u, to_Symbol("answer"), 0)),
-				     0))),
+	A_root_ *r = A_RootExp(A_LetExp(u,
+					A_DecList(A_VarDec(u, to_Symbol("two"), tig_int, A_IntExp(u, 2)),
+						  A_DecList(A_FunctionDec(u, A_FundecList(A_Fundec(u, to_Symbol("half_answer"), 0, tig_int, A_IntExp(u, 21)),
+											  A_FundecList(A_Fundec(u, to_Symbol("answer"), 0, tig_int, A_OpExp(u, A_timesOp,
+																			    A_CallExp(u, to_Symbol("half_answer"), 0),
+																			    A_CallExp(u, to_Symbol("get_two"), 0))),
+												       A_FundecList(A_Fundec(u, to_Symbol("get_two"),     0, tig_int, A_VarExp(u, A_SimpleVar(u, to_Symbol("two")))),
+														    0)))),
+							    A_DecList(A_VarDec(u, to_Symbol("it"), tig_int, A_CallExp(u, to_Symbol("answer"), 0)),
+								      0))),
 				     
-				     A_CallExp(u, to_Symbol("printint"),
-					       A_ExpList(A_VarExp(u, A_SimpleVar(u, to_Symbol("it"))), 0))));
+					A_CallExp(u, to_Symbol("printint"),
+						  A_ExpList(A_VarExp(u, A_SimpleVar(u, to_Symbol("it"))), 0))));
 	
 	EM_debug("Here's the example from AST_example_functions:");
 	EM_debug(str(r));
@@ -399,7 +407,7 @@ A_fundec_::A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result, 
 	precondition(name != 0 && body != 0);
 }
 
-A_typeDec_::A_typeDec_(A_pos pos, A_nametyList types_that_might_refer_to_each_other): AST_node_(pos), theTypes(types_that_might_refer_to_each_other)
+A_typeDec_::A_typeDec_(A_pos pos, A_nametyList types_that_might_refer_to_each_other): A_dec_(pos), theTypes(types_that_might_refer_to_each_other)
 {
 	// lists can be null (empty-list), so it's possibly that theTypes could be 0
 }
