@@ -34,6 +34,8 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 	switch (op) {
 	case A_plusOp:
 		return "ADD";
+	case A_minusOp:
+		return "SUB";
 	case A_timesOp:
 		return "MUL";	// was MULT for HERA 2.3
 	default:

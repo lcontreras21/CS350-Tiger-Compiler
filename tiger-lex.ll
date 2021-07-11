@@ -53,7 +53,14 @@ static int textToInt(std::string the_text)  // a C-style array of char will be c
 	// alternate implementation: use hc_string's to_int function:
 	// return to_int(the_text);
 }
-
+/*
+int parseComment(std::string comment) {
+	int comment_amount = 0
+	for (int i=0; i< comment.length(); i++) {
+		
+	}	
+}
+*/
 
 // This uses some stuff created by flex, so it's easiest to just put it here.
 int tigerParseDriver::parse (const std::string &f)
@@ -74,6 +81,7 @@ int tigerParseDriver::parse (const std::string &f)
 	return res;
 }
 
+
 %}
 
 /* In this second section of the lex file (after the %}),
@@ -85,7 +93,6 @@ int tigerParseDriver::parse (const std::string &f)
 %option noyywrap nounput
 /* Not using these: batch debug noinput */
 
-
 integer	[0-9]+
 
 /* real numbers don't occur in tiger, but if they did,
@@ -93,6 +100,7 @@ integer	[0-9]+
    we could do this: */
 real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 
+c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 
 
 /* In the third section of the lex file (after the %%),
@@ -101,30 +109,52 @@ real	[0-9]+\.[0-9]*(e-?[0-9]+)?
    and give the action (as C++ code) for each token.
    Comments are legal only inside the actions. */
 
+/* Inclusive start conditions */
+/*%s*/ 
+/* Exclusive start conditions */
+%x COMMENT
 %%
 
 %{
 /* Surrounding four lines, and other things involving "loc", are from
-   https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Scanner.html#Calc_002b_002b-Scanner */
+      https://www.gnu.org/software/bison/manual/html_node/Calc_002b_002b-Scanner.html#Calc_002b_002b-Scanner */
   // Code run each time yylex is called.
   loc.step();
 %}
+	int num_comments = 0;
 
 [ \t]	{ loc.step(); }
 [\n\r]	{ loc.lines(yyleng); loc.step(); }
 
 
-\+		{ return yy::tigerParser::make_PLUS(loc); }
-\*		{ return yy::tigerParser::make_TIMES(loc); }
-
-{integer}	{
-   return yy::tigerParser::make_INT(textToInt(yytext), loc);
+\+					{ loc.step(); return yy::tigerParser::make_PLUS(loc);			}
+\-					{ loc.step(); return yy::tigerParser::make_MINUS(loc);			}
+\*					{ loc.step(); return yy::tigerParser::make_TIMES(loc);			}
+"("					{ loc.step(); return yy::tigerParser::make_LPAREN(loc);			}
+")"					{ loc.step(); return yy::tigerParser::make_RPAREN(loc);			} 
+{integer}			{
+	loc.step();
+	return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
 
+
+"/*"				{BEGIN(COMMENT); ++num_comments;								}
+<COMMENT>{
+[^*/]*				{/* Match text that does not have * or / */						}
+"*"+[^*/]*			{/* Match text that has * not followed by / */					}
+"/"+[^*/]*			{/* Match text that has / not followed by * */					}
+"/*"				{/* Encounter a start comment, may be nested */ ++num_comments;	}
+"*"+"/"				{/* Encounter a closed comment, may be nested */
+					--num_comments;
+					if (num_comments < 0) { EM_error("Illegal nested comments");	}
+					else if (num_comments == 0) {BEGIN(INITIAL);					}
+					}
+}
+
+
 \<[Ee][Oo][Ff]\>		{ return yy::tigerParser::make_END(loc); /* this RE matches the literal five characters <EOF>, regardless of upper/lower case   */ }
 <<EOF>>					{ return yy::tigerParser::make_END(loc); /* <<EOF>> is a flex built-in for an actual end of a file, when there is no more input */ }
-
 .	{ string it = "?"; it[0] = yytext[0]; EM_error("illegal token: " + it); }
 %%
