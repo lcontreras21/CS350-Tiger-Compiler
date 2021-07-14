@@ -17,7 +17,7 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 
 string A_root_::HERA_code()
 {
-	return "CBON()\n\n" + main_expr->HERA_code();  // was SETCB for HERA 2.3
+	return main_expr->HERA_data() + "\nCBON()\n\n" + main_expr->HERA_code();  // was SETCB for HERA 2.3
 }
 
 
@@ -50,4 +50,30 @@ string A_opExp_::HERA_code()
 					_left->result_reg_s() + ", " +
 					_right->result_reg_s() + ")\n");
 	return _left->HERA_code() + _right->HERA_code() + my_code;
+}
+
+string A_callExp_::HERA_code()
+{
+	string my_code = indent_math + "MOVE(R1, R3)\n" + 
+					 indent_math + "CALL(FP_alt, " + 
+					 Symbol_to_string(_func) + ")\n";	
+	return _args->HERA_code() + my_code;
+}
+
+string A_expList_::HERA_code()
+{
+	string output =_head->HERA_code(); 
+	if (_tail != 0)
+	{
+		output = output + _tail->HERA_code();
+	}
+	return output;
+}
+
+string A_stringExp_::HERA_code()
+{
+	/* Add preamble string memory allocation */
+	string this_str_label = "string_" + std::to_string(count);
+						 	 
+	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
 }

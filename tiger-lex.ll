@@ -53,14 +53,57 @@ static int textToInt(std::string the_text)  // a C-style array of char will be c
 	// alternate implementation: use hc_string's to_int function:
 	// return to_int(the_text);
 }
+
 /*
-int parseComment(std::string comment) {
-	int comment_amount = 0
-	for (int i=0; i< comment.length(); i++) {
-		
-	}	
-}
-*/
+static std::string parseString(std::string the_text)
+{
+	// Iterate through the string. If it reaches a \ then keep adding to it and convert to special char, then back to std::string
+	// Possible escape sequences:
+	// \n newline
+	// \t tab
+	// ^c control character c, for any appropriate c
+	// \ddd single char with ascii code ddd (3 decimal digit)
+	// \" escaped quote "
+	// \\ backslash char
+	// \f__f\ sequence is ignored. f__f can include any escape sequence
+
+	// Tracking variables
+	std::string string_to_return = "";	
+	bool found_escape_char = false;
+	std::string escape_string_so_far = "";
+
+	for (int i=1; i<the_text.length()-1; i++)
+	{	
+		std::string escape_char = "";
+		// First and last are quotes. Drop them in for loop bounds
+		char letter = the_text[i];
+		if (letter == "\\" and !found_escape_char) {
+			found_escape_char = true;
+		}
+		if (found_escape_char) {
+			if (letter == "n") {
+				// Found Newline
+				found_escape_char = false;
+				escape_string_so_far = "";
+				to_return++ "\n";
+			} else if (letter = "t") {
+				// Found tab
+				found_escape_char = false;
+				escape_string_so_far = "";
+				to_return++ "\t";
+			} else if (letter >= '0' and letter <= '9') {
+				// Found ascii code
+				if (escape_string_so_far.length() == 3) {
+					found_escape_char = false;
+					escape_string_so_far = "";
+				} else {
+					escape_string_so_far++ letter;
+				}
+		}	
+	return string_to_return;
+
+{string}			{ loc.step(); return yy::tigerParser::make_STRING(parseString(yytext), loc);	}
+}*/
 
 // This uses some stuff created by flex, so it's easiest to just put it here.
 int tigerParseDriver::parse (const std::string &f)
@@ -100,6 +143,13 @@ integer	[0-9]+
    we could do this: */
 real	[0-9]+\.[0-9]*(e-?[0-9]+)?
 
+/*Identifiers: An identifier is a sequence of letters, digits, and underscores, starting with a letter. Uppercase letters are distinguished from lowercase. In this
+appendix the symbol id stands for an identifier. FROM APPEL APPENDIX. */
+identifier	[a-zA-Z]+[_a-zA-Z0-9]* 
+
+string	\"[^"]*\" 
+/* " */
+
 c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 
 
@@ -112,7 +162,7 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 /* Inclusive start conditions */
 /*%s*/ 
 /* Exclusive start conditions */
-%x COMMENT
+%x COMMENT str
 %%
 
 %{
@@ -122,6 +172,7 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
   loc.step();
 %}
 	int num_comments = 0;
+	std::string to_return = "";
 
 [ \t]	{ loc.step(); }
 [\n\r]	{ loc.lines(yyleng); loc.step(); }
@@ -132,12 +183,30 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 \*					{ loc.step(); return yy::tigerParser::make_TIMES(loc);			}
 "("					{ loc.step(); return yy::tigerParser::make_LPAREN(loc);			}
 ")"					{ loc.step(); return yy::tigerParser::make_RPAREN(loc);			} 
-{integer}			{
-	loc.step();
-	return yy::tigerParser::make_INT(textToInt(yytext), loc);
+{identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
+{integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
+
+"\""				{ /* Initial quote of string */ 
+					  to_return = "";
+					  BEGIN(str); }
+<str>{
+"\""				{ /* Closing quote of string */
+					  BEGIN(INITIAL); 
+					  loc.step(); 
+					  return yy::tigerParser::make_STRING(repr(to_return), loc);	}
+\\n					{ to_return = to_return + '\n'; }
+\\t					{ to_return = to_return + '\t'; }
+\\\"				{ to_return = to_return + '\"'; }
+\\					{ to_return = to_return + '\\'; }
+\\[ \t\n]*\\		{ /* Special thing defined by Appel */ }
+[^\\\n\"]+			{ /* Any other part of the string */
+					  to_return = to_return + yytext;
+					}
+}
+
 
 
 "/*"				{BEGIN(COMMENT); ++num_comments;								}

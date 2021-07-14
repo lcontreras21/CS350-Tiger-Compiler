@@ -68,6 +68,9 @@ program: exp[main]	{ EM_debug("Got the main expression of our tiger program.", $
 exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  EM_debug("Got int " + str($i), $$.AST->pos());
 								}
+	| STRING[str1]				{ $$.AST = A_StringExp(Position::fromLex(@str1), $str1);
+								  EM_debug("Got string: " + $str1, $$.AST->pos());
+								}
 	| exp[exp1] PLUS exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
 												   A_plusOp,  $exp1.AST,$exp2.AST);
 								  EM_debug("Got plus expression.", $$.AST->pos());
@@ -81,6 +84,9 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  EM_debug("Got times expression.", $$.AST->pos());
 								}
 	| LPAREN exp[exp1] RPAREN	{ $$.AST = $exp1.AST; 
+								}
+	| ID[id1] LPAREN exp[exp1] RPAREN{ $$.AST = A_CallExp($exp1.AST->pos(), to_Symbol($id1), A_ExpList($exp1.AST, 0));
+								  EM_debug("Got function call", $$.AST->pos()); 
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.

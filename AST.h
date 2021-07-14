@@ -221,7 +221,7 @@ public:
 	// And now, the attributes that exist in ALL kinds of AST nodes.
 	//  See Design_Documents/AST_Attributes.txt for details.
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
-
+	virtual string HERA_data();  // defaults to empty string 
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -264,6 +264,7 @@ public:
 	A_exp *main();
 
 	string HERA_code();
+	string HERA_data();
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -318,7 +319,10 @@ public:
 	A_stringExp_(A_pos pos, String s);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
+	int count;
 	String value;
+	virtual string HERA_code();
+	virtual string HERA_data();
 };
 
 class A_recordExp_ : public A_literalExp_ {
@@ -385,12 +389,15 @@ private:
 };
 
 class A_callExp_ : public A_exp_ {
-public:
-	A_callExp_(A_pos pos, Symbol func, A_expList args);
+	public:
+		A_callExp_(A_pos pos, Symbol func, A_expList args);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
 	Symbol _func;
 	A_expList _args;
+	virtual string HERA_code();
+	virtual string HERA_data()
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
 class A_controlExp_ : public A_exp_ {
@@ -476,6 +483,9 @@ public:
 	int length();
 	A_exp _head;
 	A_expList _tail;
+	virtual string HERA_code();
+	virtual string HERA_data()
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
 // The componends of a A_recordExp, e.g. point{X = 4, Y = 12}

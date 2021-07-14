@@ -56,3 +56,22 @@ AST_node_ *A_root_::parent()
 	EM_error("Called parent() for root node. This typically happens when A_root has not defined a method for some inherited attribute.", true);
 	throw "Oops, shouldn't get here, if 'true' is on for 'is this error fatal";
 }
+
+
+void A_callExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
+{
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_args->set_parent_pointers_for_me_and_my_descendants(this);
+}
+
+
+
+void A_expList_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
+{
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_head->set_parent_pointers_for_me_and_my_descendants(this);	
+	if (_tail != 0)
+	{
+		_tail->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
