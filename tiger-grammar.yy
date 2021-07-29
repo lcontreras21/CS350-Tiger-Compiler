@@ -45,10 +45,11 @@ class tigerParseDriver;
 /* precedence (stickiness) ... put the stickiest stuff at the bottom of the list */
 
 %left PLUS MINUS 
-%left TIMES
+%left TIMES DIVIDE
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
+%type <expListAttrs> expList
 
 
 // The line below means our grammar must not have conflicts
@@ -80,12 +81,17 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  EM_debug("Got minus expression.", $$.AST->pos());
 								}
 	| exp[exp1] TIMES exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
-												   A_timesOp, $exp1.AST,$exp2.AST);
+												   A_timesOp, $exp1.AST, $exp2.AST);
 								  EM_debug("Got times expression.", $$.AST->pos());
 								}
+	| exp[exp1] DIVIDE exp[exp2]{ $$.AST = A_CallExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), to_Symbol("DIV"), A_ExpList($exp1.AST, A_ExpList($exp2.AST, 0)));
+
+								  EM_debug("Got divide expression.", $$.AST->pos());
+								}
+
 	| LPAREN exp[exp1] RPAREN	{ $$.AST = $exp1.AST; 
 								}
-	| ID[id1] LPAREN exp[exp1] RPAREN{ $$.AST = A_CallExp($exp1.AST->pos(), to_Symbol($id1), A_ExpList($exp1.AST, 0));
+	| ID[id1] LPAREN expList[list1] RPAREN[a]{ $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
 								  EM_debug("Got function call", $$.AST->pos()); 
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
@@ -98,6 +104,16 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 //        writing, e.g., Position::fromLex(@exp1) or instead of $exp1.AST->pos()
 //
 			  					}
+	;
+expList: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
+										  EM_debug("Got end of expList  expression.", $$.AST->pos());
+										}
+	| exp[exp1] COLON expList[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
+										  EM_debug("Got expList  expression.", $$.AST->pos());
+										} 
+	|									{ $$.AST = A_ExpList(0, 0);
+										  EM_debug("Got empty expList  expression");
+										}
 	;
 
 %%

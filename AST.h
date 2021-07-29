@@ -287,6 +287,7 @@ public:
 
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // this one's easy, by definition :-)
 	virtual int compute_height();  // just for an example, not needed to compile
+	virtual int init_result_reg();
 };
 
 class A_nilExp_ : public A_leafExp_ {
@@ -361,6 +362,7 @@ public:
 	A_opExp_(A_pos pos, A_oper oper, A_exp left, A_exp right);
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
+	virtual int init_result_reg();
 
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int compute_height();  // just for an example, not needed to compile
@@ -396,7 +398,8 @@ private:
 	Symbol _func;
 	A_expList _args;
 	virtual string HERA_code();
-	virtual string HERA_data()
+	virtual string HERA_data();
+	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
@@ -483,8 +486,8 @@ public:
 	int length();
 	A_exp _head;
 	A_expList _tail;
-	virtual string HERA_code();
-	virtual string HERA_data()
+	string func_HERA_code(int counter);
+	string func_HERA_data();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 

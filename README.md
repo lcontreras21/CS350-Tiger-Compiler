@@ -2,7 +2,7 @@
 ## Computer Science 350: Compiler Design
 
 ### Overview:
-Haverford's CS core curriculum is centered around their proprietary assembly language HERA. In this class, we are tasked with writing a compiler to go from Andrew Appel's Tiger language to the HERA language. The class follows many of the sections in (Appel's compiler design book)[https://www.cs.princeton.edu/~appel/modern/c/]. 
+Haverford's CS core curriculum is centered around their proprietary assembly language HERA. In this class, we are tasked with writing a compiler to go from Andrew Appel's Tiger language to the HERA language. The class follows many of the sections in [Appel's compiler design book](https://www.cs.princeton.edu/~appel/modern/c/). 
 
 ### Purpose:
 During the semester I took the course, I only made it through 9 out of the 10 assignments to finish the compiler. Here, I intend to start from the beginning and finish the compiler, incorporating all of the information I have learned since then. 
@@ -21,3 +21,4 @@ During the semester I took the course, I only made it through 9 out of the 10 as
 
 ### Notes for each Milestone:
 - Milestone 1: Sub and Parenthesis done without much difficulty. Comments were handled in two ways: Regular expression for C-style comments (which can't be nested), and advanced Lex functionality for Tiger-style nested comments. I learned everything about Lex functionality from (this Stanford Lex description)[https://web.stanford.edu/class/archive/cs/cs143/cs143.1112/materials/other/manflex.html]. There it meantions things like Starting conditions and usage of automata with regular expressions. Of particular interest was the Start conditions section.  
+- Milestone 3: (d) Implementing escape sequences. The control characters are ‘\a’, ‘\b’, ‘\f’, ‘\n’, ‘\r’, ‘\t’, ‘\v’. To handle \ddd, I convert just ddd from string to int, then convert to octal number and back to string, if it's less than 377. Referencing the [iger Language Reference Manual](https://www.lrde.epita.fr/~tiger/tiger.html#Lexical-Specifications). 

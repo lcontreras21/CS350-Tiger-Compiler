@@ -54,56 +54,35 @@ static int textToInt(std::string the_text)  // a C-style array of char will be c
 	// return to_int(the_text);
 }
 
-/*
-static std::string parseString(std::string the_text)
+char decToAscii(int n)
 {
-	// Iterate through the string. If it reaches a \ then keep adding to it and convert to special char, then back to std::string
-	// Possible escape sequences:
-	// \n newline
-	// \t tab
-	// ^c control character c, for any appropriate c
-	// \ddd single char with ascii code ddd (3 decimal digit)
-	// \" escaped quote "
-	// \\ backslash char
-	// \f__f\ sequence is ignored. f__f can include any escape sequence
+	// char array to store hexadecimal number
+	char hexaDeciNum[100];
+	// counter for hexadecimal number array
+	int i = 0;
+	while (n != 0) {
+		// temporary variable to store remainder
+		int temp = n % 16;
+		// check if temp < 10
+		if (temp < 10) {
+			hexaDeciNum[i] = temp + 48;
 
-	// Tracking variables
-	std::string string_to_return = "";	
-	bool found_escape_char = false;
-	std::string escape_string_so_far = "";
-
-	for (int i=1; i<the_text.length()-1; i++)
-	{	
-		std::string escape_char = "";
-		// First and last are quotes. Drop them in for loop bounds
-		char letter = the_text[i];
-		if (letter == "\\" and !found_escape_char) {
-			found_escape_char = true;
 		}
-		if (found_escape_char) {
-			if (letter == "n") {
-				// Found Newline
-				found_escape_char = false;
-				escape_string_so_far = "";
-				to_return++ "\n";
-			} else if (letter = "t") {
-				// Found tab
-				found_escape_char = false;
-				escape_string_so_far = "";
-				to_return++ "\t";
-			} else if (letter >= '0' and letter <= '9') {
-				// Found ascii code
-				if (escape_string_so_far.length() == 3) {
-					found_escape_char = false;
-					escape_string_so_far = "";
-				} else {
-					escape_string_so_far++ letter;
-				}
-		}	
-	return string_to_return;
-
-{string}			{ loc.step(); return yy::tigerParser::make_STRING(parseString(yytext), loc);	}
-}*/
+		else {
+			hexaDeciNum[i] = temp + 55;
+		}
+		i++;
+		n = n / 16;
+	}
+	// Need to get numbers in reverse order and append to string
+	std::string to_return = "";
+	for (int j=i-1; j>=0; j--) {
+		to_return = to_return + hexaDeciNum[j];
+	}
+	// Convert to Ascii
+	char ch = stoul(to_return, nullptr, 16);
+	return ch;
+}
 
 // This uses some stuff created by flex, so it's easiest to just put it here.
 int tigerParseDriver::parse (const std::string &f)
@@ -181,8 +160,10 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 \+					{ loc.step(); return yy::tigerParser::make_PLUS(loc);			}
 \-					{ loc.step(); return yy::tigerParser::make_MINUS(loc);			}
 \*					{ loc.step(); return yy::tigerParser::make_TIMES(loc);			}
+"/"					{ loc.step(); return yy::tigerParser::make_DIVIDE(loc);			}
 "("					{ loc.step(); return yy::tigerParser::make_LPAREN(loc);			}
 ")"					{ loc.step(); return yy::tigerParser::make_RPAREN(loc);			} 
+","					{ loc.step(); return yy::tigerParser::make_COLON(loc);			}
 {identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
 {integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */
@@ -199,14 +180,19 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 					  return yy::tigerParser::make_STRING(repr(to_return), loc);	}
 \\n					{ to_return = to_return + '\n'; }
 \\t					{ to_return = to_return + '\t'; }
+\\[0-9]{3}			{ // Octal escape sequence
+					  int result;
+					  // Dave says \ddd is decimal when appel says it should be octal
+					  (void) sscanf(yytext+1, "%d", &result);
+					  to_return = to_return + decToAscii(result);
+					}
 \\\"				{ to_return = to_return + '\"'; }
-\\					{ to_return = to_return + '\\'; }
+\\\\				{ to_return = to_return + '\\'; }
 \\[ \t\n]*\\		{ /* Special thing defined by Appel */ }
 [^\\\n\"]+			{ /* Any other part of the string */
 					  to_return = to_return + yytext;
 					}
 }
-
 
 
 "/*"				{BEGIN(COMMENT); ++num_comments;								}
