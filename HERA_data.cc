@@ -26,6 +26,10 @@ string A_stringExp_::HERA_data() {
 	return output; 
 }
 
+string A_opExp_::HERA_data() {
+	return _left->HERA_data() + _right->HERA_data();
+}
+
 string A_expList_::func_HERA_data() {
 	if (_tail == 0) {
 		return _head->HERA_data();

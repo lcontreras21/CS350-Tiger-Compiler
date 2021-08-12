@@ -169,6 +169,11 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
    /* textToInt is defined above */
    /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
    }
+"if"				{ loc.step(); return yy::tigerParser::make_IF(loc);			}
+"then"				{ loc.step(); return yy::tigerParser::make_THEN(loc);			}
+"else"				{ loc.step(); return yy::tigerParser::make_ELSE(loc);			}
+"true"				{ loc.step(); return yy::tigerParser::make_TRUE(loc);			}
+"false"				{ loc.step(); return yy::tigerParser::make_FALSE(loc);			}
 
 "\""				{ /* Initial quote of string */ 
 					  to_return = "";

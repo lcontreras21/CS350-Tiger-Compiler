@@ -172,6 +172,9 @@ int main(int argc, char **argv)
 			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
 
 			if (! EM_recorded_any_errors()) {
+				// Typecheck first
+				driver.AST->typecheck();
+
 				String code = driver.AST->HERA_code();
 				if (! EM_recorded_any_errors()) {
 					cout << code;

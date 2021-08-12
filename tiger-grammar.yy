@@ -40,12 +40,17 @@ class tigerParseDriver;
   BREAK NIL
   FUNCTION VAR TYPE DOT
   PLUS MINUS TIMES DIVIDE ASSIGN EQ NEQ LT LE GT GE OR AND NOT
+  UMINUS TRUE FALSE
 ;
 
 /* precedence (stickiness) ... put the stickiest stuff at the bottom of the list */
 
+%left OR
+%left AND
+%nonassoc GE LE EQ NEQ LT GT
 %left PLUS MINUS 
 %left TIMES DIVIDE
+%left UMINUS
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
@@ -88,11 +93,19 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 
 								  EM_debug("Got divide expression.", $$.AST->pos());
 								}
-
+	| MINUS exp[exp1] %prec UMINUS			{ $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
+								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
+								}
 	| LPAREN exp[exp1] RPAREN	{ $$.AST = $exp1.AST; 
 								}
+	
 	| ID[id1] LPAREN expList[list1] RPAREN[a]{ $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
 								  EM_debug("Got function call", $$.AST->pos()); 
+								}
+	| TRUE{t}					{
+								}
+	| FALSE{f}					{
+								}
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.

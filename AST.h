@@ -222,6 +222,7 @@ public:
 	//  See Design_Documents/AST_Attributes.txt for details.
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
 	virtual string HERA_data();  // defaults to empty string 
+	virtual Ty_ty typecheck();	// Perform typechecking all along the tree 
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -265,6 +266,7 @@ public:
 
 	string HERA_code();
 	string HERA_data();
+	Ty_ty typecheck();
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -311,6 +313,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 
 	virtual string HERA_code();
+	Ty_ty typecheck();
 private:
 	int value;
 };
@@ -324,6 +327,7 @@ private:
 	String value;
 	virtual string HERA_code();
 	virtual string HERA_data();
+	Ty_ty typecheck();
 };
 
 class A_recordExp_ : public A_literalExp_ {
@@ -361,8 +365,11 @@ class A_opExp_ : public A_exp_ {
 public:
 	A_opExp_(A_pos pos, A_oper oper, A_exp left, A_exp right);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_data();
 	virtual string HERA_code();
+	Ty_ty typecheck();
 	virtual int init_result_reg();
+
 
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int compute_height();  // just for an example, not needed to compile
@@ -400,6 +407,7 @@ private:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
+	Ty_ty typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
@@ -488,6 +496,7 @@ public:
 	A_expList _tail;
 	string func_HERA_code(int counter);
 	string func_HERA_data();
+	Ty_ty func_typecheck(int n);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
