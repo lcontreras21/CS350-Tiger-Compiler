@@ -32,7 +32,7 @@ Have ** on their name
 				A_leafExp_
 					A_nilExp_
 					A_intExp_**
-					A_boolExp_
+					A_boolExp_**
 					A_stringExp_**
 				A_recordExp_
 				A_arrayExp_
@@ -42,7 +42,7 @@ Have ** on their name
 			A_letExp_
 			A_callExp_**
 			A_controlExp_
-				A_ifExp_
+				A_ifExp_**
 				A_whileExp_
 				A_forExp_
 				A_breakExp_
@@ -87,6 +87,10 @@ Ty_ty A_intExp_::typecheck() {
 	return Ty_Int();
 }
 
+Ty_ty A_boolExp_::typecheck() {
+	return Ty_Bool();
+}
+
 Ty_ty A_stringExp_::typecheck() {
 	return Ty_String();
 }
@@ -129,4 +133,8 @@ Ty_ty A_expList_::func_typecheck(int n) {
 			return Ty_Error();
 		}	
 	}
+}
+
+Ty_ty A_ifExp_::typecheck() {
+x
 }

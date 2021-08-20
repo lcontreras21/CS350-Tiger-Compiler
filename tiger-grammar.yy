@@ -102,10 +102,19 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| ID[id1] LPAREN expList[list1] RPAREN[a]{ $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
 								  EM_debug("Got function call", $$.AST->pos()); 
 								}
-	| TRUE{t}					{
+	| TRUE{t}					{ $$.AST = A_BoolExp(Position::fromLex(@t), true);
+								  EM_debug("Got true boolean expression", $$.AST->pos());
 								}
-	| FALSE{f}					{
+	| FALSE{f}					{ $$.AST = A_BoolExp(Position::fromLex(@f), false);
+								  EM_debug("Got false boolean expression", $$.AST->pos());
 								}
+	| IF[if] exp[exp1] THEN exp[exp2] ELSE exp[exp3] {
+								  $$.AST = A_IfExp(Poisition::range(Position::fromLex(@if), $exp3.AST->pos()), $exp1.AST, $exp2.AST, $exp3.AST);
+								  EM_debug("Got if/then/else expression", $$.AST->pos());
+								}
+	| IF[if] exp[exp1] THEN exp[exp2] {
+								  $$.AST = A_IfExp(Poisition::range(Position::fromLex(@if), $exp3.AST->pos()), $exp1.AST, $exp2.AST, 0);
+								  EM_debug("Got if/then/ expression", $$.AST->pos());
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.

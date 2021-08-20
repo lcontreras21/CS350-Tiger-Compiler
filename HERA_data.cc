@@ -42,3 +42,10 @@ string A_callExp_::HERA_data() {
 	return _args->func_HERA_data();
 }
 
+string A_ifExp_::HERA_data() {
+	string output = _test->HERA_data() + _then->HERA_data();
+	if (_else_or_null != 0) {
+		output = output + _else_or_null->HERA_data();
+	}
+	return output;
+}

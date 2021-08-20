@@ -1,5 +1,9 @@
 #include "AST.h"
 
+// IfExp Counter for branching expressions
+int if_counter = 0;
+
+
 /*
  * HERA_code methods
  */
@@ -12,6 +16,8 @@ const string indent_math = "    ";  // might want to use something different for
 	A_callExp_
 	A_expList_
 	A_stringExp_
+	A_boolExp_
+	A_ifExp_
 
 */
 
@@ -21,7 +27,6 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 	EM_error(message);
 	return "#error " + message;  //if somehow we try to HERA-C-Run this, it will fail
 }
-
 
 string A_root_::HERA_code()
 {
@@ -108,4 +113,41 @@ string A_stringExp_::HERA_code()
 	string this_str_label = "string_" + std::to_string(this->count);
 						 	 
 	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
+}
+
+string A_boolExp_::HERA_code()
+{
+	if (value) {
+		return indent_math + "SET(" + result_reg_s() + ", 1)\n";
+	else {
+		return indent_math + "SET(" + result_reg_s() + ", 0)\n";
+	}  
+}
+
+string A_ifExp_::HERA_code()
+{	
+	// A few string vars for label creation
+	this_counter = if_counter;
+	string else_label = "else label " + std::to_string(this_counter);
+	string end_label;
+	if (_else_or_null != 0) {
+		end_label = "end of if/then/else " + std::to_string(this_counter)
+	}
+	// _test is either an int or 0. If int do _then, else do _else_or_null
+	// First do check
+	string my_code = _test->HERA_code();
+	// Sub by zero to check if there is a non-zero into for true or 0 for false
+	my_code = my_code + indent_math + "CMP(" + _test->result_reg_s() + ", R0)\n" 
+			+ indent_math + "BZ(" + else_label + ")\n"
+			+ _then->HERA_code();
+	if (_else_or_null != 0) {
+		my_code = indent_math + "BR(" + end_label + ")\n"
+				+ indent_math + "LABEL(" + else_label + ")\n"
+				+ _else_or_null->HERA_code()
+				+ indent_math + "LABEL(" + end_label + ")\n";	
+	} else {
+		my_code = indent_math + "LABEL(" + else_label + ")\n";
+	}
+	if_counter = if_counter +1;
+	return my_code;
 }

@@ -303,6 +303,8 @@ class A_boolExp_ : public A_leafExp_ {
 public:
 	A_boolExp_(A_pos pos, bool b);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	Ty_ty typecheck();
 private:
   bool value;
 };
@@ -420,6 +422,11 @@ class A_ifExp_ : public A_controlExp_ {
 public:
 	A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_for_no_else);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	virtual int init_result_reg();
+	Ty_ty typecheck();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_exp _test;
 	A_exp _then;
