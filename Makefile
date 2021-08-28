@@ -1,7 +1,7 @@
 # Note there are some "sleep" commands here because otherwise Eclipse sometimes doesn't realize the files are there
 
 CC=g++
-CFLAGS=--std=c++1y -g -I/home/courses/include -Wall -Wno-sign-compare -Wno-unused-function#that last due to auto-generated code from flex
+CFLAGS=--std=c++1y -g -I/home/courses/include -Wall -Wno-sign-compare -Wno-unused-function -Wno-unused-variable#that last due to auto-generated code from flex
 LDFLAGS=-L/home/courses/lib -lcourses
 REBUILD_AFTER_CLEAN=Debug/util.o
 

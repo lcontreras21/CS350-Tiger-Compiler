@@ -120,6 +120,21 @@ template <class symbol_info> String to_String(const ST<symbol_info> &table);
 void ST_test();   // check internal consistency
 void ST_examples();  // show some interesting examples to understand how ST works
 
+
+// Struct to store type information for functions
+#include "types.h"
+struct type_info {
+public:
+	// Give Ty_Function(Ty_ty return_type, Ty_fieldList(Ty_ty type, Ty_fieldList()));
+
+	type_info(Ty_ty the_type_of_function);
+	Ty_ty type_of_function;
+};
+
+ST<type_info> get_tiger_lib();
+
+
+
 #include "ST.t"
 
 #endif

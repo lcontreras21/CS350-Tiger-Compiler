@@ -1,6 +1,7 @@
 #include "util.h"
 #include "AST.h"
 #include "errormsg.h"
+#include "ST.h"
 //#include "typecheck.h"
 
 //
@@ -74,6 +75,10 @@ Have ** on their name
 
 */
 
+
+// Get Tiger Standard Library to use in typechecking
+ST<type_info> tiger_library = get_tiger_lib();
+
 Ty_ty AST_node_::typecheck() {
 	EM_error("Typecheck on node not yet having typecheck method");
 	return Ty_Error();
@@ -113,11 +118,48 @@ Ty_ty A_opExp_::typecheck() {
 
 }
 
-Ty_ty A_callExp_::typecheck() {
-	// Must check that types work in args and body of function
-	// Then return that type
-	// TODO: Deal with later when implemented tiger standard library
-	return Ty_Void();
+Ty_ty A_callExp_::typecheck() {	
+	// have name _func and args _args
+	A_expList args_exps = _args;
+	// Look up name in ST tiger_library to get args as Ty_fieldList and iterate through to check if all are correct type
+	
+	// First Check if _func is in symbol table is there	
+	if (not is_name_there(_func, tiger_library)) {
+		EM_error("Function " + str(_func) + " is not in Tiger Standard Library. Define or check again");
+	   return Ty_Error();
+	}
+	// Get Ty_Function	
+	// My defined struct to store info
+	type_info func_struct = lookup(_func, tiger_library);
+	// Get Ty_Function
+	Ty_ty func_type_info = func_struct.type_of_function;
+	// Get return type of function
+	Ty_ty return_type = func_type_info->u.function.return_type;
+	// Get types of args in Ty_fieldList_ struct
+	Ty_fieldList arg_types = func_type_info->u.function.parameter_types;
+	// Simple Base case, if both are 0
+	if (arg_types == 0 and args_exps == 0) {
+		return return_type;
+	}
+	// Iterate through arg_types and args_exps (A_expList _head _tail)
+	int arg_counter = 1;
+	while (args_exps != 0) {
+		// Base case if too little args in args_exps
+		if (arg_types == 0) {
+			EM_error("Function " + str(_func) + " has extra arguments. Please Check");
+			return Ty_Error(); 
+		}
+		// Check if types are the same
+		if (args_exps->_head->typecheck() != arg_types->head->ty) {
+		   	EM_error("Arg " + std::to_string(arg_counter) + " type does not match");
+			return Ty_Error();
+		} 
+		arg_types = arg_types->tail;
+		args_exps = args_exps->_tail;
+		arg_counter++;
+	}
+	// If made it this far, then all types check out
+	return return_type;
 }
 
 Ty_ty A_expList_::func_typecheck(int n) {
@@ -136,5 +178,33 @@ Ty_ty A_expList_::func_typecheck(int n) {
 }
 
 Ty_ty A_ifExp_::typecheck() {
-x
+	// exp1 is typed as an integer, exp2 and exp3 must have the same type which will be the type of the entire structure. The resulting type cannot be that of nil. 
+	// if Test is type bool that is also allowed, since it evaluates to nonzero or zero
+	// First check if the test is type int
+	if (_test->typecheck() != Ty_Int()) {
+		if (_test->typecheck() != Ty_Bool()) {
+			EM_error("Type of test expression must be Ty_Int()");
+			return Ty_Error();
+		}
+	} 
+	// Then check if it is an IF-THEN-ELSE versus IF-THEN
+	if (_else_or_null != 0) {
+		// In IF-THEN-ELSE, both then and else must be the same type,
+	    // 	and return that type
+		if (_then->typecheck() == _else_or_null->typecheck()) {
+			return _then->typecheck();
+		} else {
+			EM_error("Type of then and else statement must be the same");
+			return Ty_Error();
+		}
+	} else {
+		// In IF-THEN, the then must be void, and return void
+		if (_then->typecheck() != Ty_Void()) {
+			EM_error("IF-THEN statement must have THEN statement be void");
+			return Ty_Error();
+		} else {
+			return Ty_Void();
+		}
+	}
 }
+

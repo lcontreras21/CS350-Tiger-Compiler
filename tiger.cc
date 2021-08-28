@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 
 			if (! EM_recorded_any_errors()) {
 				// Typecheck first
-				driver.AST->typecheck();
+				Ty_ty x = driver.AST->typecheck();
 
 				String code = driver.AST->HERA_code();
 				if (! EM_recorded_any_errors()) {

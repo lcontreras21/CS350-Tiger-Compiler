@@ -52,18 +52,6 @@ int A_callExp_::init_result_reg() {
 		return max_reg;
 	}
 }
-/*
-int A_expList_::init_result_reg() {
-	 Have _head and _tail 
-	 Return Max register in sequence,
-	 If equal, return 
-	 
-	if (_tail == 0) {
-		return _head->result_reg();
-	} else {
-		return std::max(_head->result_reg(), _tail->init_result_reg());
-	}
-}
 
 int A_ifExp_::init_result_reg() {
 	// Sethi-Ullman with three instead of two --- ish
@@ -71,11 +59,10 @@ int A_ifExp_::init_result_reg() {
 	if (_else_or_null == 0) {
 		return std::max(_test->init_result_reg(), _then->init_result_reg());
 	} else {
-		return std::max(_test->init_result_reg(), std::max(_then->init_result_reg(), _else_or_null->init_result_reg());
+		return std::max(_test->init_result_reg(), std::max(_then->init_result_reg(), _else_or_null->init_result_reg()));
 	}
 }
 
-*/
 int A_leafExp_::init_result_reg() {
    return min_reg;
 } 

@@ -61,7 +61,9 @@ AST_node_ *A_root_::parent()
 void A_callExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root)
 {
 	stored_parent = my_parent_or_null_if_i_am_the_root;
-	_args->set_parent_pointers_for_me_and_my_descendants(this);
+	if (_args != 0) {
+		_args->set_parent_pointers_for_me_and_my_descendants(this);
+	}
 }
 
 
@@ -73,5 +75,15 @@ void A_expList_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_par
 	if (_tail != 0)
 	{
 		_tail->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
+
+void A_ifExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_test->set_parent_pointers_for_me_and_my_descendants(this);	
+	_then->set_parent_pointers_for_me_and_my_descendants(this);	
+	if (_else_or_null != 0) {
+		_else_or_null->set_parent_pointers_for_me_and_my_descendants(this);	
 	}
 }

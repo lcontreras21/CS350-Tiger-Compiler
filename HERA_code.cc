@@ -101,8 +101,11 @@ string A_callExp_::HERA_code()
 	/* Need custom function to do _expList_ iteration and hera code
 	   generation. expList used here and in seqExp so have to
 	   differentiate */
-	string my_code = _args->func_HERA_code(0) + 
-					 indent_math + "CALL(FP_alt, " + 
+	string my_code;
+	if (_args != 0) {
+		my_code = _args->func_HERA_code(0);
+	}
+	my_code = my_code + indent_math + "CALL(FP_alt, " + 
 					 Symbol_to_string(_func) + ")\n"; 
 	return my_code;
 }
@@ -119,7 +122,7 @@ string A_boolExp_::HERA_code()
 {
 	if (value) {
 		return indent_math + "SET(" + result_reg_s() + ", 1)\n";
-	else {
+	} else {
 		return indent_math + "SET(" + result_reg_s() + ", 0)\n";
 	}  
 }
@@ -127,11 +130,11 @@ string A_boolExp_::HERA_code()
 string A_ifExp_::HERA_code()
 {	
 	// A few string vars for label creation
-	this_counter = if_counter;
-	string else_label = "else label " + std::to_string(this_counter);
+	int this_if_counter = if_counter;
+	string else_label = "else_label_" + std::to_string(this_if_counter);
 	string end_label;
 	if (_else_or_null != 0) {
-		end_label = "end of if/then/else " + std::to_string(this_counter)
+		end_label = "end_of_if_then_else_" + std::to_string(this_if_counter);
 	}
 	// _test is either an int or 0. If int do _then, else do _else_or_null
 	// First do check
@@ -141,12 +144,12 @@ string A_ifExp_::HERA_code()
 			+ indent_math + "BZ(" + else_label + ")\n"
 			+ _then->HERA_code();
 	if (_else_or_null != 0) {
-		my_code = indent_math + "BR(" + end_label + ")\n"
+		my_code = my_code + indent_math + "BR(" + end_label + ")\n"
 				+ indent_math + "LABEL(" + else_label + ")\n"
 				+ _else_or_null->HERA_code()
 				+ indent_math + "LABEL(" + end_label + ")\n";	
 	} else {
-		my_code = indent_math + "LABEL(" + else_label + ")\n";
+		my_code = my_code + indent_math + "LABEL(" + else_label + ")\n";
 	}
 	if_counter = if_counter +1;
 	return my_code;

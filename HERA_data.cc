@@ -39,7 +39,11 @@ string A_expList_::func_HERA_data() {
 }
 
 string A_callExp_::HERA_data() {
-	return _args->func_HERA_data();
+	if (_args != 0) {
+		return _args->func_HERA_data();
+	} else {
+		return "";
+	}
 }
 
 string A_ifExp_::HERA_data() {

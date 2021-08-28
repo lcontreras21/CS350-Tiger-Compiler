@@ -164,16 +164,16 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "("					{ loc.step(); return yy::tigerParser::make_LPAREN(loc);			}
 ")"					{ loc.step(); return yy::tigerParser::make_RPAREN(loc);			} 
 ","					{ loc.step(); return yy::tigerParser::make_COLON(loc);			}
-{identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
-{integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
-   /* textToInt is defined above */
-   /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
-   }
 "if"				{ loc.step(); return yy::tigerParser::make_IF(loc);			}
 "then"				{ loc.step(); return yy::tigerParser::make_THEN(loc);			}
 "else"				{ loc.step(); return yy::tigerParser::make_ELSE(loc);			}
 "true"				{ loc.step(); return yy::tigerParser::make_TRUE(loc);			}
 "false"				{ loc.step(); return yy::tigerParser::make_FALSE(loc);			}
+{identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
+{integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
+   /* textToInt is defined above */
+   /* make_INT, make_END from example at https://www.gnu.org/software/bison/manual/html_node/Complete-Symbols.html#Complete-Symbols */	  
+					}
 
 "\""				{ /* Initial quote of string */ 
 					  to_return = "";

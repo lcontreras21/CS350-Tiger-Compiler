@@ -1,7 +1,84 @@
 #include <logic.h>
 #include "errormsg.h"
 #include "ST.h"
+#include "types.h"
 
+// Tiger Standard Library
+type_info::type_info(Ty_ty the_type_of_function) {
+	type_of_function = the_type_of_function;
+};
+typedef ST<type_info> lib_func;
+
+ST<type_info> tiger_lib = FuseOneScope(
+				lib_func(to_Symbol("ord"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+				FuseOneScope(
+					lib_func(to_Symbol("chr"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+					FuseOneScope(
+						lib_func(to_Symbol("size"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+						FuseOneScope(
+							lib_func(to_Symbol("substring"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("first"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("n"), Ty_Int()), 0)))))),
+							FuseOneScope(
+								lib_func(to_Symbol("concat"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
+								FuseOneScope(
+									lib_func(to_Symbol("tstrcmp"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
+									FuseOneScope(
+										lib_func(to_Symbol("div"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
+										FuseOneScope(
+											lib_func(to_Symbol("mod"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
+											FuseOneScope(
+												lib_func(to_Symbol("getchar_ord"), type_info(Ty_Function(Ty_Int(), 0))),
+												FuseOneScope(
+													lib_func(to_Symbol("putchar_ord"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+													FuseOneScope(
+														lib_func(to_Symbol("flush"), type_info(Ty_Function(Ty_Void(), 0))),
+														FuseOneScope(
+															lib_func(to_Symbol("printint"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+															FuseOneScope(
+																lib_func(to_Symbol("printbool"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("b"), Ty_Bool()), 0)))),
+																FuseOneScope(
+																	lib_func(to_Symbol("print"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+																	FuseOneScope(
+																		lib_func(to_Symbol("println"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+																		FuseOneScope(
+																			lib_func(to_Symbol("getchar"), type_info(Ty_Function(Ty_String(), 0))),
+																			FuseOneScope(
+																				lib_func(to_Symbol("ungetchar"), type_info(Ty_Function(Ty_Void(), 0))),
+																				FuseOneScope(
+																					lib_func(to_Symbol("getline"), type_info(Ty_Function(Ty_String(), 0))),
+																					FuseOneScope(
+																						lib_func(to_Symbol("getint"), type_info(Ty_Function(Ty_Int(), 0))),
+																						FuseOneScope(
+																							lib_func(to_Symbol("exit"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+																							FuseOneScope(
+																								lib_func(to_Symbol("malloc"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("n_cells"), Ty_Int()), 0)))),
+																								lib_func(to_Symbol("free"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("address"), Ty_Int()), 0))))
+																							)
+																						)
+																					)
+																				)
+																			)
+																		)
+																	)
+																)
+															)
+														)
+													)
+												)
+											)
+										)
+									)
+								)
+							)
+						)
+					)
+				)
+			);
+
+ST<type_info> get_tiger_lib() {
+	return tiger_lib;
+}
+
+// Examples BELOW
 
 /* Note that this is just some examples, since most C++ compilers require that the implementation of template functions be #included and thus I put it in ST.t */
 
