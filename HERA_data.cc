@@ -13,14 +13,13 @@ string AST_node_::HERA_data()  // Default used during development; could be remo
 }
 
 string A_root_::HERA_data() {
-	std::cout << " HERA_data not written for node" << std::endl;
 	return  main_expr->HERA_data(); 
 }
 
 string A_stringExp_::HERA_data() {
-	this->count = string_counter; 
-	string this_str_label = "string_" + std::to_string(string_counter);
+	count = string_counter; 
 	string_counter++;
+	string this_str_label = "string_" + std::to_string(count);
 	string output = "DLABEL(" + this_str_label + ")\n" + 
 					indent_math + "LP_STRING(" + value + ")\n";
 	return output; 
@@ -52,4 +51,19 @@ string A_ifExp_::HERA_data() {
 		output = output + _else_or_null->HERA_data();
 	}
 	return output;
+}
+
+string A_seqExp_::HERA_data() {
+	// Iterate through A_expList _seq and add HERA_datas
+	A_expList seq = _seq;
+	string my_code = "";
+	if (seq == 0) {
+		return my_code;
+	} else {
+		while (seq != 0) {
+			my_code = my_code + seq->_head->HERA_data();
+			seq = seq->_tail;
+		}
+		return my_code;
+	}
 }

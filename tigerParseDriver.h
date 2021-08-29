@@ -12,6 +12,12 @@ struct expListAttrs {
 		Ty_ty type;
 		A_expList AST;
 };
+
+struct seqExpAttrs {
+		Ty_ty type;
+		A_expList AST;
+};
+
 #include "tiger-grammar.tab.hh"
 
 

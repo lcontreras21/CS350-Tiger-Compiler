@@ -56,6 +56,7 @@ class tigerParseDriver;
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
 %type <expListAttrs> expList
+%type <seqExpAttrs> seqExp
 
 
 // The line below means our grammar must not have conflicts
@@ -97,9 +98,6 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| MINUS exp[exp1] %prec UMINUS			{ $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
 								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
 								}
-	| LPAREN exp[exp1] RPAREN	{ $$.AST = $exp1.AST; 
-								}
-	
 	| ID[id1] LPAREN expList[list1] RPAREN[a]{ $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
 								  EM_debug("Got function call", $$.AST->pos()); 
 								}
@@ -116,6 +114,9 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| IF[if] exp[exp1] THEN exp[exp2] {
 								  $$.AST = A_IfExp(Position::range(Position::fromLex(@if), $exp2.AST->pos()), $exp1.AST, $exp2.AST, 0);
 								  EM_debug("Got if/then/ expression", $$.AST->pos());
+								}
+	| LPAREN[lp] seqExp[seqExp1] RPAREN[rp]	  { $$.AST = A_SeqExp(Position::range(Position::fromLex(@lp), Position::fromLex(@rp)), $seqExp1.AST); 
+									    EM_debug("Got sequence expression", $$.AST->pos());
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.
@@ -132,6 +133,16 @@ expList: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
 										  EM_debug("Got end of expList  expression.", $$.AST->pos());
 										}
 	| exp[exp1] COLON expList[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
+										  EM_debug("Got expList  expression.", $$.AST->pos());
+										} 
+	|									{ $$.AST = 0;
+										  EM_debug("Got empty expList  expression");
+										}
+	;
+seqExp: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
+										  EM_debug("Got end of expList  expression.", $$.AST->pos());
+										}
+	| exp[exp1] SEMICOLON seqExp[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
 										  EM_debug("Got expList  expression.", $$.AST->pos());
 										} 
 	|									{ $$.AST = 0;

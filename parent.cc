@@ -87,3 +87,10 @@ void A_ifExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_paren
 		_else_or_null->set_parent_pointers_for_me_and_my_descendants(this);	
 	}
 }
+
+void A_seqExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	if (_seq != 0) {
+		_seq->set_parent_pointers_for_me_and_my_descendants(this);
+	}
+}

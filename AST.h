@@ -457,6 +457,11 @@ class A_seqExp_ : public A_controlExp_ {
 public:
 	A_seqExp_(A_pos pos, A_expList seq);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	virtual int init_result_reg();
+	Ty_ty typecheck();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_expList _seq;
 };

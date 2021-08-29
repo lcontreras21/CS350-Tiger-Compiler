@@ -67,6 +67,22 @@ int A_leafExp_::init_result_reg() {
    return min_reg;
 } 
 
+int A_seqExp_::init_result_reg() {
+	// Return reg of the exp with highest reg number, iterate through
+	int max_reg = -1;
+	A_expList seq = _seq;
+	if (seq == 0) {
+		return max_reg;
+	} else {
+		while (seq != 0) {
+			int curr_reg = seq->_head->init_result_reg();
+			max_reg = std::max(max_reg, curr_reg);
+			seq = seq->_tail;
+		}
+		return max_reg;
+	}
+}
+
 
 /* Old Code for naive register allocation
 static int next_unique_number = 1;

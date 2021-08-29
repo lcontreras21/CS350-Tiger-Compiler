@@ -18,6 +18,7 @@ const string indent_math = "    ";  // might want to use something different for
 	A_stringExp_
 	A_boolExp_
 	A_ifExp_
+	A_seqExp_
 
 */
 
@@ -30,7 +31,7 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 
 string A_root_::HERA_code()
 {
-	return main_expr->HERA_data() + "\nCBON()\n\n" + main_expr->HERA_code();  // was SETCB for HERA 2.3
+	return "\nCBON()\n\n" + main_expr->HERA_code();  // was SETCB for HERA 2.3
 }
 
 
@@ -113,7 +114,7 @@ string A_callExp_::HERA_code()
 string A_stringExp_::HERA_code()
 {
 	/* Add preamble string memory allocation */
-	string this_str_label = "string_" + std::to_string(this->count);
+	string this_str_label = "string_" + std::to_string(count);
 						 	 
 	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
 }
@@ -131,6 +132,7 @@ string A_ifExp_::HERA_code()
 {	
 	// A few string vars for label creation
 	int this_if_counter = if_counter;
+	if_counter = if_counter +1;
 	string else_label = "else_label_" + std::to_string(this_if_counter);
 	string end_label;
 	if (_else_or_null != 0) {
@@ -151,6 +153,25 @@ string A_ifExp_::HERA_code()
 	} else {
 		my_code = my_code + indent_math + "LABEL(" + else_label + ")\n";
 	}
-	if_counter = if_counter +1;
 	return my_code;
+}
+
+string A_seqExp_::HERA_code() {
+	// Iterate through A_expList _seq and add HERA_codes
+	A_expList seq = _seq;
+	string my_code = "";
+	string reg = "";
+	if (seq == 0) {
+		return my_code;
+	} else {
+		while (seq != 0) {
+			my_code = my_code + seq->_head->HERA_code();
+			reg = seq->_head->result_reg_s();
+			seq = seq->_tail;
+		}
+		// Move last exp to reg of seq
+		my_code = my_code + indent_math + "MOVE(" + result_reg_s() + ", " + reg + ")\n";
+		return my_code;
+
+	}
 }

@@ -47,7 +47,7 @@ Have ** on their name
 				A_whileExp_
 				A_forExp_
 				A_breakExp_
-				A_seqExp_
+				A_seqExp_**
 		A_var_
 			A_simpleVar_
 			A_fieldVar_
@@ -208,3 +208,17 @@ Ty_ty A_ifExp_::typecheck() {
 	}
 }
 
+Ty_ty A_seqExp_::typecheck() {
+	// return Ty_Void if _seq is 0, else return type of last item
+	Ty_ty return_type = Ty_Void();
+	A_expList seq = _seq;
+	if (seq == 0) {
+		return return_type;
+	} else {
+		while (seq != 0) {
+			return_type = seq->_head->typecheck();
+			seq = seq->_tail;
+		}
+		return return_type;
+	}
+}
