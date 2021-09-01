@@ -367,8 +367,8 @@ class A_opExp_ : public A_exp_ {
 public:
 	A_opExp_(A_pos pos, A_oper oper, A_exp left, A_exp right);
 	virtual string print_rep(int indent, bool with_attributes);
-	virtual string HERA_data();
 	virtual string HERA_code();
+	virtual string HERA_data();
 	Ty_ty typecheck();
 	virtual int init_result_reg();
 

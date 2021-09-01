@@ -2,6 +2,7 @@
 
 // IfExp Counter for branching expressions
 int if_counter = 0;
+int comp_counter = 0;
 
 
 /*
@@ -41,7 +42,25 @@ string A_intExp_::HERA_code()
 	return indent_math + "SET(" + result_reg_s() + ", " + str(value) +")\n";
 }
 
-
+static string HERA_comp_op(A_oper op) {
+	switch (op) {
+	case A_eqOp:
+		return "BZ";
+	case A_neqOp:
+		return "BNZ";
+	case A_ltOp:
+		return "BL";
+	case A_leOp:
+		return "BLE";
+	case A_gtOp:
+		return "BG";
+	case A_geOp:
+		return "BGE";
+	default:
+		EM_error("Unhandled case in HERA_comp_op");
+		return "0";
+	}
+}
 
 static string HERA_math_op(Position p, A_oper op) // needed for opExp
 {
@@ -55,8 +74,12 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 	case A_divideOp:
 		return "DIV";
 	default:
-		EM_error("Unhandled case in HERA_math_op", false, p);
-		return "Oops_unhandled_hera_math_op";
+		if (op == A_eqOp || op == A_neqOp || op == A_ltOp || op == A_leOp || op == A_gtOp || op == A_geOp) {
+			return "1";
+		} else {
+			EM_error("Unhandled case in HERA_math_op", false, p);
+			return "0";
+		}
 	}
 }
 string A_opExp_::HERA_code()
@@ -64,22 +87,60 @@ string A_opExp_::HERA_code()
 	/* Modify to follow S-U algorithm
 	   child with more registers should be first */
 	int left_reg = _left->result_reg();
+	string left_reg_s = _left->result_reg_s();
 	int right_reg = _right->result_reg();
+	string right_reg_s = _right->result_reg_s();
+	
+	string HERA_op = HERA_math_op(pos(), _oper);
+	string output_reg;
+	bool comp = false;
+	if (HERA_op == "1") {
+		comp = true;
+		HERA_op = HERA_comp_op(_oper);
+	}
 	string output;
+	// Handle Math operations
 	if (left_reg == right_reg) {
 		/* Handle case when they are equal */ 
 		output = _left->HERA_code() + 
-				 indent_math + "MOVE(R" + std::to_string(left_reg+1) + ", " + _left->result_reg_s() + ")\n" + 
-				 _right->HERA_code() +
-				 indent_math + HERA_math_op(pos(), _oper) + "(R" + std::to_string(left_reg+1) + ", " + "R" + std::to_string(left_reg+1) + ", " + _right->result_reg_s() + ")\n";
+				 indent_math + "MOVE(R" + std::to_string(left_reg+1) + ", " + left_reg_s + ")\n" + 
+				 _right->HERA_code();
+		output_reg = "R" + std::to_string(left_reg+1);
+		left_reg_s = output_reg;
+		if (not comp) {
+			output = output + indent_math + HERA_op + "(R" + std::to_string(left_reg+1) + ", " + "R" + std::to_string(left_reg+1) + ", " + right_reg_s + ")\n";
+		}
 	} else if (left_reg > right_reg) {
 		/* Handle case when left is greater */ 
-		output = _left->HERA_code() + _right->HERA_code() +
-				 indent_math + HERA_math_op(pos(), _oper) + "(" + _left->result_reg_s() + ", " + _left->result_reg_s() + ", " + _right->result_reg_s() + ")\n";
+		output = _left->HERA_code() + _right->HERA_code();
+		output_reg = left_reg_s;
+		if (not comp) {
+			output = output + indent_math + HERA_op + "(" + left_reg_s + ", " + left_reg_s + ", " + right_reg_s + ")\n";
+		}
 	} else if (left_reg < right_reg) {
 		/* Handle case when right is greater */ 
-		output = _right->HERA_code() + _left->HERA_code() +
-				 indent_math + HERA_math_op(pos(), _oper) + "(" + _right->result_reg_s() + ", " + _left->result_reg_s() + ", " + _right->result_reg_s() + ")\n";
+		output = _right->HERA_code() + _left->HERA_code();
+		output_reg = right_reg_s;
+		if (not comp) {
+			output = output + indent_math + HERA_op + "(" + right_reg_s + ", " + left_reg_s + ", " + right_reg_s + ")\n";
+		}
+	}
+	if (comp) {
+		// Handle Comparison Operations
+		// A few string vars for label creation
+		int this_comp_counter = comp_counter;
+		comp_counter++;
+		string label = "else_comp_" + std::to_string(this_comp_counter);
+		string end_label = "end_of_comp_" + std::to_string(this_comp_counter);
+		// Subtract both 
+		// Sub by zero to check if there is a non-zero into for true or 0 for false
+		output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n" 
+				+ indent_math + HERA_op + "(" + label + ")\n"
+				+ indent_math + "SET(" + output_reg + ", 0)\n"  
+				+ indent_math + "BR(" + end_label + ")\n"
+				+ indent_math + "LABEL(" + label + ")\n"
+				+ indent_math + "SET(" + output_reg + ", 1)\n"
+				+ indent_math + "LABEL(" + end_label + ")\n";	
 	}
 	return output;
 }
@@ -145,11 +206,17 @@ string A_ifExp_::HERA_code()
 	my_code = my_code + indent_math + "CMP(" + _test->result_reg_s() + ", R0)\n" 
 			+ indent_math + "BZ(" + else_label + ")\n"
 			+ _then->HERA_code();
+	if (_then->result_reg() != this->result_reg()) {
+		my_code = my_code + indent_math + "MOVE(" + this->result_reg_s() + ", " + _then->result_reg_s() + ")\n";
+	}
 	if (_else_or_null != 0) {
 		my_code = my_code + indent_math + "BR(" + end_label + ")\n"
 				+ indent_math + "LABEL(" + else_label + ")\n"
-				+ _else_or_null->HERA_code()
-				+ indent_math + "LABEL(" + end_label + ")\n";	
+				+ _else_or_null->HERA_code();
+		if (_else_or_null->result_reg() != this->result_reg()) {
+			my_code = my_code + indent_math + "MOVE(" + this->result_reg_s() + ", " + _else_or_null->result_reg_s() + ")\n";
+		}
+		my_code = my_code + indent_math + "LABEL(" + end_label + ")\n";	
 	} else {
 		my_code = my_code + indent_math + "LABEL(" + else_label + ")\n";
 	}

@@ -100,22 +100,41 @@ Ty_ty A_stringExp_::typecheck() {
 	return Ty_String();
 }
 
+static Ty_ty check_return_type(A_oper op) {
+	if (op == A_plusOp || op == A_minusOp || op == A_timesOp) {
+		return Ty_Int();
+	} else if (op == A_eqOp || op == A_neqOp || op == A_leOp || op == A_ltOp
+			|| op == A_geOp || op == A_gtOp) {
+		return Ty_Bool();
+	} else {
+		return Ty_Error();
+	}
+}
+
 Ty_ty A_opExp_::typecheck() {
 	// Check types on _left and _right
 	string error = "";
-	if (_left->typecheck() != Ty_Int()) {
-		error = error + "opExp has type error on left expression\n";
+	Ty_ty type_to_check = Ty_Int();
+	if (_left->typecheck() != type_to_check) {
+		if (_left->typecheck() != Ty_Bool()) { 
+			error = error + "opExp has type error on left expression\n";
+		} else {
+			EM_warning("Boolean expression found on the left");
+		}
 	}
-	if (_right->typecheck() != Ty_Int()) {
-		error = error + "opExp has type error on right  expression\n";
+	if (_right->typecheck() != type_to_check) {
+		if (_right->typecheck() != Ty_Bool()) { 
+			error = error + "opExp has type error on right expression\n";
+		} else {
+			EM_warning("Boolean expression found on the right");
+		}
 	}
 	if (error != "") {
 		EM_error(error);
 		return Ty_Error();
 	} else {
-		return Ty_Int();
+		return check_return_type(_oper);
 	}
-
 }
 
 Ty_ty A_callExp_::typecheck() {	

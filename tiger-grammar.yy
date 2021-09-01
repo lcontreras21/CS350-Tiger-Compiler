@@ -51,7 +51,7 @@ class tigerParseDriver;
 %nonassoc ELSE 
 %left PLUS MINUS 
 %left TIMES DIVIDE 
-%left UMINUS
+%left UMINUS NEGATION
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
@@ -94,6 +94,41 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| exp[exp1] DIVIDE exp[exp2]{ $$.AST = A_CallExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), to_Symbol("DIV"), A_ExpList($exp1.AST, A_ExpList($exp2.AST, 0)));
 
 								  EM_debug("Got divide expression.", $$.AST->pos());
+								}
+	| exp[exp1] LT exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_ltOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got less than expression.", $$.AST->pos());
+								}
+	| exp[exp1] LE exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_leOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got less than or equal to expression", $$.AST->pos());
+								}
+	| exp[exp1] GT exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_gtOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got greater than expression.", $$.AST->pos());
+								}
+	| exp[exp1] GE exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_geOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got greater than or equal to expression", $$.AST->pos());
+								}
+	| exp[exp1] EQ exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_eqOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got equal to expression.", $$.AST->pos());
+								}
+	| exp[exp1] NEQ exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
+												   A_neqOp, $exp1.AST, $exp2.AST);
+								  EM_debug("Got not equal to expression", $$.AST->pos());
+								}
+	| exp[exp1] AND exp[exp2]	{ $$.AST = A_IfExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST,  $exp2.AST, A_BoolExp($exp2.AST->pos(), false));
+								  // if e1 then e2 else 0
+								  EM_debug("Got AND expression", $$.AST->pos());
+								}
+	| exp[exp1] OR exp[exp2]	{ $$.AST = A_IfExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST, A_BoolExp($exp2.AST->pos(), true), $exp2.AST);
+								  // if e1 then 1 else e2
+								  EM_debug("Got OR expression.", $$.AST->pos());
+								}
+	| NOT exp[exp1]	%prec NEGATION	{ $$.AST = A_IfExp($exp1.AST->pos(), $exp1.AST, A_BoolExp($exp1.AST->pos(), false), A_BoolExp($exp1.AST->pos(), true));
+									  EM_debug("Got NOT expression", $$.AST->pos());
 								}
 	| MINUS exp[exp1] %prec UMINUS			{ $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
 								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
