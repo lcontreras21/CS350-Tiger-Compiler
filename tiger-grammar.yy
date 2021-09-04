@@ -52,6 +52,7 @@ class tigerParseDriver;
 %left PLUS MINUS 
 %left TIMES DIVIDE 
 %left UMINUS NEGATION
+%nonassoc DO
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
@@ -152,6 +153,12 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								}
 	| LPAREN[lp] seqExp[seqExp1] RPAREN[rp]	  { $$.AST = A_SeqExp(Position::range(Position::fromLex(@lp), Position::fromLex(@rp)), $seqExp1.AST); 
 									    EM_debug("Got sequence expression", $$.AST->pos());
+								}
+	| WHILE exp[exp1] DO exp[exp2]	{ $$.AST = A_WhileExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST, $exp2.AST);
+									  EM_debug("Got while expression", $$.AST->pos());
+								} 
+	| BREAK[br]						{ $$.AST = A_BreakExp(Position::fromLex(@br));
+									  EM_debug("Got break expression", $$.AST->pos());
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.

@@ -51,15 +51,10 @@ inline A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_
 {
 	return new A_ifExp_(pos, test, then, else_or_0_pointer_for_no_else);
 }
-/*
-UNCOMMENT THE FUNCTION BELOW TO HAVE A_WhileExp THATS COMPATIBLE WITH APPEL's BOOK
-Note that you'll also need to have the A_whileExp_ class, of course...
-
 inline A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body)
 {
 	return new A_whileExp_(pos, test, body);
 }
-*/
 inline A_exp A_ForExp(A_pos pos, Symbol var, A_exp lo, A_exp hi, A_exp body)
 {
 	return new A_forExp_(pos, var, lo, hi, body);

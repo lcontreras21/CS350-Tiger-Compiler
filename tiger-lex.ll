@@ -180,6 +180,9 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "&"					{ loc.step(); return yy::tigerParser::make_AND(loc);			}
 "|"					{ loc.step(); return yy::tigerParser::make_OR(loc);				}
 "!"					{ loc.step(); return yy::tigerParser::make_NOT(loc);			}
+"while"				{ loc.step(); return yy::tigerParser::make_WHILE(loc);			}
+"break"				{ loc.step(); return yy::tigerParser::make_BREAK(loc);			}
+"do"				{ loc.step(); return yy::tigerParser::make_DO(loc);				}
 {identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
 {integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */

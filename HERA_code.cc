@@ -3,6 +3,7 @@
 // IfExp Counter for branching expressions
 int if_counter = 0;
 int comp_counter = 0;
+int while_counter = 0;
 
 
 /*
@@ -20,7 +21,8 @@ const string indent_math = "    ";  // might want to use something different for
 	A_boolExp_
 	A_ifExp_
 	A_seqExp_
-
+	A_whileExp_
+	A_breakExp_
 */
 
 string AST_node_::HERA_code()  // Default used during development; could be removed in final version
@@ -167,8 +169,8 @@ string A_callExp_::HERA_code()
 	if (_args != 0) {
 		my_code = _args->func_HERA_code(0);
 	}
-	my_code = my_code + indent_math + "CALL(FP_alt, " + 
-					 Symbol_to_string(_func) + ")\n"; 
+	my_code = my_code + indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
+			+ indent_math + "MOVE(" + this->result_reg_s() + ", R1)\n"; 
 	return my_code;
 }
 
@@ -241,4 +243,29 @@ string A_seqExp_::HERA_code() {
 		return my_code;
 
 	}
+}
+
+string A_whileExp_::HERA_code() {
+	// Evaluate _test
+	// Check if zero
+	// If it is, branch to end
+	// Else evaluate _body and branch to beginning of while
+	int this_while_counter = while_counter;
+	my_num = this_while_counter;
+	while_counter++;
+	string start_label = "while_start_" + std::to_string(this_while_counter);
+	string end_label = "while_end_" + std::to_string(this_while_counter);
+	string my_code = indent_math + "LABEL(" + start_label + ")\n"
+			+ _test->HERA_code()
+			+ indent_math + "CMP(" + _test->result_reg_s() + ", R0)\n" 
+			+ indent_math + "BZ(" + end_label + ")\n"
+			+ _body->HERA_code()
+			+ indent_math + "BR(" + start_label + ")\n"
+			+ indent_math + "LABEL(" + end_label + ")\n";
+	return my_code;
+}
+
+string A_breakExp_::HERA_code() {
+	int earliest_while = am_i_in_while();
+	return indent_math + "BR(while_end_" + std::to_string(earliest_while) + ")\n";
 }

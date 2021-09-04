@@ -315,6 +315,10 @@ A_ifExp_::A_ifExp_(A_pos pos, A_exp test, A_exp then, A_exp else_or_0_pointer_fo
 	precondition(test != 0 && then != 0);
 }
 
+A_whileExp_::A_whileExp_(A_pos pos, A_exp test, A_exp body) : A_controlExp_(pos), _test(test), _body(body)
+{
+	precondition(test != 0 && body != 0);
+}
 
 A_forExp_::A_forExp_(A_pos pos, Symbol var, A_exp lo, A_exp hi, A_exp body) :  A_controlExp_(pos), _var(var), _lo(lo), _hi(hi), _body(body)
 {
@@ -328,8 +332,6 @@ A_breakExp_::A_breakExp_(A_pos pos) :  A_controlExp_(pos)
 A_seqExp_::A_seqExp_(A_pos pos, A_expList seq) :  A_controlExp_(pos), _seq(seq)
 {
 }
-
-
 
 A_var_::A_var_(A_pos p) : AST_node_(p)
 {

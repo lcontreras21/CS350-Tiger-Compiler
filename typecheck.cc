@@ -241,3 +241,23 @@ Ty_ty A_seqExp_::typecheck() {
 		return return_type;
 	}
 }
+
+Ty_ty A_whileExp_::typecheck() {
+	// _test must be type int
+	// _body must be type void
+	if (_test->typecheck() == Ty_Int() || _test->typecheck() == Ty_Bool()) {
+		if (_body->typecheck() == Ty_Void()) {
+			return Ty_Void();
+		} else {
+			EM_error("WHILE expression body must be void");
+			return Ty_Error();
+		}
+	} else {
+		EM_error("WHILE expression test must be type int");
+		return Ty_Error();
+	}
+}
+
+Ty_ty A_breakExp_::typecheck() {
+	return Ty_Void();
+}

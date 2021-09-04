@@ -223,6 +223,7 @@ public:
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
 	virtual string HERA_data();  // defaults to empty string 
 	virtual Ty_ty typecheck();	// Perform typechecking all along the tree 
+	virtual int am_i_in_while();
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -267,6 +268,7 @@ public:
 	string HERA_code();
 	string HERA_data();
 	Ty_ty typecheck();
+	int am_i_in_while();
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -433,6 +435,22 @@ private:
 	A_exp _else_or_null;
 };
 
+class A_whileExp_ : public A_controlExp_ {
+public:
+	A_whileExp_(A_pos pos, A_exp test, A_exp body);
+	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	virtual int init_result_reg();
+	Ty_ty typecheck();
+	virtual int am_i_in_while();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+private:
+	int my_num;
+	A_exp _test;
+	A_exp _body;
+};
+
 
 class A_forExp_ : public A_controlExp_ {
 public:
@@ -450,7 +468,11 @@ class A_breakExp_ : public A_controlExp_ {
 public:
 	A_breakExp_(A_pos p);
 	virtual string print_rep(int indent, bool with_attributes);
-
+	virtual string HERA_code();
+	virtual string HERA_data();
+	virtual int init_result_reg();
+	Ty_ty typecheck();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
 class A_seqExp_ : public A_controlExp_ {

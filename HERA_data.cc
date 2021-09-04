@@ -67,3 +67,11 @@ string A_seqExp_::HERA_data() {
 		return my_code;
 	}
 }
+
+string A_whileExp_::HERA_data() {
+	return _test->HERA_data() + _body->HERA_data();
+}
+
+string A_breakExp_::HERA_data() {
+	return "";
+}

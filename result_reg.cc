@@ -37,7 +37,7 @@ int A_callExp_::init_result_reg() {
 	 Iterate through each _head and check
 	 Can create pointer and go like that
 	 */
-	int max_reg = 0;
+	int max_reg = 4;
 	A_expList pointer = _args;
 	if (pointer == 0) {
 		return max_reg;
@@ -83,6 +83,13 @@ int A_seqExp_::init_result_reg() {
 	}
 }
 
+int A_whileExp_::init_result_reg() {
+	return std::max(_test->init_result_reg(), _body->init_result_reg());
+}
+
+int A_breakExp_::init_result_reg() {
+	return 0;
+}
 
 /* Old Code for naive register allocation
 static int next_unique_number = 1;
