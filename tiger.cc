@@ -174,8 +174,10 @@ int main(int argc, char **argv)
 			if (! EM_recorded_any_errors()) {
 				// Typecheck first
 				Ty_ty x = driver.AST->typecheck();
-				String code = driver.AST->HERA_data();
+				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
+				code = code + driver.AST->HERA_data();
 				code = code + driver.AST->HERA_code();
+				code = code + "\nHALT()\n\n #include <Tiger-stdlib-stack.hera>\n"; 
 				if (! EM_recorded_any_errors()) {
 					cout << code;
 					return 0; // no errors

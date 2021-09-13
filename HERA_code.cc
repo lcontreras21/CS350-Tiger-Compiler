@@ -1,10 +1,12 @@
 #include "AST.h"
+#include "ST.h"
 
 // IfExp Counter for branching expressions
 int if_counter = 0;
 int comp_counter = 0;
-int while_counter = 0;
-
+int loop_counter = 0;
+int SP_counter = 0;
+ST<var_info> var_library = ST<var_info>();
 
 /*
  * HERA_code methods
@@ -23,6 +25,9 @@ const string indent_math = "    ";  // might want to use something different for
 	A_seqExp_
 	A_whileExp_
 	A_breakExp_
+	A_forExp_
+	A_varExp_
+	A_simpleVar_
 */
 
 string AST_node_::HERA_code()  // Default used during development; could be removed in final version
@@ -147,9 +152,25 @@ string A_opExp_::HERA_code()
 	return output;
 }
 
-string A_expList_::func_HERA_code(int counter) {
-	/* Go through _head->code and move to R counter
-	   Then repeat with _tail */
+string A_callExp_::_args_HERA_code(int counter) {
+	// Using parameter on the stack version
+	// Go through expList and move SP counter
+	// Call HERA_code and store(reg, SP_counter, FP_alt)
+	string output = "";
+	A_expList args = _args;
+	while(args != 0) {
+		output = output + args->_head->HERA_code() 
+						+ indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(counter) + ", FP_alt)\n";
+		args = args->_tail;
+		counter++;
+	}
+	return output;
+	
+	//---------------------------------------
+
+	/* Code for parater as registers
+	// Go through _head->code and move to R counter
+	//   Then repeat with _tail 
 	counter++;
 	string output = _head->HERA_code() + 
 					indent_math + "MOVE(R" + std::to_string(counter) + ", " + _head->result_reg_s() + ")\n";
@@ -158,13 +179,36 @@ string A_expList_::func_HERA_code(int counter) {
 	} else {
 		return output + _tail->func_HERA_code(counter);
 	}
+	*/
 }
 
 string A_callExp_::HERA_code()
 {
-	/* Need custom function to do _expList_ iteration and hera code
-	   generation. expList used here and in seqExp so have to
-	   differentiate */
+	// Using parameter on the stack version
+	
+	// Check if func has return
+	string return_val = this->func_returnq(tiger_library);	
+	int stack_size = 3;
+	if (_args != 0) {
+		stack_size = stack_size + _args->length();
+	}
+	SP_counter = SP_counter + stack_size;
+	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n"
+			+ indent_math + "MOVE(FP_alt, SP)\n" 
+			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n" 
+			+ _args_HERA_code(3) 
+			+ indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
+			+ return_val
+			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	
+	SP_counter = SP_counter - stack_size;
+	my_code = my_code + "// End of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
+	return my_code;
+
+	//---------------------------------------
+	
+
+	/*
+	// Code for parameters as registers
 	string my_code;
 	if (_args != 0) {
 		my_code = _args->func_HERA_code(0);
@@ -172,13 +216,13 @@ string A_callExp_::HERA_code()
 	my_code = my_code + indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
 			+ indent_math + "MOVE(" + this->result_reg_s() + ", R1)\n"; 
 	return my_code;
+	*/
 }
 
 string A_stringExp_::HERA_code()
 {
 	/* Add preamble string memory allocation */
 	string this_str_label = "string_" + std::to_string(count);
-						 	 
 	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
 }
 
@@ -250,22 +294,95 @@ string A_whileExp_::HERA_code() {
 	// Check if zero
 	// If it is, branch to end
 	// Else evaluate _body and branch to beginning of while
-	int this_while_counter = while_counter;
-	my_num = this_while_counter;
-	while_counter++;
-	string start_label = "while_start_" + std::to_string(this_while_counter);
-	string end_label = "while_end_" + std::to_string(this_while_counter);
-	string my_code = indent_math + "LABEL(" + start_label + ")\n"
+	int this_loop_counter = loop_counter;
+	my_num = this_loop_counter;
+	loop_counter++;
+	string start_label = "loop_start_" + std::to_string(this_loop_counter);
+	string end_label = "loop_end_" + std::to_string(this_loop_counter);
+	string my_code = "// Start of While loop: " + std::to_string(my_num) + "\n"
+			+ indent_math + "LABEL(" + start_label + ")\n"
 			+ _test->HERA_code()
 			+ indent_math + "CMP(" + _test->result_reg_s() + ", R0)\n" 
 			+ indent_math + "BZ(" + end_label + ")\n"
 			+ _body->HERA_code()
 			+ indent_math + "BR(" + start_label + ")\n"
-			+ indent_math + "LABEL(" + end_label + ")\n";
+			+ indent_math + "LABEL(" + end_label + ")\n"
+			+ "// End of While Loop: " + std::to_string(my_num) + "\n";
 	return my_code;
 }
 
 string A_breakExp_::HERA_code() {
-	int earliest_while = am_i_in_while();
-	return indent_math + "BR(while_end_" + std::to_string(earliest_while) + ")\n";
+	int earliest_while = am_i_in_loop(this);
+	return indent_math + "BR(loop_end_" + std::to_string(earliest_while) + ")\n";
+}
+
+string A_forExp_::HERA_code() {
+	// Strings used for loop management
+	int this_loop_counter = loop_counter;
+	int this_SP_counter = SP_counter;
+	my_num = this_loop_counter;
+	loop_counter++;
+	string start_label = "loop_start_" + std::to_string(this_loop_counter);
+	string end_label = "loop_end_" + std::to_string(this_loop_counter);
+	// SP location strings for loop bounds
+	string _lo_sp_loc = std::to_string(this_SP_counter);
+	string _hi_sp_loc = std::to_string(this_SP_counter+1);
+	SP_counter = SP_counter + 2;
+	// Store the _var in Stack with _lo, and store _hi one above that
+	string output = "// Start of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(SP_counter) + "\n"
+				  + indent_math + "INC(SP, 2)\n"
+				  + _lo->HERA_code() 
+				  + indent_math + "STORE(" + _lo->result_reg_s() + ", " + _lo_sp_loc + ", FP)\n"
+				  + _hi->HERA_code()
+				  + indent_math + "STORE(" + _hi->result_reg_s() + ", " + _hi_sp_loc + ", FP)\n";
+	// Changing ST here after it has been initialized in HERA_code. Prevents weird scoping issues?
+	// Make a copy of ST var_library
+	ST<var_info> previous_scope = var_library;
+	// Add the _var to the ST var_library with it's type and SP number
+	ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter));
+	// var_library = MergeAndShadow(var_library, for_var);
+	var_library = MergeAndShadow(for_var, var_library);
+
+
+	// Start of Loop
+	output = output + indent_math + "LABEL(" + start_label + ")\n";
+		// Load _var from Stack (_lo and _hi
+	output = output + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n" 
+					+ indent_math + "LOAD(R2, " + _hi_sp_loc + ", FP)\n"; 
+		// Compare _lo to _hi, if <= 0 go to end of loop, Otherwise go through loop
+	output = output	+ indent_math + "CMP(R2, R1)\n"
+					+ indent_math + "BL(" + end_label + ")\n";
+		// Run _body HERA_code
+	output = output + _body->HERA_code();
+		// Increment _hi and store in _var in Stack
+	output = output + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n"
+					+ indent_math + "INC(R1, 1)\n"
+					+ indent_math + "STORE(R1, " + _lo_sp_loc + ", FP)\n";
+		// Branch back to beginning of loop
+	output = output + indent_math + "BR(" + start_label + ")\n";
+	// End of Loop. Decrement the SP
+	SP_counter = SP_counter - 2;
+	output = output + indent_math + "LABEL(" + end_label + ")\n"
+					+ indent_math + "DEC(SP, 2)\n"
+					+ "// End of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
+	// Finally restore the scope to the original
+	var_library = previous_scope;
+	return output;
+}
+
+string A_varExp_::HERA_code() {
+	return _var->HERA_code();
+}
+
+string A_simpleVar_::HERA_code() {
+	// Access sp number from declaration
+	// int my_sp_location = 
+	// Load it into R4
+	string output = "";
+	if (is_name_there(_sym, var_library)) {
+		var_info var_struct = lookup(_sym, var_library);
+		output = "// Accessing Variable: " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP())  
+			   + "\n    LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+	}
+	return output;
 }

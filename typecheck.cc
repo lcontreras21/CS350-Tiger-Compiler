@@ -37,7 +37,7 @@ Have ** on their name
 					A_stringExp_**
 				A_recordExp_
 				A_arrayExp_
-			A_varExp_
+			A_varExp_**
 			A_opExp_**
 			A_assignExp_
 			A_letExp_
@@ -45,11 +45,11 @@ Have ** on their name
 			A_controlExp_
 				A_ifExp_**
 				A_whileExp_
-				A_forExp_
+				A_forExp_**
 				A_breakExp_
 				A_seqExp_**
 		A_var_
-			A_simpleVar_
+			A_simpleVar_**
 			A_fieldVar_
 			A_subscriptVar_
 		A_dec_
@@ -75,9 +75,10 @@ Have ** on their name
 
 */
 
+// Create var_library to keep track of var tpes
 
-// Get Tiger Standard Library to use in typechecking
-ST<type_info> tiger_library = get_tiger_lib();
+ST<var_info> var_type_lib = ST<var_info>();
+
 
 Ty_ty AST_node_::typecheck() {
 	EM_error("Typecheck on node not yet having typecheck method");
@@ -260,4 +261,41 @@ Ty_ty A_whileExp_::typecheck() {
 
 Ty_ty A_breakExp_::typecheck() {
 	return Ty_Void();
+}
+
+Ty_ty A_forExp_::typecheck() {
+	// _lo, _hi must be Ty_Int()
+	// _body must return Ty_Void()
+	ST<var_info> copy_lib = var_type_lib;
+	var_type_lib = MergeAndShadow(var_type_lib, 
+			ST<var_info>(_var, var_info(Ty_Int(), 0)));
+	Ty_ty _body_type = _body->typecheck();
+	if (_lo->typecheck() != Ty_Int()) {
+		EM_error("For expression must have type int in lower bound");
+		return Ty_Error();
+	} else if (_hi->typecheck() != Ty_Int()) {
+		EM_error("For expression must have type int in upper bound");
+		return Ty_Error();
+	} else if (_body_type != Ty_Void()) {
+		EM_error("For expression must have type void in body bound");
+		return Ty_Error();
+	}
+	var_type_lib = copy_lib;
+	return Ty_Void();
+}
+
+Ty_ty A_varExp_::typecheck() {
+	return _var->typecheck();
+}
+
+Ty_ty A_simpleVar_::typecheck() {
+	// Lookup in symbol type what the stored type is
+	// If not in symbol table, return Ty_Error
+	if (is_name_there(_sym, var_type_lib)) {
+		var_info var_struct = lookup(_sym, var_type_lib);
+		return var_struct.my_type();
+	} else {
+		EM_error("Variable " + Symbol_to_string(_sym) + " has not been declared");
+		return Ty_Error();
+	}
 }

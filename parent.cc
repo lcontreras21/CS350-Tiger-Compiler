@@ -105,3 +105,19 @@ void A_whileExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_pa
 void A_breakExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
 	stored_parent = my_parent_or_null_if_i_am_the_root;
 }
+
+void A_forExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_lo->set_parent_pointers_for_me_and_my_descendants(this);	
+	_hi->set_parent_pointers_for_me_and_my_descendants(this);	
+	_body->set_parent_pointers_for_me_and_my_descendants(this);	
+}
+
+void A_varExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_var->set_parent_pointers_for_me_and_my_descendants(this);	
+}
+
+void A_simpleVar_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+}

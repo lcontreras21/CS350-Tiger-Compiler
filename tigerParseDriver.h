@@ -8,6 +8,10 @@ struct expAttrs {
 		A_exp AST;
 };
 
+struct lvalueAttrs {
+		A_exp AST;
+};
+
 struct expListAttrs {
 		Ty_ty type;
 		A_expList AST;

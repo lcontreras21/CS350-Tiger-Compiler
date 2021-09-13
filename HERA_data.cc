@@ -75,3 +75,15 @@ string A_whileExp_::HERA_data() {
 string A_breakExp_::HERA_data() {
 	return "";
 }
+
+string A_forExp_::HERA_data() {
+	return _lo->HERA_data() + _hi->HERA_data() + _body->HERA_data();	
+}
+
+string A_varExp_::HERA_data() {
+	return _var->HERA_data();
+}
+
+string A_simpleVar_::HERA_data() {
+	return "";
+}

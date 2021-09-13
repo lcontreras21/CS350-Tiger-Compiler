@@ -183,6 +183,12 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "while"				{ loc.step(); return yy::tigerParser::make_WHILE(loc);			}
 "break"				{ loc.step(); return yy::tigerParser::make_BREAK(loc);			}
 "do"				{ loc.step(); return yy::tigerParser::make_DO(loc);				}
+"for"				{ loc.step(); return yy::tigerParser::make_FOR(loc);			}
+"to"				{ loc.step(); return yy::tigerParser::make_TO(loc);				}
+":="				{ loc.step(); return yy::tigerParser::make_ASSIGN(loc);			}
+"."					{ loc.step(); return yy::tigerParser::make_DOT(loc);			}
+"["					{ loc.step(); return yy::tigerParser::make_L_SQUARE_BRACKET(loc);}
+"]"					{ loc.step(); return yy::tigerParser::make_R_SQUARE_BRACKET(loc);}
 {identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
 {integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */

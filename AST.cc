@@ -357,14 +357,6 @@ A_expList_::A_expList_(A_exp head, A_expList tail) :  AST_node_(head->pos()), _h
 {
 	precondition(head != 0);
 }
-int A_expList_::length()
-{
-	if (_tail == 0)
-		return 1;
-	else
-		return 1+_tail->length();
-}
-
 
 A_efield_::A_efield_(Symbol name, A_exp exp) :  AST_node_(exp->pos()), _name(name), _exp(exp)
 {

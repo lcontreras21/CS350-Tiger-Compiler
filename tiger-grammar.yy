@@ -56,6 +56,7 @@ class tigerParseDriver;
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
+%type <lvalueAttrs> lvalue
 %type <expListAttrs> expList
 %type <seqExpAttrs> seqExp
 
@@ -159,6 +160,12 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								} 
 	| BREAK[br]						{ $$.AST = A_BreakExp(Position::fromLex(@br));
 									  EM_debug("Got break expression", $$.AST->pos());
+								}
+	| FOR ID[id] ASSIGN exp[exp1] TO exp[exp2] DO exp[exp3] {
+									  $$.AST = A_ForExp(Position::range($exp1.AST->pos(), $exp3.AST->pos()), to_Symbol($id), $exp1.AST, $exp2.AST, $exp3.AST);
+									  EM_debug("Got FOR expression", $$.AST->pos()); 
+								}
+	| lvalue[lv]					{ $$.AST = $lv.AST;
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.
@@ -191,6 +198,13 @@ seqExp: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
 										  EM_debug("Got empty expList  expression");
 										}
 	;
+lvalue: ID[id]				{ $$.AST = A_VarExp(Position::fromLex(@id), A_SimpleVar(Position::fromLex(@id), to_Symbol($id)));
+							  EM_debug("Got SimpleVar" + $id, $$.AST->pos());
+							}
+	| lvalue[lv] DOT ID[id] {
+							}
+	| lvalue L_SQUARE_BRACKET exp[exp1] R_SQUARE_BRACKET {
+							}
 
 %%
 

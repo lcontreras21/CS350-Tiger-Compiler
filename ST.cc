@@ -3,13 +3,38 @@
 #include "ST.h"
 #include "types.h"
 
+// Variable Library
+var_info::var_info(Ty_ty the_type, int the_SP) {
+	_type = the_type;
+	_SP = the_SP;	
+};
+
+Ty_ty var_info::my_type() {
+	return _type;
+}
+
+int var_info::my_SP() {
+	return _SP;
+}
+
+
 // Tiger Standard Library
 type_info::type_info(Ty_ty the_type_of_function) {
 	type_of_function = the_type_of_function;
 };
+
+Ty_ty type_info::my_return_type() {
+	// type_of_function is Ty_Function
+	return type_of_function->u.function.return_type;
+}
+
+Ty_fieldList type_info::my_args() {
+	return type_of_function->u.function.parameter_types;
+}
+
 typedef ST<type_info> lib_func;
 
-ST<type_info> tiger_lib = FuseOneScope(
+ST<type_info> tiger_library = FuseOneScope(
 				lib_func(to_Symbol("ord"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 				FuseOneScope(
 					lib_func(to_Symbol("chr"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
@@ -74,10 +99,10 @@ ST<type_info> tiger_lib = FuseOneScope(
 				)
 			);
 
-ST<type_info> get_tiger_lib() {
-	return tiger_lib;
-}
 
+
+
+//---------------------------------------------------
 // Examples BELOW
 
 /* Note that this is just some examples, since most C++ compilers require that the implementation of template functions be #included and thus I put it in ST.t */
