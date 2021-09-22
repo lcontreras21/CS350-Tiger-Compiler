@@ -29,7 +29,7 @@ string A_opExp_::HERA_data() {
 	return _left->HERA_data() + _right->HERA_data();
 }
 
-string A_expList_::func_HERA_data() {
+string A_expList_::HERA_data() {
 	if (_tail == 0) {
 		return _head->HERA_data();
 	} else {
@@ -39,7 +39,7 @@ string A_expList_::func_HERA_data() {
 
 string A_callExp_::HERA_data() {
 	if (_args != 0) {
-		return _args->func_HERA_data();
+		return _args->HERA_data();
 	} else {
 		return "";
 	}
@@ -86,4 +86,28 @@ string A_varExp_::HERA_data() {
 
 string A_simpleVar_::HERA_data() {
 	return "";
+}
+
+string A_letExp_::HERA_data() {
+	string output = "";
+	if (_decs != 0) {
+		output = output + _decs->HERA_data();
+	} 
+	if (_body != 0) {
+		output = output + _body->HERA_data();
+	}
+	return output;
+}
+
+string A_decList_::HERA_data() {
+	if (_tail == 0) {
+		return _head->HERA_data();
+	} else {
+		return _head->HERA_data() + _tail->HERA_data();
+	}
+}
+
+
+string A_varDec_::HERA_data() {
+	return _init->HERA_data();
 }

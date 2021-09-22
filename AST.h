@@ -179,6 +179,7 @@ typedef class A_dec_ *A_dec;
 typedef class A_ty_ *A_ty;
 
 typedef class A_decList_ *A_decList;
+typedef class A_seqExp_ *A_seqExp;
 typedef class A_expList_ *A_expList;
 typedef class A_field_ *A_field;
 typedef class A_fieldList_ *A_fieldList;
@@ -223,12 +224,17 @@ public:
 	//  See Design_Documents/AST_Attributes.txt for details.
 	virtual string HERA_code();  // defaults to a warning, with HERA code that would error if compiled; could be "=0" in final compiler
 	virtual string HERA_data();  // defaults to empty string 
-	virtual Ty_ty typecheck();	// Perform typechecking all along the tree 
 	virtual int am_i_in_loop(AST_node_ *child);
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
 	virtual int compute_depth();   // just for an example, not needed to compile
+	Ty_ty typecheck() {
+		if (this->stored_type == Ty_Placeholder()) this->stored_type = this->init_typecheck();
+		return stored_type;
+	}
+	virtual Ty_ty init_typecheck();
 
 protected:  // so that derived class's set_parent should be able to get at stored_parent for "this" object ... Smalltalk allows this by default
 	AST_node_ *stored_parent = 0;
@@ -236,6 +242,7 @@ protected:  // so that derived class's set_parent should be able to get at store
 private:
 	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
+	Ty_ty stored_type = Ty_Placeholder(); 
 };
 
 class A_exp_ : public AST_node_ {
@@ -268,8 +275,9 @@ public:
 
 	string HERA_code();
 	string HERA_data();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	int am_i_in_loop(AST_node_ *child);
+	int calculate_my_SP(AST_node_ *_parent_or_child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -307,7 +315,7 @@ public:
 	A_boolExp_(A_pos pos, bool b);
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 private:
   bool value;
 };
@@ -318,7 +326,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 
 	virtual string HERA_code();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 private:
 	int value;
 };
@@ -332,7 +340,7 @@ private:
 	String value;
 	virtual string HERA_code();
 	virtual string HERA_data();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 };
 
 class A_recordExp_ : public A_literalExp_ {
@@ -361,7 +369,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
 	virtual string HERA_data();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
@@ -377,7 +385,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
 	virtual string HERA_data();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int compute_height();  // just for an example, not needed to compile
@@ -398,11 +406,17 @@ private:
 
 class A_letExp_ : public A_exp_ {
 public:
-	A_letExp_(A_pos pos, A_decList decs, A_exp body);
+	A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	Ty_ty init_typecheck();
+	virtual int init_result_reg();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_decList _decs;
-	A_exp _body;
+	A_expList _body;
 };
 
 class A_callExp_ : public A_exp_ {
@@ -415,9 +429,10 @@ private:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	string func_returnq(ST<type_info> tiger_library);
+	string func_returnq(ST<function_info> tiger_library);
 	string _args_HERA_code(int counter);
 };
 
@@ -433,7 +448,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_exp _test;
@@ -448,7 +463,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
@@ -465,7 +480,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
@@ -484,7 +499,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 };
 
@@ -495,7 +510,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_expList _seq;
@@ -512,7 +527,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
 	virtual string HERA_data();
-	Ty_ty typecheck();
+	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _sym;
@@ -542,10 +557,10 @@ class A_expList_ : public AST_node_ {
 public:
 	A_expList_(A_exp head, A_expList tail);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_data();
 	A_exp _head;
 	A_expList _tail;
-	string func_HERA_data();
-	Ty_ty func_typecheck(int n);
+	Ty_ty let_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int length();
 };
@@ -574,13 +589,21 @@ private:
 class A_dec_ : public AST_node_ {
 public:
 	A_dec_(A_pos p);
+	virtual int init_result_reg();
 };
 
 class A_decList_ : public A_dec_ {
 public:
 	A_decList_(A_dec head, A_decList tail);
 	virtual string print_rep(int indent, bool with_attributes);
-private:
+	virtual string HERA_code();
+	virtual string HERA_data();
+	virtual int init_result_reg();
+	Ty_ty init_typecheck();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	int length();
+
 	A_dec _head;
 	A_decList _tail;
 };
@@ -589,6 +612,12 @@ class A_varDec_ : public A_dec_ {
 public:
 	A_varDec_(A_pos pos, Symbol var, Symbol typ, A_exp init);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	Ty_ty init_typecheck();
+	virtual int init_result_reg();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
 	Symbol _typ;

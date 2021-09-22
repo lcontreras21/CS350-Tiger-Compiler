@@ -123,17 +123,17 @@ void ST_examples();  // show some interesting examples to understand how ST work
 
 // Struct to store type information for functions
 #include "types.h"
-struct type_info {
+struct function_info {
 public:
 	// Give Ty_Function(Ty_ty return_type, Ty_fieldList(Ty_ty type, Ty_fieldList()));
-	type_info(Ty_ty the_type_of_function);
+	function_info(Ty_ty the_type_of_function);
 	Ty_ty type_of_function;
 	Ty_ty my_return_type();
 	Ty_fieldList my_args();
 };
 
-//ST<type_info> get_tiger_lib();
-extern ST<type_info> tiger_library;
+//ST<function_info> get_tiger_lib();
+extern ST<function_info> tiger_library;
 
 // Struct to store type and SP information for variables
 struct var_info {
@@ -145,7 +145,14 @@ public:
 	int my_SP();
 };
 
+struct type_info {
+public:
+	type_info(Ty_ty type);
+	Ty_ty _type;
+	Ty_ty my_type();	
+};
 extern ST<var_info> var_library;
+extern ST<type_info> type_library;
 
 #include "ST.t"
 

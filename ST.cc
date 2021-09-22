@@ -3,6 +3,15 @@
 #include "ST.h"
 #include "types.h"
 
+// Types Library
+type_info::type_info(Ty_ty type) {
+	_type = type;
+}
+
+Ty_ty type_info::my_type() {
+	return _type;
+}
+
 // Variable Library
 var_info::var_info(Ty_ty the_type, int the_SP) {
 	_type = the_type;
@@ -17,66 +26,75 @@ int var_info::my_SP() {
 	return _SP;
 }
 
+// Type Standard library
+typedef ST<type_info> type_table;
+type_table type_library = FuseOneScope(
+							type_table(to_Symbol("int"), type_info(Ty_Int())),
+							FuseOneScope(
+								type_table(to_Symbol("string"), type_info(Ty_String())),
+								type_table(to_Symbol("bool"), type_info(Ty_Bool()))
+							)
+						  );
 
 // Tiger Standard Library
-type_info::type_info(Ty_ty the_type_of_function) {
+function_info::function_info(Ty_ty the_type_of_function) {
 	type_of_function = the_type_of_function;
 };
 
-Ty_ty type_info::my_return_type() {
+Ty_ty function_info::my_return_type() {
 	// type_of_function is Ty_Function
 	return type_of_function->u.function.return_type;
 }
 
-Ty_fieldList type_info::my_args() {
+Ty_fieldList function_info::my_args() {
 	return type_of_function->u.function.parameter_types;
 }
 
-typedef ST<type_info> lib_func;
+typedef ST<function_info> lib_func;
 
-ST<type_info> tiger_library = FuseOneScope(
-				lib_func(to_Symbol("ord"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+ST<function_info> tiger_library = FuseOneScope(
+				lib_func(to_Symbol("ord"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 				FuseOneScope(
-					lib_func(to_Symbol("chr"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+					lib_func(to_Symbol("chr"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
 					FuseOneScope(
-						lib_func(to_Symbol("size"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+						lib_func(to_Symbol("size"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 						FuseOneScope(
-							lib_func(to_Symbol("substring"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("first"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("n"), Ty_Int()), 0)))))),
+							lib_func(to_Symbol("substring"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("first"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("n"), Ty_Int()), 0)))))),
 							FuseOneScope(
-								lib_func(to_Symbol("concat"), type_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
+								lib_func(to_Symbol("concat"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
 								FuseOneScope(
-									lib_func(to_Symbol("tstrcmp"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
+									lib_func(to_Symbol("tstrcmp"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
 									FuseOneScope(
-										lib_func(to_Symbol("div"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
+										lib_func(to_Symbol("div"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
 										FuseOneScope(
-											lib_func(to_Symbol("mod"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
+											lib_func(to_Symbol("mod"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("num"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("den"), Ty_Int()), 0))))),
 											FuseOneScope(
-												lib_func(to_Symbol("getchar_ord"), type_info(Ty_Function(Ty_Int(), 0))),
+												lib_func(to_Symbol("getchar_ord"), function_info(Ty_Function(Ty_Int(), 0))),
 												FuseOneScope(
-													lib_func(to_Symbol("putchar_ord"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+													lib_func(to_Symbol("putchar_ord"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
 													FuseOneScope(
-														lib_func(to_Symbol("flush"), type_info(Ty_Function(Ty_Void(), 0))),
+														lib_func(to_Symbol("flush"), function_info(Ty_Function(Ty_Void(), 0))),
 														FuseOneScope(
-															lib_func(to_Symbol("printint"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+															lib_func(to_Symbol("printint"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
 															FuseOneScope(
-																lib_func(to_Symbol("printbool"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("b"), Ty_Bool()), 0)))),
+																lib_func(to_Symbol("printbool"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("b"), Ty_Bool()), 0)))),
 																FuseOneScope(
-																	lib_func(to_Symbol("print"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+																	lib_func(to_Symbol("print"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 																	FuseOneScope(
-																		lib_func(to_Symbol("println"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
+																		lib_func(to_Symbol("println"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 																		FuseOneScope(
-																			lib_func(to_Symbol("getchar"), type_info(Ty_Function(Ty_String(), 0))),
+																			lib_func(to_Symbol("getchar"), function_info(Ty_Function(Ty_String(), 0))),
 																			FuseOneScope(
-																				lib_func(to_Symbol("ungetchar"), type_info(Ty_Function(Ty_Void(), 0))),
+																				lib_func(to_Symbol("ungetchar"), function_info(Ty_Function(Ty_Void(), 0))),
 																				FuseOneScope(
-																					lib_func(to_Symbol("getline"), type_info(Ty_Function(Ty_String(), 0))),
+																					lib_func(to_Symbol("getline"), function_info(Ty_Function(Ty_String(), 0))),
 																					FuseOneScope(
-																						lib_func(to_Symbol("getint"), type_info(Ty_Function(Ty_Int(), 0))),
+																						lib_func(to_Symbol("getint"), function_info(Ty_Function(Ty_Int(), 0))),
 																						FuseOneScope(
-																							lib_func(to_Symbol("exit"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
+																							lib_func(to_Symbol("exit"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("i"), Ty_Int()), 0)))),
 																							FuseOneScope(
-																								lib_func(to_Symbol("malloc"), type_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("n_cells"), Ty_Int()), 0)))),
-																								lib_func(to_Symbol("free"), type_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("address"), Ty_Int()), 0))))
+																								lib_func(to_Symbol("malloc"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("n_cells"), Ty_Int()), 0)))),
+																								lib_func(to_Symbol("free"), function_info(Ty_Function(Ty_Void(), Ty_FieldList(Ty_Field(to_Symbol("address"), Ty_Int()), 0))))
 																							)
 																						)
 																					)

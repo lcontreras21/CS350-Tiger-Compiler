@@ -1,10 +1,18 @@
-(
-  for i := 1 to 3 do (
-    for i := i to 4 do (
-      printint(10*i);
-      print(" ")
-    );
-    printint(100*i);
-    print("\n")
+printint(
+  div(
+    let
+	var x : int := 6
+	var y : int := 7
+    in
+	x*y*5
+    end*2
+  ,
+    let
+	var a : int := 3
+	var b : int := 2
+    in
+	a+b
+    end*2
   )
 )
+

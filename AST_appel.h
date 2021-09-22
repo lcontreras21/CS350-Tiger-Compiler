@@ -39,7 +39,7 @@ inline A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp)
 {
 	return new A_assignExp_(pos, var, exp);
 }
-inline A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body)
+inline A_exp A_LetExp(A_pos pos, A_decList decs, A_expList body)
 {
 	return new A_letExp_(pos, decs, body);
 }

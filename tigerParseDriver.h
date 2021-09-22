@@ -22,6 +22,14 @@ struct seqExpAttrs {
 		A_expList AST;
 };
 
+struct decListAttrs {
+		A_decList AST;
+};
+
+struct decAttrs {
+		A_dec AST;
+};
+
 #include "tiger-grammar.tab.hh"
 
 

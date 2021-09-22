@@ -30,6 +30,7 @@ Ty_ty Ty_String();	// the type of a string expresison, e.g. "good"
 Ty_ty Ty_Void();	// the type of an expression without a value, e.g.  ( )   or  if x<0 then print("D'oh ... x<0")
 Ty_ty Ty_Nil();  	// the type of the nil expression e.g. nil (this is a value belonging to every record type)
 Ty_ty Ty_Error();	// useful to indicate an error has already been produced for an expression
+Ty_ty Ty_Placeholder(); // Used for keeping track if typecheck has already been calculated
 
 /*
  * There are four "extending" constructors for types, for functions, records, arrays,
@@ -70,7 +71,7 @@ void Ty_examples();  // examples
  */
 
 enum Ty_ty_kind {Ty_error, Ty_nil, Ty_int, Ty_bool, Ty_void, Ty_string,
-		 Ty_function, Ty_record, Ty_array, Ty_name};
+		 Ty_function, Ty_record, Ty_array, Ty_name, Ty_placeholder};
 
 struct Ty_ty_ {
 	enum Ty_ty_kind kind;

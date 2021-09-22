@@ -88,6 +88,9 @@ void Ty_examples()  // examples
 	cout << endl;
 }
 
+static struct Ty_ty_ typlaceholder = {Ty_placeholder};
+Ty_ty Ty_Placeholder() {return &typlaceholder;}
+
 static struct Ty_ty_ tyerr = {Ty_error};
 Ty_ty Ty_Error() {return &tyerr;}
 
@@ -196,6 +199,8 @@ static string to_String(Ty_ty_kind what_kind)
     return "Ty_Array";
   case Ty_name:
     return "Ty_Name";
+  case Ty_placeholder:
+	return "Ty_Placeholder";
   default:
     EM_warning("Hmmm... unrecognized Ty_ty_kind in types.cc; perhaps the compiler is about to crash...");
     return INVALID_TYPE_KIND;

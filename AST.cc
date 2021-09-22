@@ -124,23 +124,26 @@ void AST_example_let()
 	A_exp assign_a = A_AssignExp(Position::undefined(), a_var2, sum2);
 
 	// now, build the node for "let2" from everything from "*** Now the stuff for the 2nd let" to here
-	A_exp let2     = A_LetExp(Position::undefined(), let2_decs, assign_a);
+	// A_exp let2     = A_LetExp(Position::undefined(), let2_decs, assign_a);
 
 
 	// *** Now the stuff for the 3rd let (the 2nd one inside the outer let)
+	/*
 	A_exp let3     = A_LetExp(Position::undefined(),
 				  A_DecList(A_VarDec(Position::undefined(), to_Symbol("arthropod"), 0, A_IntExp(Position::undefined(), 4)),
 					    0),
 				  A_OpExp(Position::undefined(), A_divideOp,
 					  A_VarExp(Position::undefined(), A_SimpleVar(Position::undefined(), to_Symbol("wombat"))),
 					  A_VarExp(Position::undefined(), A_SimpleVar(Position::undefined(), to_Symbol("arthropod")))));
+	*/
 
 	// *** At long last, we can build that "+" that sums the two inner lets, and the main let itself:
+	/*
 	A_exp let1      = A_LetExp(Position::undefined(),
 				   let1_decs,
 				   A_OpExp(Position::undefined(), A_plusOp, let2, let3));
-
-	A_root_ *local_AST_root = new A_root_(let1);
+	*/
+	// A_root_ *local_AST_root = new A_root_(let1);
 
 	// Phew. Done at last. Let's print it.
 
@@ -151,7 +154,7 @@ void AST_example_let()
 	EM_debug(twenty->HERA_code());
 
 	EM_debug("Here's the full example AST, printed with to_String");
-	EM_debug(str(local_AST_root));
+	// EM_debug(str(local_AST_root));
 }
 
 
@@ -184,8 +187,9 @@ void AST_example_functions()
   */
 
 
-	Position u = Position::undefined();
-	Symbol tig_int = to_Symbol("int");
+	// Position u = Position::undefined();
+	// Symbol tig_int = to_Symbol("int");
+	/*
 	A_root_ *r = A_RootExp(A_LetExp(u,
 					A_DecList(A_VarDec(u, to_Symbol("two"), tig_int, A_IntExp(u, 2)),
 						  A_DecList(A_FunctionDec(u, A_FundecList(A_Fundec(u, to_Symbol("half_answer"), 0, tig_int, A_IntExp(u, 21)),
@@ -199,9 +203,9 @@ void AST_example_functions()
 				     
 					A_CallExp(u, to_Symbol("printint"),
 						  A_ExpList(A_VarExp(u, A_SimpleVar(u, to_Symbol("it"))), 0))));
-	
+	*/
 	EM_debug("Here's the example from AST_example_functions:");
-	EM_debug(str(r));
+	// EM_debug(str(r));
 }
 
 #if defined(AST_EXAMPLES_IS_MAIN) && AST_EXAMPLES_IS_MAIN
@@ -296,7 +300,7 @@ A_assignExp_::A_assignExp_(A_pos pos, A_var var, A_exp exp) : A_exp_(pos), _var(
 	precondition(exp != 0 && var != 0);
 }
 
-A_letExp_::A_letExp_(A_pos pos, A_decList decs, A_exp body) :  A_exp_(pos), _decs(decs), _body(body)
+A_letExp_::A_letExp_(A_pos pos, A_decList decs, A_expList body) :  A_exp_(pos), _decs(decs), _body(body)
 {
 	// Appel says body and decs can each be null
 }

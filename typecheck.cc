@@ -79,25 +79,25 @@ Have ** on their name
 
 ST<var_info> var_type_lib = ST<var_info>();
 
-
-Ty_ty AST_node_::typecheck() {
+Ty_ty AST_node_::init_typecheck() {
 	EM_error("Typecheck on node not yet having typecheck method");
 	return Ty_Error();
 }
 
-Ty_ty A_root_::typecheck() {
-	return main_expr->typecheck();
+Ty_ty A_root_::init_typecheck() {
+	Ty_ty result = main_expr->typecheck();
+	return result;
 }
 
-Ty_ty A_intExp_::typecheck() {
+Ty_ty A_intExp_::init_typecheck() {
 	return Ty_Int();
 }
 
-Ty_ty A_boolExp_::typecheck() {
+Ty_ty A_boolExp_::init_typecheck() {
 	return Ty_Bool();
 }
 
-Ty_ty A_stringExp_::typecheck() {
+Ty_ty A_stringExp_::init_typecheck() {
 	return Ty_String();
 }
 
@@ -112,19 +112,21 @@ static Ty_ty check_return_type(A_oper op) {
 	}
 }
 
-Ty_ty A_opExp_::typecheck() {
+Ty_ty A_opExp_::init_typecheck() {
 	// Check types on _left and _right
 	string error = "";
 	Ty_ty type_to_check = Ty_Int();
-	if (_left->typecheck() != type_to_check) {
-		if (_left->typecheck() != Ty_Bool()) { 
+	Ty_ty left_type = _left->typecheck();
+	Ty_ty right_type = _right->typecheck();
+	if (left_type != type_to_check) {
+		if (left_type != Ty_Bool()) { 
 			error = error + "opExp has type error on left expression\n";
 		} else {
 			EM_warning("Boolean expression found on the left");
 		}
 	}
-	if (_right->typecheck() != type_to_check) {
-		if (_right->typecheck() != Ty_Bool()) { 
+	if (right_type != type_to_check) {
+		if (right_type != Ty_Bool()) { 
 			error = error + "opExp has type error on right expression\n";
 		} else {
 			EM_warning("Boolean expression found on the right");
@@ -138,7 +140,7 @@ Ty_ty A_opExp_::typecheck() {
 	}
 }
 
-Ty_ty A_callExp_::typecheck() {	
+Ty_ty A_callExp_::init_typecheck() {	
 	// have name _func and args _args
 	A_expList args_exps = _args;
 	// Look up name in ST tiger_library to get args as Ty_fieldList and iterate through to check if all are correct type
@@ -150,7 +152,7 @@ Ty_ty A_callExp_::typecheck() {
 	}
 	// Get Ty_Function	
 	// My defined struct to store info
-	type_info func_struct = lookup(_func, tiger_library);
+	function_info func_struct = lookup(_func, tiger_library);
 	// Get Ty_Function
 	Ty_ty func_type_info = func_struct.type_of_function;
 	// Get return type of function
@@ -171,7 +173,7 @@ Ty_ty A_callExp_::typecheck() {
 		}
 		// Check if types are the same
 		if (args_exps->_head->typecheck() != arg_types->head->ty) {
-		   	EM_error("Arg " + std::to_string(arg_counter) + " type does not match");
+		   	EM_error("Arg " + std::to_string(arg_counter) + " type does not match in function call " + str(_func));
 			return Ty_Error();
 		} 
 		arg_types = arg_types->tail;
@@ -182,22 +184,7 @@ Ty_ty A_callExp_::typecheck() {
 	return return_type;
 }
 
-Ty_ty A_expList_::func_typecheck(int n) {
-	// Check each type works.
-	// Return 
-	if (_tail == 0) {
-		return _head->typecheck();
-	} else {
-		if (_head->typecheck() != Ty_Error()) {
-			return _tail->func_typecheck(n+1);
-		} else {
-			EM_error("Type error on paramater " + std::to_string(n));
-			return Ty_Error();
-		}	
-	}
-}
-
-Ty_ty A_ifExp_::typecheck() {
+Ty_ty A_ifExp_::init_typecheck() {
 	// exp1 is typed as an integer, exp2 and exp3 must have the same type which will be the type of the entire structure. The resulting type cannot be that of nil. 
 	// if Test is type bool that is also allowed, since it evaluates to nonzero or zero
 	// First check if the test is type int
@@ -228,7 +215,7 @@ Ty_ty A_ifExp_::typecheck() {
 	}
 }
 
-Ty_ty A_seqExp_::typecheck() {
+Ty_ty A_seqExp_::init_typecheck() {
 	// return Ty_Void if _seq is 0, else return type of last item
 	Ty_ty return_type = Ty_Void();
 	A_expList seq = _seq;
@@ -243,7 +230,7 @@ Ty_ty A_seqExp_::typecheck() {
 	}
 }
 
-Ty_ty A_whileExp_::typecheck() {
+Ty_ty A_whileExp_::init_typecheck() {
 	// _test must be type int
 	// _body must be type void
 	if (_test->typecheck() == Ty_Int() || _test->typecheck() == Ty_Bool()) {
@@ -259,11 +246,11 @@ Ty_ty A_whileExp_::typecheck() {
 	}
 }
 
-Ty_ty A_breakExp_::typecheck() {
+Ty_ty A_breakExp_::init_typecheck() {
 	return Ty_Void();
 }
 
-Ty_ty A_forExp_::typecheck() {
+Ty_ty A_forExp_::init_typecheck() {
 	// _lo, _hi must be Ty_Int()
 	// _body must return Ty_Void()
 	ST<var_info> copy_lib = var_type_lib;
@@ -284,18 +271,85 @@ Ty_ty A_forExp_::typecheck() {
 	return Ty_Void();
 }
 
-Ty_ty A_varExp_::typecheck() {
+Ty_ty A_varExp_::init_typecheck() {
 	return _var->typecheck();
 }
 
-Ty_ty A_simpleVar_::typecheck() {
+Ty_ty A_simpleVar_::init_typecheck() {
 	// Lookup in symbol type what the stored type is
 	// If not in symbol table, return Ty_Error
 	if (is_name_there(_sym, var_type_lib)) {
 		var_info var_struct = lookup(_sym, var_type_lib);
 		return var_struct.my_type();
 	} else {
-		EM_error("Variable " + Symbol_to_string(_sym) + " has not been declared");
+		EM_error("Typecheck: Variable " + Symbol_to_string(_sym) + " has not been declared");
 		return Ty_Error();
 	}
+}
+
+Ty_ty A_expList_::let_typecheck() {
+	Ty_ty head_type = _head->typecheck();
+	if (_tail == 0) {
+		return head_type;
+	} else {
+		return _tail->let_typecheck();
+	}
+}
+
+Ty_ty A_letExp_::init_typecheck() {
+	// _decs and _body might both be empty
+	if (_decs == 0) {
+		if (_body == 0) {
+			return Ty_Void();
+		} else {
+			return _body->let_typecheck();
+		}
+	} else {
+		ST<var_info> copy_lib = var_type_lib;
+		Ty_ty decs_type = _decs->typecheck();
+		if (decs_type != Ty_Error()) {
+			Ty_ty _body_type = _body->let_typecheck();
+			var_type_lib = copy_lib;
+			return _body_type;
+		} else {
+			var_type_lib = copy_lib;
+			return Ty_Error();
+		}
+	}
+}
+
+Ty_ty A_decList_::init_typecheck() {
+	Ty_ty head_type = _head->typecheck();
+	if (_tail == 0) {
+		return head_type;
+	} else {
+		return _tail->typecheck();
+	}
+}
+
+
+Ty_ty A_varDec_::init_typecheck() {
+	// If no _typ available, return type of _init
+	Ty_ty implicit_type = _init->typecheck();
+	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
+		var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(implicit_type, 0)));
+		return implicit_type;
+	} else {
+		// Lookup declared type in type_library
+		if (is_name_there(_typ, type_library)) {
+			type_info type_struct = lookup(_typ, type_library);
+			Ty_ty return_type = type_struct.my_type();
+			if (return_type != implicit_type) {
+				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type. Not adding to Variable Symbol Table.");
+				return Ty_Error();
+			} else {
+				var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(return_type, 0)));
+				return return_type;
+			}
+		} else {
+			EM_error("Var " + Symbol_to_string(_var) + " declared type is not in type ST");
+			return Ty_Error();
+		}
+	}
+
 }

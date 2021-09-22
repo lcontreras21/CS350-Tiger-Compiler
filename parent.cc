@@ -121,3 +121,29 @@ void A_varExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_pare
 void A_simpleVar_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
 	stored_parent = my_parent_or_null_if_i_am_the_root;
 }
+
+
+void A_letExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	if (_decs != 0) {
+		_decs->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+	if (_body != 0) {
+		_body->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
+
+
+void A_decList_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_head->set_parent_pointers_for_me_and_my_descendants(this);	
+	if (_tail != 0) {
+		_tail->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
+
+
+void A_varDec_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_init->set_parent_pointers_for_me_and_my_descendants(this);	
+}

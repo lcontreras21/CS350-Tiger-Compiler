@@ -31,14 +31,9 @@ int A_opExp_::init_result_reg() {
 	}
 }
 
-int A_callExp_::init_result_reg() {
-	/* Have _args */
-	/* Return highest register in expList 
-	 Iterate through each _head and check
-	 Can create pointer and go like that
-	 */
+int expList_init_result_reg(A_expList _list) {
 	int max_reg = 4;
-	A_expList pointer = _args;
+	A_expList pointer = _list;
 	if (pointer == 0) {
 		return max_reg;
 	} else {
@@ -51,6 +46,16 @@ int A_callExp_::init_result_reg() {
 		}
 		return max_reg;
 	}
+
+}
+
+int A_callExp_::init_result_reg() {
+	/* Have _args */
+	/* Return highest register in expList 
+	 Iterate through each _head and check
+	 Can create pointer and go like that
+	 */
+	return expList_init_result_reg(_args);
 }
 
 int A_ifExp_::init_result_reg() {
@@ -69,18 +74,7 @@ int A_leafExp_::init_result_reg() {
 
 int A_seqExp_::init_result_reg() {
 	// Return reg of the exp with highest reg number, iterate through
-	int max_reg = -1;
-	A_expList seq = _seq;
-	if (seq == 0) {
-		return max_reg;
-	} else {
-		while (seq != 0) {
-			int curr_reg = seq->_head->init_result_reg();
-			max_reg = std::max(max_reg, curr_reg);
-			seq = seq->_tail;
-		}
-		return max_reg;
-	}
+	return expList_init_result_reg(_seq);
 }
 
 int A_whileExp_::init_result_reg() {
@@ -97,4 +91,35 @@ int A_forExp_::init_result_reg() {
 
 int A_varExp_::init_result_reg() {
 	return min_reg;
+}
+
+
+int A_dec_::init_result_reg() {
+	EM_error("Requesting init_result_reg for A_dec without a declared function");
+	return -1;
+}
+
+
+int A_decList_::init_result_reg() {
+	if (_tail == 0) {
+		return _head->init_result_reg();
+	} else {
+		return std::max(_head->init_result_reg(), _tail->init_result_reg());
+	}
+}
+
+int A_letExp_::init_result_reg() {
+	if (_decs == 0) {
+		if (_body == 0) {
+			return min_reg;
+		} else {
+			return expList_init_result_reg(_body);
+		} 
+	} else {
+		return std::max(_decs->init_result_reg(), expList_init_result_reg(_body));
+	}
+}
+
+int A_varDec_::init_result_reg() {
+	return _init->result_reg();
 }

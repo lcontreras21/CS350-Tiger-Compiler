@@ -56,9 +56,11 @@ class tigerParseDriver;
 
 /* Attributes types for nonterminals are next, e.g. struct's from tigerParseDriver.h */
 %type <expAttrs>  exp
+%type <decAttrs>  dec
 %type <lvalueAttrs> lvalue
 %type <expListAttrs> expList
 %type <seqExpAttrs> seqExp
+%type <decListAttrs> decList
 
 
 // The line below means our grammar must not have conflicts
@@ -66,7 +68,8 @@ class tigerParseDriver;
 //   meaning it must be unambiguous and have some other properties).
 %expect 0
 
-
+// Following Grammar order on this Tiger documentation Page:
+// https://www.lrde.epita.fr/~tiger/tiger.html
 %%
 
 %start program;
@@ -81,6 +84,22 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| STRING[str1]				{ $$.AST = A_StringExp(Position::fromLex(@str1), $str1);
 								  EM_debug("Got string: " + $str1, $$.AST->pos());
 								}
+	| TRUE[t]					{ $$.AST = A_BoolExp(Position::fromLex(@t), true);
+								  EM_debug("Got true boolean expression", $$.AST->pos());
+								}
+	| FALSE[f]					{ $$.AST = A_BoolExp(Position::fromLex(@f), false);
+								  EM_debug("Got false boolean expression", $$.AST->pos());
+								}
+	| lvalue[lv]				{ $$.AST = $lv.AST;
+								}
+	| ID[id1] LPAREN expList[list1] RPAREN[a] { 
+								  $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
+								  EM_debug("Got function call", $$.AST->pos()); 
+								}
+	| MINUS exp[exp1] %prec UMINUS	{ 
+								  $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
+								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
+								}
 	| exp[exp1] PLUS exp[exp2]	{ $$.AST = A_OpExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()),
 												   A_plusOp,  $exp1.AST,$exp2.AST);
 								  EM_debug("Got plus expression.", $$.AST->pos());
@@ -93,7 +112,7 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 												   A_timesOp, $exp1.AST, $exp2.AST);
 								  EM_debug("Got times expression.", $$.AST->pos());
 								}
-	| exp[exp1] DIVIDE exp[exp2]{ $$.AST = A_CallExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), to_Symbol("DIV"), A_ExpList($exp1.AST, A_ExpList($exp2.AST, 0)));
+	| exp[exp1] DIVIDE exp[exp2]{ $$.AST = A_CallExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), to_Symbol("div"), A_ExpList($exp1.AST, A_ExpList($exp2.AST, 0)));
 
 								  EM_debug("Got divide expression.", $$.AST->pos());
 								}
@@ -121,6 +140,10 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 												   A_neqOp, $exp1.AST, $exp2.AST);
 								  EM_debug("Got not equal to expression", $$.AST->pos());
 								}
+	| NOT exp[exp1]	%prec NEGATION	{ 
+								  $$.AST = A_IfExp($exp1.AST->pos(), $exp1.AST, A_BoolExp($exp1.AST->pos(), false), A_BoolExp($exp1.AST->pos(), true));
+								  EM_debug("Got NOT expression", $$.AST->pos());
+								}
 	| exp[exp1] AND exp[exp2]	{ $$.AST = A_IfExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST,  $exp2.AST, A_BoolExp($exp2.AST->pos(), false));
 								  // if e1 then e2 else 0
 								  EM_debug("Got AND expression", $$.AST->pos());
@@ -129,20 +152,9 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  // if e1 then 1 else e2
 								  EM_debug("Got OR expression.", $$.AST->pos());
 								}
-	| NOT exp[exp1]	%prec NEGATION	{ $$.AST = A_IfExp($exp1.AST->pos(), $exp1.AST, A_BoolExp($exp1.AST->pos(), false), A_BoolExp($exp1.AST->pos(), true));
-									  EM_debug("Got NOT expression", $$.AST->pos());
-								}
-	| MINUS exp[exp1] %prec UMINUS			{ $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
-								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
-								}
-	| ID[id1] LPAREN expList[list1] RPAREN[a]{ $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
-								  EM_debug("Got function call", $$.AST->pos()); 
-								}
-	| TRUE[t]					{ $$.AST = A_BoolExp(Position::fromLex(@t), true);
-								  EM_debug("Got true boolean expression", $$.AST->pos());
-								}
-	| FALSE[f]					{ $$.AST = A_BoolExp(Position::fromLex(@f), false);
-								  EM_debug("Got false boolean expression", $$.AST->pos());
+	| LPAREN[lp] seqExp[seqExp1] RPAREN[rp]	  { 
+								  $$.AST = A_SeqExp(Position::range(Position::fromLex(@lp), Position::fromLex(@rp)), $seqExp1.AST); 
+							      EM_debug("Got sequence expression", $$.AST->pos());
 								}
 	| IF[if] exp[exp1] THEN exp[exp2] ELSE exp[exp3] {
 								  $$.AST = A_IfExp(Position::range(Position::fromLex(@if), $exp3.AST->pos()), $exp1.AST, $exp2.AST, $exp3.AST);
@@ -152,20 +164,24 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  $$.AST = A_IfExp(Position::range(Position::fromLex(@if), $exp2.AST->pos()), $exp1.AST, $exp2.AST, 0);
 								  EM_debug("Got if/then/ expression", $$.AST->pos());
 								}
-	| LPAREN[lp] seqExp[seqExp1] RPAREN[rp]	  { $$.AST = A_SeqExp(Position::range(Position::fromLex(@lp), Position::fromLex(@rp)), $seqExp1.AST); 
-									    EM_debug("Got sequence expression", $$.AST->pos());
-								}
-	| WHILE exp[exp1] DO exp[exp2]	{ $$.AST = A_WhileExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST, $exp2.AST);
-									  EM_debug("Got while expression", $$.AST->pos());
+	| WHILE exp[exp1] DO exp[exp2]	{ 
+								  $$.AST = A_WhileExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST, $exp2.AST);
+								  EM_debug("Got while expression", $$.AST->pos());
 								} 
-	| BREAK[br]						{ $$.AST = A_BreakExp(Position::fromLex(@br));
-									  EM_debug("Got break expression", $$.AST->pos());
-								}
 	| FOR ID[id] ASSIGN exp[exp1] TO exp[exp2] DO exp[exp3] {
-									  $$.AST = A_ForExp(Position::range($exp1.AST->pos(), $exp3.AST->pos()), to_Symbol($id), $exp1.AST, $exp2.AST, $exp3.AST);
-									  EM_debug("Got FOR expression", $$.AST->pos()); 
+								  $$.AST = A_ForExp(Position::range($exp1.AST->pos(), $exp3.AST->pos()), to_Symbol($id), $exp1.AST, $exp2.AST, $exp3.AST);
+								  EM_debug("Got FOR expression", $$.AST->pos()); 
 								}
-	| lvalue[lv]					{ $$.AST = $lv.AST;
+	| BREAK[br]					{ $$.AST = A_BreakExp(Position::fromLex(@br));
+								  EM_debug("Got break expression", $$.AST->pos());
+								}
+	| LET decList[decs] IN seqExp[seqExp1] END_LET {
+								  $$.AST = A_LetExp(Position::range($decs.AST->pos(), $seqExp1.AST->pos()), $decs.AST, $seqExp1.AST);
+								  EM_debug("Got LET expression", $$.AST->pos());							
+								}
+	| LET IN seqExp[seqExp1] END_LET {
+								  $$.AST = A_LetExp($seqExp1.AST->pos(), 0, $seqExp1.AST);
+								  EM_debug("Got LET expression", $$.AST->pos());							
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.
@@ -177,11 +193,18 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 //        writing, e.g., Position::fromLex(@exp1) or instead of $exp1.AST->pos()
 //
 			  					}
+lvalue: ID[id]					{ $$.AST = A_VarExp(Position::fromLex(@id), A_SimpleVar(Position::fromLex(@id), to_Symbol($id)));
+								EM_debug("Got Var " + $id, $$.AST->pos());
+								}
+	| lvalue[lv] DOT ID[id]		{
+								}
+	| lvalue L_SQUARE_BRACKET exp[exp1] R_SQUARE_BRACKET {
+								}
 	;
 expList: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
 										  EM_debug("Got end of expList  expression.", $$.AST->pos());
 										}
-	| exp[exp1] COLON expList[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
+	| exp[exp1] COMMA expList[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
 										  EM_debug("Got expList  expression.", $$.AST->pos());
 										} 
 	|									{ $$.AST = 0;
@@ -198,13 +221,22 @@ seqExp: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
 										  EM_debug("Got empty expList  expression");
 										}
 	;
-lvalue: ID[id]				{ $$.AST = A_VarExp(Position::fromLex(@id), A_SimpleVar(Position::fromLex(@id), to_Symbol($id)));
-							  EM_debug("Got SimpleVar" + $id, $$.AST->pos());
-							}
-	| lvalue[lv] DOT ID[id] {
-							}
-	| lvalue L_SQUARE_BRACKET exp[exp1] R_SQUARE_BRACKET {
-							}
+decList: dec[dec1]				{ $$.AST = A_DecList($dec1.AST, 0); 
+								  EM_debug("Got declaration", $$.AST->pos());
+								}
+	| dec[dec1]	decList[dL]		{ $$.AST = A_DecList($dec1.AST, $dL.AST); 
+								  EM_debug("Got declaration list", $$.AST->pos());
+								}
+	;
+dec: VAR ID[id1] COLON ID[id2] ASSIGN exp[exp1] {
+								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), to_Symbol($id2), $exp1.AST); 
+								  EM_debug("Got Variable declaration: " + $id1 + " with type " + $id2, $$.AST->pos());
+								}
+	| VAR ID[id1] ASSIGN exp[exp1] {
+								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), to_Symbol("NA"), $exp1.AST); 
+								  EM_debug("Got Variable declaration: " + $id1, $$.AST->pos());
+								}
+   ;
 
 %%
 

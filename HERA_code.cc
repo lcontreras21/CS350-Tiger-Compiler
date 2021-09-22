@@ -6,6 +6,7 @@ int if_counter = 0;
 int comp_counter = 0;
 int loop_counter = 0;
 int SP_counter = 0;
+int let_counter = 0;
 ST<var_info> var_library = ST<var_info>();
 
 /*
@@ -28,6 +29,9 @@ const string indent_math = "    ";  // might want to use something different for
 	A_forExp_
 	A_varExp_
 	A_simpleVar_
+	A_letExp_
+	A_decList_
+	A_varDec_
 */
 
 string AST_node_::HERA_code()  // Default used during development; could be removed in final version
@@ -192,9 +196,9 @@ string A_callExp_::HERA_code()
 	if (_args != 0) {
 		stack_size = stack_size + _args->length();
 	}
+	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	SP_counter = SP_counter + stack_size;
-	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n"
-			+ indent_math + "MOVE(FP_alt, SP)\n" 
+	my_code = my_code + indent_math + "MOVE(FP_alt, SP)\n" 
 			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n" 
 			+ _args_HERA_code(3) 
 			+ indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
@@ -384,5 +388,79 @@ string A_simpleVar_::HERA_code() {
 		output = "// Accessing Variable: " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP())  
 			   + "\n    LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\n";
 	}
+	//	else {
+	//	EM_error("HERA_code: Variable " + str(_sym) + " has not been declared in this scope.");
+	//}
+	return output;
+}
+
+string A_letExp_::HERA_code() {
+	// INC SP by number of things being declared
+	int my_SP = _decs->calculate_my_SP(this); 
+	string output = "// Start of Let Expression " + std::to_string(let_counter) + ". Stack starting at SP: " + std::to_string(SP_counter) + ". Initializing " + std::to_string(my_SP) + " variables.\n"
+				  + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
+	// Increment the SP_counter
+	SP_counter = SP_counter + my_SP;
+	// Save current var_library, type_library, function_library to restore later
+	ST<var_info> copy_var_lib = var_library;
+	ST<type_info> copy_type_lib = type_library;
+	ST<function_info> copy_tiger_lib = tiger_library;
+	// Make changes to STs and store decs into Stack
+		// Should happen in A_decList_::HERA_code and in A_decs_
+	if (_decs != 0) {
+		output = output + _decs->HERA_code();
+	}
+	// Do _body HERA_code
+	if (_body != 0) {
+		A_expList body = _body;
+		while (body != 0) {
+			output = output + body->_head->HERA_code();
+			body = body->_tail;
+		}
+	}
+	// DEC SP by same amount as was increased
+	output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
+	SP_counter = SP_counter - my_SP;
+	// Restore all scopes to original
+	var_library = copy_var_lib;
+	type_library = copy_type_lib;
+	tiger_library = copy_tiger_lib;
+	output = output + "// END of Let Expression " + std::to_string(let_counter) + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
+	return output;
+}
+
+string A_decList_::HERA_code() {
+	if (_tail == 0) {
+		return _head->HERA_code();
+	} else {
+		string head_code = _head->HERA_code();
+		return head_code + _tail->HERA_code();	
+	}
+}
+
+string A_varDec_::HERA_code() {
+	// Get SP for this declaration by asking parent 
+	int my_SP = calculate_my_SP(this);
+	ST<var_info> var;
+	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
+		// Use type of _init to initialize type 
+		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP));
+	} else {
+		// Lookup the type for _typ in ST type_library
+		if (is_name_there(_typ, type_library)) {
+			type_info type_struct = lookup(_typ, type_library);
+			Ty_ty type = type_struct.my_type();
+			var = ST<var_info>(_var, var_info(type, my_SP));
+			// Add var into the stack
+		} else {
+			EM_error("HERA_code: Type not found for VarDec with type " + Symbol_to_string(_typ));
+			return "";
+		}
+	}
+	// Add variable to type library
+	var_library = MergeAndShadow(var, var_library);
+	// Add variable to stack
+	string output = _init->HERA_code()  
+				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)\n";
 	return output;
 }

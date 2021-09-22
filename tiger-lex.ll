@@ -163,7 +163,7 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "/"					{ loc.step(); return yy::tigerParser::make_DIVIDE(loc);			}
 "("					{ loc.step(); return yy::tigerParser::make_LPAREN(loc);			}
 ")"					{ loc.step(); return yy::tigerParser::make_RPAREN(loc);			} 
-","					{ loc.step(); return yy::tigerParser::make_COLON(loc);			}
+","					{ loc.step(); return yy::tigerParser::make_COMMA(loc);			}
 "if"				{ loc.step(); return yy::tigerParser::make_IF(loc);				}
 "then"				{ loc.step(); return yy::tigerParser::make_THEN(loc);			}
 "else"				{ loc.step(); return yy::tigerParser::make_ELSE(loc);			}
@@ -189,6 +189,11 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "."					{ loc.step(); return yy::tigerParser::make_DOT(loc);			}
 "["					{ loc.step(); return yy::tigerParser::make_L_SQUARE_BRACKET(loc);}
 "]"					{ loc.step(); return yy::tigerParser::make_R_SQUARE_BRACKET(loc);}
+"let"				{ loc.step(); return yy::tigerParser::make_LET(loc);			}
+"in"				{ loc.step(); return yy::tigerParser::make_IN(loc);				}
+"end"				{ loc.step(); return yy::tigerParser::make_END_LET(loc);		}
+"var"				{ loc.step(); return yy::tigerParser::make_VAR(loc);			}
+":"					{ loc.step(); return yy::tigerParser::make_COLON(loc);			}
 {identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
 {integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */
