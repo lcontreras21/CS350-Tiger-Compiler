@@ -39,7 +39,7 @@ Have ** on their name
 				A_arrayExp_
 			A_varExp_**
 			A_opExp_**
-			A_assignExp_
+			A_assignExp_**
 			A_letExp_
 			A_callExp_**
 			A_controlExp_
@@ -113,30 +113,37 @@ static Ty_ty check_return_type(A_oper op) {
 }
 
 Ty_ty A_opExp_::init_typecheck() {
-	// Check types on _left and _right
-	string error = "";
-	Ty_ty type_to_check = Ty_Int();
 	Ty_ty left_type = _left->typecheck();
 	Ty_ty right_type = _right->typecheck();
-	if (left_type != type_to_check) {
-		if (left_type != Ty_Bool()) { 
-			error = error + "opExp has type error on left expression\n";
+	Ty_ty return_type = check_return_type(_oper);
+	// If return type is Ty_Bool (comparison Op), just make sure left/right types are the same
+	// Otherwise, type is Ty_Int (arithmetic op), make sure left/right are type int ( maybe Ty_bool?)
+	if (return_type == Ty_Bool()) {
+		if (left_type == right_type) {
+			return return_type;
 		} else {
-			EM_warning("Boolean expression found on the left");
+			EM_error("Comparison operator does not have left and right being the same type");
+			return Ty_Error();
+		}	
+	} else if (return_type == Ty_Int()) {
+		bool error = false;
+		if (left_type != Ty_Int()) {
+			EM_warning("Left side of op does not have Ty_Int()");
+			error = true;
 		}
-	}
-	if (right_type != type_to_check) {
-		if (right_type != Ty_Bool()) { 
-			error = error + "opExp has type error on right expression\n";
+		if (right_type != Ty_Int()) {
+			EM_warning("Right side of op does not have Ty_Int()");
+			error = true;
+		}
+		if (error) {
+			EM_error("Type error in op expression");
+			return Ty_Error();
 		} else {
-			EM_warning("Boolean expression found on the right");
+			return return_type;
 		}
-	}
-	if (error != "") {
-		EM_error(error);
-		return Ty_Error();
 	} else {
-		return check_return_type(_oper);
+		EM_error("Make sure you have used the correct operator");
+		return Ty_Error();
 	}
 }
 
@@ -179,6 +186,11 @@ Ty_ty A_callExp_::init_typecheck() {
 		arg_types = arg_types->tail;
 		args_exps = args_exps->_tail;
 		arg_counter++;
+	}
+	if (args_exps == 0 and arg_types != 0) {
+		// Too few arguments
+		EM_error("Function " + str(_func) + " has too few arguments.");
+		return Ty_Error();
 	}
 	// If made it this far, then all types check out
 	return return_type;
@@ -352,4 +364,14 @@ Ty_ty A_varDec_::init_typecheck() {
 		}
 	}
 
+}
+
+Ty_ty A_assignExp_::init_typecheck() {
+	// Make sure type of _exp matches type initially stored in ST?
+	// Or can type info be overwritten?
+	if (_exp->typecheck() != _var->typecheck()) {
+		return Ty_Error();
+	} else {
+		return Ty_Void();
+	}
 }

@@ -32,6 +32,7 @@ const string indent_math = "    ";  // might want to use something different for
 	A_letExp_
 	A_decList_
 	A_varDec_
+	A_assignExp_
 */
 
 string AST_node_::HERA_code()  // Default used during development; could be removed in final version
@@ -93,64 +94,66 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 		}
 	}
 }
+
 string A_opExp_::HERA_code()
 {
-	/* Modify to follow S-U algorithm
-	   child with more registers should be first */
+	/* Modify to follow S-U algorithm child with more registers should be first */
 	int left_reg = _left->result_reg();
 	string left_reg_s = _left->result_reg_s();
 	int right_reg = _right->result_reg();
 	string right_reg_s = _right->result_reg_s();
 	
 	string HERA_op = HERA_math_op(pos(), _oper);
-	string output_reg;
+	string output_reg_s;
 	bool comp = false;
 	if (HERA_op == "1") {
 		comp = true;
 		HERA_op = HERA_comp_op(_oper);
 	}
 	string output;
-	// Handle Math operations
+	// Handle which operation happens first according to SU algorithm
 	if (left_reg == right_reg) {
 		/* Handle case when they are equal */ 
+		output_reg_s = "R" + std::to_string(left_reg+1);
 		output = _left->HERA_code() + 
-				 indent_math + "MOVE(R" + std::to_string(left_reg+1) + ", " + left_reg_s + ")\n" + 
+				 indent_math + "MOVE(" + output_reg_s + ", " + left_reg_s + ")\n" + 
 				 _right->HERA_code();
-		output_reg = "R" + std::to_string(left_reg+1);
-		left_reg_s = output_reg;
-		if (not comp) {
-			output = output + indent_math + HERA_op + "(R" + std::to_string(left_reg+1) + ", " + "R" + std::to_string(left_reg+1) + ", " + right_reg_s + ")\n";
-		}
-	} else if (left_reg > right_reg) {
-		/* Handle case when left is greater */ 
-		output = _left->HERA_code() + _right->HERA_code();
-		output_reg = left_reg_s;
-		if (not comp) {
-			output = output + indent_math + HERA_op + "(" + left_reg_s + ", " + left_reg_s + ", " + right_reg_s + ")\n";
-		}
-	} else if (left_reg < right_reg) {
-		/* Handle case when right is greater */ 
-		output = _right->HERA_code() + _left->HERA_code();
-		output_reg = right_reg_s;
-		if (not comp) {
-			output = output + indent_math + HERA_op + "(" + right_reg_s + ", " + left_reg_s + ", " + right_reg_s + ")\n";
-		}
+		left_reg_s = output_reg_s;
+	}  else {
+		output = (left_reg > right_reg) ? (_left->HERA_code() + _right->HERA_code()) : (_right->HERA_code() + _left->HERA_code());
+		output_reg_s = (left_reg > right_reg) ? (left_reg_s) : (right_reg_s);
 	}
-	if (comp) {
-		// Handle Comparison Operations
+	
+	if (not comp) {
+		// Arithmetic Operation
+		output = output + indent_math + HERA_op + "("+ output_reg_s + ", " + left_reg_s + ", " + right_reg_s + ")\n";
+	} else  {
 		// A few string vars for label creation
 		int this_comp_counter = comp_counter;
 		comp_counter++;
 		string label = "else_comp_" + std::to_string(this_comp_counter);
 		string end_label = "end_of_comp_" + std::to_string(this_comp_counter);
-		// Subtract both 
-		// Sub by zero to check if there is a non-zero into for true or 0 for false
-		output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n" 
-				+ indent_math + HERA_op + "(" + label + ")\n"
-				+ indent_math + "SET(" + output_reg + ", 0)\n"  
+
+		// Int Comparisons
+		if (_left->typecheck() == Ty_Int()) {
+			// Handle Comparison Operations
+			output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n"; 
+		} else if (_left->typecheck() == Ty_String()) {
+			// String comparison. Function call to tstrcmp
+			output = output + indent_math + "MOVE(FP_alt, SP)\n" 
+				+ indent_math + "INC(SP, 5)\n" 
+				+ indent_math + "STORE(" + left_reg_s + ", 3, FP_alt)\n"
+				+ indent_math + "STORE(" + right_reg_s + ", 4, FP_alt)\n"
+				+ indent_math + "CALL(FP_alt, tstrcmp)\n"
+				+ indent_math + "LOAD(" + output_reg_s + ", 3, FP_alt)\n"
+				+ indent_math + "CMP(" + output_reg_s + ", R0)\n"; 
+		}
+		// Comparison Operation and Branching. Generic to all comparisons
+		output = output + indent_math + HERA_op + "(" + label + ")\n"
+				+ indent_math + "SET(" + output_reg_s + ", 0)\n"  
 				+ indent_math + "BR(" + end_label + ")\n"
 				+ indent_math + "LABEL(" + label + ")\n"
-				+ indent_math + "SET(" + output_reg + ", 1)\n"
+				+ indent_math + "SET(" + output_reg_s + ", 1)\n"
 				+ indent_math + "LABEL(" + end_label + ")\n";	
 	}
 	return output;
@@ -198,11 +201,15 @@ string A_callExp_::HERA_code()
 	}
 	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	SP_counter = SP_counter + stack_size;
-	my_code = my_code + indent_math + "MOVE(FP_alt, SP)\n" 
+	my_code = my_code 
+			+ indent_math + "MOVE(Rt, FP_alt)\n"
+			+ indent_math + "MOVE(FP_alt, SP)\n" 
 			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n" 
+			+ indent_math + "STORE(Rt, 2, FP_alt)\n"
 			+ _args_HERA_code(3) 
 			+ indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
 			+ return_val
+			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
 			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	
 	SP_counter = SP_counter - stack_size;
 	my_code = my_code + "// End of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
@@ -379,19 +386,29 @@ string A_varExp_::HERA_code() {
 }
 
 string A_simpleVar_::HERA_code() {
-	// Access sp number from declaration
-	// int my_sp_location = 
-	// Load it into R4
+	// Two cases: In A_varDec_ or A_assignExp_
+	int inAssignExp = am_i_in_assignExp_(this);
+	// Returns register of new assignment value if in assignexp, otherwise < 0
+
 	string output = "";
 	if (is_name_there(_sym, var_library)) {
 		var_info var_struct = lookup(_sym, var_library);
-		output = "// Accessing Variable: " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP())  
-			   + "\n    LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+
+		if (inAssignExp > 0) {
+			output = "// Reassigning Variable: " + Symbol_to_string(_sym) + " + SP: " + std::to_string(var_struct.my_SP())
+				   + "\n    STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+		} else {
+			// In varDec_
+			// Access sp number from declaration
+			// int my_sp_location = 
+			// Load it into R4
+			output = "// Accessing Variable: " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP())  
+					   + "\n    LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+		}
+		return output;
+	} else {
+		return "";
 	}
-	//	else {
-	//	EM_error("HERA_code: Variable " + str(_sym) + " has not been declared in this scope.");
-	//}
-	return output;
 }
 
 string A_letExp_::HERA_code() {
@@ -442,6 +459,7 @@ string A_varDec_::HERA_code() {
 	// Get SP for this declaration by asking parent 
 	int my_SP = calculate_my_SP(this);
 	ST<var_info> var;
+	MergeAndShadow(var, var_library);
 	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
 		// Use type of _init to initialize type 
 		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP));
@@ -463,4 +481,10 @@ string A_varDec_::HERA_code() {
 	string output = _init->HERA_code()  
 				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)\n";
 	return output;
+}
+
+string A_assignExp_::HERA_code() {
+	// Run code for _exp
+	// Have _var store that in the ST
+	return _exp->HERA_code() + _var->HERA_code(); 
 }

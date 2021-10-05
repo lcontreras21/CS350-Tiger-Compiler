@@ -111,3 +111,7 @@ string A_decList_::HERA_data() {
 string A_varDec_::HERA_data() {
 	return _init->HERA_data();
 }
+
+string A_assignExp_::HERA_data() {
+	return _var->HERA_data() + _exp->HERA_data();
+}

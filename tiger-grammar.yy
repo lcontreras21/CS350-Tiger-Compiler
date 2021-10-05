@@ -45,6 +45,7 @@ class tigerParseDriver;
 
 /* precedence (stickiness) ... put the stickiest stuff at the bottom of the list */
 /* https://stackoverflow.com/questions/12731922/reforming-the-grammar-to-remove-shift-reduce-conflict-in-if-then-else Precence for THEN ELSE */ 
+%left ASSIGN
 %left OR
 %left AND
 %nonassoc GE LE EQ NEQ LT GT THEN
@@ -78,7 +79,8 @@ program: exp[main]	{ EM_debug("Got the main expression of our tiger program.", $
 		 			}
 	;
 
-exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
+exp:  INT[i]					{ // LITERALS
+								  $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  EM_debug("Got int " + str($i), $$.AST->pos());
 								}
 	| STRING[str1]				{ $$.AST = A_StringExp(Position::fromLex(@str1), $str1);
@@ -90,13 +92,16 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 	| FALSE[f]					{ $$.AST = A_BoolExp(Position::fromLex(@f), false);
 								  EM_debug("Got false boolean expression", $$.AST->pos());
 								}
-	| lvalue[lv]				{ $$.AST = $lv.AST;
+	| lvalue[lv]				{ // VARIABLES, FIELD, ELEMENTS OF AN ARRAY
+								  $$.AST = A_VarExp(Position::fromLex(@lv), $lv.AST);
 								}
 	| ID[id1] LPAREN expList[list1] RPAREN[a] { 
+								  // FUNCTION CALL
 								  $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
 								  EM_debug("Got function call", $$.AST->pos()); 
 								}
 	| MINUS exp[exp1] %prec UMINUS	{ 
+								  // OPERATIONS: UNARY, ARITHMETIC, BOOLEAN, PARENTHESIS
 								  $$.AST = A_OpExp($exp1.AST->pos(), A_timesOp, A_IntExp(Position::fromLex(@exp1), -1), $exp1.AST); 
 								  EM_debug("Got Unary Negation expression.", $$.AST->pos());
 								}
@@ -140,10 +145,6 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 												   A_neqOp, $exp1.AST, $exp2.AST);
 								  EM_debug("Got not equal to expression", $$.AST->pos());
 								}
-	| NOT exp[exp1]	%prec NEGATION	{ 
-								  $$.AST = A_IfExp($exp1.AST->pos(), $exp1.AST, A_BoolExp($exp1.AST->pos(), false), A_BoolExp($exp1.AST->pos(), true));
-								  EM_debug("Got NOT expression", $$.AST->pos());
-								}
 	| exp[exp1] AND exp[exp2]	{ $$.AST = A_IfExp(Position::range($exp1.AST->pos(), $exp2.AST->pos()), $exp1.AST,  $exp2.AST, A_BoolExp($exp2.AST->pos(), false));
 								  // if e1 then e2 else 0
 								  EM_debug("Got AND expression", $$.AST->pos());
@@ -152,11 +153,20 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 								  // if e1 then 1 else e2
 								  EM_debug("Got OR expression.", $$.AST->pos());
 								}
+	| NOT exp[exp1]	%prec NEGATION	{ 
+								  $$.AST = A_IfExp($exp1.AST->pos(), $exp1.AST, A_BoolExp($exp1.AST->pos(), false), A_BoolExp($exp1.AST->pos(), true));
+								  EM_debug("Got NOT expression", $$.AST->pos());
+								}
 	| LPAREN[lp] seqExp[seqExp1] RPAREN[rp]	  { 
 								  $$.AST = A_SeqExp(Position::range(Position::fromLex(@lp), Position::fromLex(@rp)), $seqExp1.AST); 
 							      EM_debug("Got sequence expression", $$.AST->pos());
 								}
+	| lvalue[lv] ASSIGN exp[exp1]{// ASSIGNMENT
+								  $$.AST = A_AssignExp(Position::range($lv.AST->pos(), $exp1.AST->pos()), $lv.AST, $exp1.AST);
+								  EM_debug("Got Assignment expression", $$.AST->pos());  
+								}
 	| IF[if] exp[exp1] THEN exp[exp2] ELSE exp[exp3] {
+								  // CONTROL STRUCTURES: IF, WHILE, FOR, BREAK, LET	
 								  $$.AST = A_IfExp(Position::range(Position::fromLex(@if), $exp3.AST->pos()), $exp1.AST, $exp2.AST, $exp3.AST);
 								  EM_debug("Got if/then/else expression", $$.AST->pos());
 								}
@@ -193,7 +203,7 @@ exp:  INT[i]					{ $$.AST = A_IntExp(Position::fromLex(@i), $i);
 //        writing, e.g., Position::fromLex(@exp1) or instead of $exp1.AST->pos()
 //
 			  					}
-lvalue: ID[id]					{ $$.AST = A_VarExp(Position::fromLex(@id), A_SimpleVar(Position::fromLex(@id), to_Symbol($id)));
+lvalue: ID[id]					{ $$.AST = A_SimpleVar(Position::fromLex(@id), to_Symbol($id));
 								EM_debug("Got Var " + $id, $$.AST->pos());
 								}
 	| lvalue[lv] DOT ID[id]		{
@@ -229,6 +239,7 @@ decList: dec[dec1]				{ $$.AST = A_DecList($dec1.AST, 0);
 								}
 	;
 dec: VAR ID[id1] COLON ID[id2] ASSIGN exp[exp1] {
+								  // VARIABLE DECLARATION
 								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), to_Symbol($id2), $exp1.AST); 
 								  EM_debug("Got Variable declaration: " + $id1 + " with type " + $id2, $$.AST->pos());
 								}

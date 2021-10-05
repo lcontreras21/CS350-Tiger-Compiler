@@ -123,3 +123,7 @@ int A_letExp_::init_result_reg() {
 int A_varDec_::init_result_reg() {
 	return _init->result_reg();
 }
+
+int A_assignExp_::init_result_reg() {
+	return _exp->result_reg();	
+}

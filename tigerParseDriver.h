@@ -9,7 +9,7 @@ struct expAttrs {
 };
 
 struct lvalueAttrs {
-		A_exp AST;
+		A_var AST;
 };
 
 struct expListAttrs {

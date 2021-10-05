@@ -126,3 +126,25 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 }
 
 
+//--------------------------------------------------------------------------------
+
+int AST_node_::am_i_in_assignExp_(AST_node_ *child) {
+	return stored_parent->am_i_in_assignExp_(this);	
+}
+
+int A_root_::am_i_in_assignExp_(AST_node_ *child) {
+	// Should this be an error?
+	return -2;
+}
+
+int A_assignExp_::am_i_in_assignExp_(AST_node_ *child) {
+	return _exp->result_reg();
+}
+
+int A_varExp_::am_i_in_assignExp_(AST_node_ *child) {
+	return -1;
+}
+
+int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
+	return stored_parent->am_i_in_assignExp_(this);
+}

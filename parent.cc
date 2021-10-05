@@ -147,3 +147,9 @@ void A_varDec_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_pare
 	stored_parent = my_parent_or_null_if_i_am_the_root;
 	_init->set_parent_pointers_for_me_and_my_descendants(this);	
 }
+
+void A_assignExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_var->set_parent_pointers_for_me_and_my_descendants(this);	
+	_exp->set_parent_pointers_for_me_and_my_descendants(this);	
+}
