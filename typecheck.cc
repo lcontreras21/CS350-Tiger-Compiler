@@ -267,7 +267,7 @@ Ty_ty A_forExp_::init_typecheck() {
 	// _body must return Ty_Void()
 	ST<var_info> copy_lib = var_type_lib;
 	var_type_lib = MergeAndShadow(var_type_lib, 
-			ST<var_info>(_var, var_info(Ty_Int(), 0)));
+			ST<var_info>(_var, var_info(Ty_Int(), 0, false)));
 	Ty_ty _body_type = _body->typecheck();
 	if (_lo->typecheck() != Ty_Int()) {
 		EM_error("For expression must have type int in lower bound");
@@ -344,7 +344,7 @@ Ty_ty A_varDec_::init_typecheck() {
 	// If no _typ available, return type of _init
 	Ty_ty implicit_type = _init->typecheck();
 	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
-		var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(implicit_type, 0)));
+		var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(implicit_type, 0, true)));
 		return implicit_type;
 	} else {
 		// Lookup declared type in type_library
@@ -355,7 +355,7 @@ Ty_ty A_varDec_::init_typecheck() {
 				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type. Not adding to Variable Symbol Table.");
 				return Ty_Error();
 			} else {
-				var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(return_type, 0)));
+				var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(return_type, 0, true)));
 				return return_type;
 			}
 		} else {

@@ -13,9 +13,10 @@ Ty_ty type_info::my_type() {
 }
 
 // Variable Library
-var_info::var_info(Ty_ty the_type, int the_SP) {
+var_info::var_info(Ty_ty the_type, int the_SP, bool writable) {
 	_type = the_type;
 	_SP = the_SP;	
+	_writable = writable;
 };
 
 Ty_ty var_info::my_type() {
@@ -24,6 +25,10 @@ Ty_ty var_info::my_type() {
 
 int var_info::my_SP() {
 	return _SP;
+}
+
+bool var_info::am_i_writable() {
+	return _writable;
 }
 
 // Type Standard library
@@ -59,7 +64,7 @@ ST<function_info> tiger_library = FuseOneScope(
 					FuseOneScope(
 						lib_func(to_Symbol("size"), function_info(Ty_Function(Ty_Int(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), 0)))),
 						FuseOneScope(
-							lib_func(to_Symbol("substring"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("first"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("n"), Ty_Int()), 0)))))),
+							lib_func(to_Symbol("substring"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("first"), Ty_Int()), Ty_FieldList(Ty_Field(to_Symbol("n"), Ty_Int()), 0)))))),
 							FuseOneScope(
 								lib_func(to_Symbol("concat"), function_info(Ty_Function(Ty_String(), Ty_FieldList(Ty_Field(to_Symbol("s1"), Ty_String()), Ty_FieldList(Ty_Field(to_Symbol("s2"), Ty_String()), 0))))),
 								FuseOneScope(

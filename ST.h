@@ -138,11 +138,13 @@ extern ST<function_info> tiger_library;
 // Struct to store type and SP information for variables
 struct var_info {
 public:
-	var_info(Ty_ty the_type, int the_SP);
+	var_info(Ty_ty the_type, int the_SP, bool writable);
 	Ty_ty _type;
 	int _SP;
+	bool _writable; 
 	Ty_ty my_type();
 	int my_SP();
+	bool am_i_writable();
 };
 
 struct type_info {

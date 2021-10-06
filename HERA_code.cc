@@ -140,13 +140,21 @@ string A_opExp_::HERA_code()
 			output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n"; 
 		} else if (_left->typecheck() == Ty_String()) {
 			// String comparison. Function call to tstrcmp
-			output = output + indent_math + "MOVE(FP_alt, SP)\n" 
-				+ indent_math + "INC(SP, 5)\n" 
+			output = output 
+				+ "// Start of Function Call for function tstrcmp in opExp. Current SP at: " + std::to_string(SP_counter) 
+				+ indent_math + "MOVE(Rt, FP_alt)\n"
+				+ indent_math + "MOVE(FP_alt, SP)\n" 
+				+ indent_math + "INC(SP, 5)\n";
+			SP_counter = SP_counter + 5;
+			output = output + indent_math + "STORE(Rt, 2, FP_alt)\n"
 				+ indent_math + "STORE(" + left_reg_s + ", 3, FP_alt)\n"
 				+ indent_math + "STORE(" + right_reg_s + ", 4, FP_alt)\n"
 				+ indent_math + "CALL(FP_alt, tstrcmp)\n"
 				+ indent_math + "LOAD(" + output_reg_s + ", 3, FP_alt)\n"
+				+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
+				+ indent_math + "DEC(SP, 5)\n"
 				+ indent_math + "CMP(" + output_reg_s + ", R0)\n"; 
+			SP_counter = SP_counter - 5;
 		}
 		// Comparison Operation and Branching. Generic to all comparisons
 		output = output + indent_math + HERA_op + "(" + label + ")\n"
@@ -350,7 +358,7 @@ string A_forExp_::HERA_code() {
 	// Make a copy of ST var_library
 	ST<var_info> previous_scope = var_library;
 	// Add the _var to the ST var_library with it's type and SP number
-	ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter));
+	ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false));
 	// var_library = MergeAndShadow(var_library, for_var);
 	var_library = MergeAndShadow(for_var, var_library);
 
@@ -395,8 +403,14 @@ string A_simpleVar_::HERA_code() {
 		var_info var_struct = lookup(_sym, var_library);
 
 		if (inAssignExp > 0) {
-			output = "// Reassigning Variable: " + Symbol_to_string(_sym) + " + SP: " + std::to_string(var_struct.my_SP())
-				   + "\n    STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+			// Check if var is writable, otherwise produce error
+			bool writable = var_struct.am_i_writable();
+			if (writable) {
+				output = "// Reassigning Variable: " + Symbol_to_string(_sym) + " + SP: " + std::to_string(var_struct.my_SP())
+					   + "\n    STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+			} else {
+				EM_error("Tried to write to a variable that is not writable. This happens most often when trying to write to the loop variable in an IF statement");
+			}
 		} else {
 			// In varDec_
 			// Access sp number from declaration
@@ -462,13 +476,13 @@ string A_varDec_::HERA_code() {
 	MergeAndShadow(var, var_library);
 	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
 		// Use type of _init to initialize type 
-		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP));
+		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP, true));
 	} else {
 		// Lookup the type for _typ in ST type_library
 		if (is_name_there(_typ, type_library)) {
 			type_info type_struct = lookup(_typ, type_library);
 			Ty_ty type = type_struct.my_type();
-			var = ST<var_info>(_var, var_info(type, my_SP));
+			var = ST<var_info>(_var, var_info(type, my_SP, true));
 			// Add var into the stack
 		} else {
 			EM_error("HERA_code: Type not found for VarDec with type " + Symbol_to_string(_typ));
