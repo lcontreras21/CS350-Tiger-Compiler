@@ -33,6 +33,9 @@ const string indent_math = "    ";  // might want to use something different for
 	A_decList_
 	A_varDec_
 	A_assignExp_
+	A_functionDec_
+	A_fundecList_
+	A_fundec_
 */
 
 string AST_node_::HERA_code()  // Default used during development; could be removed in final version
@@ -42,9 +45,14 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 	return "#error " + message;  //if somehow we try to HERA-C-Run this, it will fail
 }
 
+string func_HERA_code = "";
+
 string A_root_::HERA_code()
 {
-	return "\nCBON()\n\n" + main_expr->HERA_code();  // was SETCB for HERA 2.3
+	string output = "\nCBON()\n\n" + main_expr->HERA_code()  // was SETCB for HERA 2.3
+		+ "\nHALT()\n" + func_HERA_code;
+
+	return output;
 }
 
 
@@ -428,8 +436,10 @@ string A_simpleVar_::HERA_code() {
 string A_letExp_::HERA_code() {
 	// INC SP by number of things being declared
 	int my_SP = _decs->calculate_my_SP(this); 
-	string output = "// Start of Let Expression " + std::to_string(let_counter) + ". Stack starting at SP: " + std::to_string(SP_counter) + ". Initializing " + std::to_string(my_SP) + " variables.\n"
-				  + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
+	string output = "// Start of Let Expression " + std::to_string(let_counter) + ". Stack starting at SP: " + std::to_string(SP_counter) + ". Initializing " + std::to_string(my_SP) + " variables.\n";
+	if (my_SP > 0) {
+		output = output + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
+	}
 	// Increment the SP_counter
 	SP_counter = SP_counter + my_SP;
 	// Save current var_library, type_library, function_library to restore later
@@ -450,7 +460,9 @@ string A_letExp_::HERA_code() {
 		}
 	}
 	// DEC SP by same amount as was increased
-	output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
+	if (my_SP > 0) {
+		output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
+	}
 	SP_counter = SP_counter - my_SP;
 	// Restore all scopes to original
 	var_library = copy_var_lib;
@@ -502,3 +514,70 @@ string A_assignExp_::HERA_code() {
 	// Have _var store that in the ST
 	return _exp->HERA_code() + _var->HERA_code(); 
 }
+
+string A_functionDec_::HERA_code() {
+	string output; 
+	// Need to do two passes, just like with typechecking, to set up functions in function library for recursive functions
+	// First pass:
+	theFunctions->HERA_code();
+	// Second pass
+	string func_code = theFunctions->HERA_code();
+	output = "// Start of Function Declarations\n" + func_code + "// End of Function Declarations\n";
+	// Have to add Function Definitions to end of HERA_code, not with all the other code
+	func_HERA_code = func_HERA_code + output;
+	return "";
+}
+
+string A_fundecList_::HERA_code() {
+	if (_tail == 0) {
+		return _head->HERA_code();
+	} else {
+		return _head->HERA_code() + _tail->HERA_code();
+	}
+}
+
+string A_fundec_::HERA_code() {
+	/* To define a function to be called with these conventions, we use these steps, as needed:
+		• Increment SP to make space for local storage
+		• Save registers, including PC_ret (return address) and FP_alt (dynamic link)
+		• Give the function body (in which parameters come from the stack frame, e.g. FP + 3)
+		• Store the return value at FP + 3
+		• Restore saved registers, including FP_alt and PC_ret, and decrement SP
+		• RETURN from the function
+	*/
+	// Make copy of function and variable library
+	if (not firstPass) {
+		// Add function to tiger_library
+		tiger_library = FuseOneScope(tiger_library, this_func_ST);
+		firstPass = true;
+		return "";
+	} else {
+
+		ST<var_info> temp_lib = var_library;
+		
+		var_library = current_var_lib;
+
+		// Add params to ST and make available in body, make copy of vars
+		string output;
+		output  = "// Start of Function Definition: " + Symbol_to_string(_name) + "\n"
+				+ "LABEL(" + Symbol_to_string(_name) + ")\n"
+				+ indent_math + "// Saving PC_ret, FP_alt\n"
+				+ indent_math + "INC(SP, 3)\n";
+		SP_counter = SP_counter + 2;
+		output =  output 
+				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
+				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
+				+ indent_math + "// Body of Function\n"
+				+ indent_math + _body->HERA_code()
+				+ indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP)\n"
+				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
+				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
+				+ indent_math + "DEC(SP, 3)\n"
+				+ indent_math + "RETURN(FP_alt, PC_ret)\n";
+		SP_counter = SP_counter - 2;
+
+		var_library = temp_lib;
+		return output;	
+	}
+}
+

@@ -115,3 +115,20 @@ string A_varDec_::HERA_data() {
 string A_assignExp_::HERA_data() {
 	return _var->HERA_data() + _exp->HERA_data();
 }
+
+string A_functionDec_::HERA_data() {
+	return theFunctions->HERA_data();
+}
+
+string A_fundecList_::HERA_data() {
+	if (_tail == 0) {
+		return _head->HERA_data();
+	} else {
+		return _head->HERA_data() + _tail->HERA_data();
+	}
+}
+
+string A_fundec_::HERA_data() {
+	return _body->HERA_data();
+}
+

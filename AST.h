@@ -639,14 +639,6 @@ private:
 	// where we conservatively assume all variables escape
 };
 
-class A_functionDec_: public A_dec_ {
-public:
-	A_functionDec_(A_pos pos, A_fundecList functions_that_might_call_each_other);
-	virtual string print_rep(int indent, bool with_attributes);
-private:
-	A_fundecList theFunctions;
-};
-
 class A_typeDec_: public A_dec_ {
 public:
 	A_typeDec_(A_pos pos, A_nametyList types_that_might_refer_to_each_other);
@@ -655,25 +647,50 @@ private:
 	A_nametyList theTypes;
 };
 
-class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
+class A_functionDec_: public A_dec_ {
 public:
-	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type,  A_exp body);
+	A_functionDec_(A_pos pos, A_fundecList functions_that_might_call_each_other);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	Ty_ty init_typecheck();
+	virtual int init_result_reg();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
-	Symbol _name;
-	A_fieldList _params;
-	Symbol _result;
-	A_exp _body;
+	A_fundecList theFunctions;
 };
+
 class A_fundecList_ : public AST_node_ {
 public:
 	A_fundecList_(A_fundec head, A_fundecList tail);
 	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	Ty_ty init_typecheck();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_fundec _head;
 	A_fundecList _tail;
 };
 
+class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
+public:
+	A_fundec_(A_pos pos, Symbol name, A_fieldList params, Symbol result_type,  A_exp body);
+	virtual string print_rep(int indent, bool with_attributes);
+	virtual string HERA_code();
+	virtual string HERA_data();
+	Ty_ty init_typecheck();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+private:
+	bool firstPass = true;
+	ST<var_info> current_var_lib;
+	ST<function_info> this_func_ST;
+	Symbol _name;
+	A_fieldList _params;
+	Symbol _result;
+	A_exp _body;
+};
 
 //  Giving a name to a type with Namety -- this is a declaration of a type
 class A_namety_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
@@ -702,6 +719,10 @@ class A_fieldList_ : public AST_node_ {
 public:
 	A_fieldList_(A_field head, A_fieldList tail);
 	virtual string print_rep(int indent, bool with_attributes);
+	Ty_ty init_typecheck();
+	Ty_fieldList init_Ty_fieldList();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_field _head;
 	A_fieldList _tail;
@@ -711,7 +732,11 @@ class A_field_ : public AST_node_ {
 public:
 	A_field_(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration);
 	virtual string print_rep(int indent, bool with_attributes);
+	Ty_ty init_typecheck();
+	Ty_field init_Ty_field();
+	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
+	bool firstPass = true;
 	Symbol _name;
 	Symbol _typ;
 };

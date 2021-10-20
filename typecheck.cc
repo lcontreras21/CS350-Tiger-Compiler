@@ -57,16 +57,16 @@ Have ** on their name
 			A_functionDec_
 			A_typeDec_
 			A_decList
-			A_functionDec_
-		A_fundec_
+			A_functionDec_**
+		A_fundec_**
 		A_expList_**
 		A_efield_
 		A_efieldList_
-		A_fundecList
+		A_fundecList_**
 		A_namety_
 		A_nametyList_
-		A_field_
-		A_fieldList_
+		A_field_**
+		A_fieldList_**
 		A_ty_
 			A_nameTy_
 			A_arrayty_
@@ -318,12 +318,15 @@ Ty_ty A_letExp_::init_typecheck() {
 		}
 	} else {
 		ST<var_info> copy_lib = var_type_lib;
+		ST<function_info> copy_func_lib = tiger_library;
 		Ty_ty decs_type = _decs->typecheck();
 		if (decs_type != Ty_Error()) {
 			Ty_ty _body_type = _body->let_typecheck();
+			tiger_library = copy_func_lib;
 			var_type_lib = copy_lib;
 			return _body_type;
 		} else {
+			tiger_library = copy_func_lib;
 			var_type_lib = copy_lib;
 			return Ty_Error();
 		}
@@ -373,5 +376,142 @@ Ty_ty A_assignExp_::init_typecheck() {
 		return Ty_Error();
 	} else {
 		return Ty_Void();
+	}
+}
+
+/*
+Type Checking on Functions
+
+Mutually recursive functions are handled similarly. The first pass gathers
+information about the header of each function (function name, formal pa-
+rameter list, return type) but leaves the bodies of the functions untouched. 
+In this pass, the types of the formal parameters are needed, but not their names (which cannot be seen from outside the function).
+
+The second pass processes the bodies of all functions in the mutually recur-
+sive declaration, taking advantage of the environment augmented with all the
+function headers. For each body, the formal parameter list is processed again,
+this time entering the parameters as VarEntrys in the value environment. 
+*/
+
+Ty_ty A_functionDec_::init_typecheck() {
+	// Go through functions twice, for each pass
+	Ty_ty firstPass = theFunctions->typecheck();
+	Ty_ty secondPass = theFunctions->typecheck();
+	if (firstPass != Ty_Error()) {
+		if (secondPass != Ty_Error()) {
+			// Passed All TypeChecking
+			return secondPass;
+		} else {
+			EM_error("Type Checking error while doing the second Pass for function declarations.");
+			return Ty_Error();
+		} 
+	} else {
+		EM_error("Type Checking error while doing the first Pass for function declarations.");
+		return Ty_Error();
+	}
+}
+
+Ty_ty A_fundecList_::init_typecheck() {
+	// Go through each fundec
+	_head->typecheck();
+	if (_tail != 0) {
+		return _tail->typecheck();
+	}
+	return _head->typecheck();
+}
+
+Ty_ty A_fundec_::init_typecheck() {
+	// First Pass: Add function name, params, return type to function library.	
+	//		Don't type check the body
+	//		After adding _params to var_library, save it in private field and reset it. Use that in second pass. This is to avoid using param from another function in your own body
+	// Second Pass: Check the body not that parameters have been addded
+	if (firstPass) {
+		firstPass = false;
+		// Get return type from type library, if there
+		if (is_name_there(_result, type_library)) {
+
+			type_info type_struct = lookup(_result, type_library);
+			Ty_ty this_type = type_struct.my_type();
+			// Type check _params, adding them to var_lib
+			ST<var_info> temp_lib = var_type_lib;
+			Ty_fieldList params;
+			if (_params != 0) {
+				_params->typecheck();
+				params = _params->init_Ty_fieldList();
+			} else {
+				params = 0;
+			}
+			current_var_lib = var_type_lib;
+			var_type_lib = temp_lib;
+
+			ST<function_info> new_func = ST<function_info>(_name, function_info(Ty_Function(this_type, params)));	
+			this_func_ST = new_func;
+			tiger_library = FuseOneScope(tiger_library, new_func);
+			return this_type;
+		} else {
+			EM_error("Function declaration " + Symbol_to_string(_name) + " does not have a valid return type");
+			return Ty_Error();
+		}
+		return Ty_Void();
+	} else {
+		// Second Pass
+		// Load stored Symbol Table and typecheck body
+		ST<var_info> temp_lib = var_type_lib;
+		var_type_lib = current_var_lib;
+		Ty_ty body_type = _body->typecheck();
+		var_type_lib = temp_lib;
+		return body_type;
+	}
+}
+
+int fieldList_count = 0;
+
+Ty_ty A_fieldList_::init_typecheck() {
+	// Go through each field
+	Ty_ty curr_type = _head->typecheck();
+	if (_tail != 0) {
+		return _tail->typecheck();
+	} 
+	fieldList_count = 0;
+	return curr_type;
+}
+
+Ty_ty A_field_::init_typecheck() {
+	// Have to be added to Symbol Table on First Pass but not on second
+	if (firstPass) {
+		firstPass = false;
+		// Check if type _typ is in allowed or declared types
+		if (is_name_there(_typ, type_library)) { 
+			type_info type_struct = lookup(_typ, type_library);
+			Ty_ty this_type = type_struct.my_type();
+			var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_name, var_info(this_type, fieldList_count, true)));
+			fieldList_count++;
+			return this_type;
+		} else {
+			EM_error("Var " + Symbol_to_string(_name) + " in function declaration does not have type in type library.");
+			return Ty_Void();
+		}	
+	} else {
+		return Ty_Void();
+	}
+}
+
+Ty_fieldList A_fieldList_::init_Ty_fieldList() {
+	if (_tail == 0) {
+		return Ty_FieldList(_head->init_Ty_field(), 0);
+	} else {
+		return Ty_FieldList(_head->init_Ty_field(), _tail->init_Ty_fieldList());	
+	}
+}
+
+Ty_field A_field_::init_Ty_field() {
+	// Check if type _typ is in allowed or declared types
+	if (is_name_there(_typ, type_library)) { 
+		type_info type_struct = lookup(_typ, type_library);
+		Ty_ty this_type = type_struct.my_type();
+		return Ty_Field(_name, this_type);
+	} else {
+		EM_error("Init_Ty_field: Var " + Symbol_to_string(_name) + " in function declaration does not have type in type library.");
+		return Ty_Field(_name, Ty_Error());
 	}
 }

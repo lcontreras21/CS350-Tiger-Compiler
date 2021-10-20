@@ -62,6 +62,11 @@ class tigerParseDriver;
 %type <expListAttrs> expList
 %type <seqExpAttrs> seqExp
 %type <decListAttrs> decList
+%type <fundecListAttrs> fundecList
+%type <vardecAttrs> vardec
+%type <fundecAttrs> fundec
+%type <tyfieldAttrs> tyfields
+%type <typeidAttrs> typeid
 
 
 // The line below means our grammar must not have conflicts
@@ -75,7 +80,8 @@ class tigerParseDriver;
 
 %start program;
 program: exp[main]	{ EM_debug("Got the main expression of our tiger program.", $main.AST->pos());
-		 			  driver.AST = new A_root_($main.AST);
+		 			  // driver.AST = new A_root_($main.AST);
+					  driver.AST = A_RootExp($main.AST);
 		 			}
 	;
 
@@ -98,7 +104,7 @@ exp:  INT[i]					{ // LITERALS
 	| ID[id1] LPAREN expList[list1] RPAREN[a] { 
 								  // FUNCTION CALL
 								  $$.AST = A_CallExp(Position::range(Position::fromLex(@id1), Position::fromLex(@a)), to_Symbol($id1), $list1.AST);
-								  EM_debug("Got function call", $$.AST->pos()); 
+								  EM_debug("Got function call for function " + $id1, $$.AST->pos()); 
 								}
 	| MINUS exp[exp1] %prec UMINUS	{ 
 								  // OPERATIONS: UNARY, ARITHMETIC, BOOLEAN, PARENTHESIS
@@ -191,7 +197,7 @@ exp:  INT[i]					{ // LITERALS
 								}
 	| LET IN seqExp[seqExp1] END_LET {
 								  $$.AST = A_LetExp($seqExp1.AST->pos(), 0, $seqExp1.AST);
-								  EM_debug("Got LET expression", $$.AST->pos());							
+								  EM_debug("Got LET expression without declarations", $$.AST->pos());							
 //
 // Note: In older compiler tools, instead of writing $exp1 and $exp2, we'd write $1 and $3,
 //        to refer to the first and third elements on the right-hand-side of the production.
@@ -211,44 +217,96 @@ lvalue: ID[id]					{ $$.AST = A_SimpleVar(Position::fromLex(@id), to_Symbol($id)
 	| lvalue L_SQUARE_BRACKET exp[exp1] R_SQUARE_BRACKET {
 								}
 	;
-expList: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
-										  EM_debug("Got end of expList  expression.", $$.AST->pos());
-										}
-	| exp[exp1] COMMA expList[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
-										  EM_debug("Got expList  expression.", $$.AST->pos());
-										} 
-	|									{ $$.AST = 0;
-										  EM_debug("Got empty expList  expression");
-										}
-	;
-seqExp: exp[exp1]						{ $$.AST = A_ExpList($exp1.AST, 0);
-										  EM_debug("Got end of expList  expression.", $$.AST->pos());
-										}
-	| exp[exp1] SEMICOLON seqExp[list1]	{ $$.AST = A_ExpList($exp1.AST, $list1.AST); 
-										  EM_debug("Got expList  expression.", $$.AST->pos());
-										} 
-	|									{ $$.AST = 0;
-										  EM_debug("Got empty expList  expression");
-										}
-	;
-decList: dec[dec1]				{ $$.AST = A_DecList($dec1.AST, 0); 
-								  EM_debug("Got declaration", $$.AST->pos());
+expList: exp[exp1]				{ $$.AST = A_ExpList($exp1.AST, 0);
+								  EM_debug("Got exp at end of expList", $$.AST->pos());
 								}
-	| dec[dec1]	decList[dL]		{ $$.AST = A_DecList($dec1.AST, $dL.AST); 
-								  EM_debug("Got declaration list", $$.AST->pos());
+	| exp[exp1] COMMA expList[list1] { 
+								  $$.AST = A_ExpList($exp1.AST, $list1.AST); 
+								  EM_debug("Got exp with more entries in expList.", $$.AST->pos());
+								} 
+	|							{ $$.AST = 0;
+								  EM_debug("Got empty expList expression", Position::undefined());
 								}
 	;
-dec: VAR ID[id1] COLON ID[id2] ASSIGN exp[exp1] {
-								  // VARIABLE DECLARATION
-								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), to_Symbol($id2), $exp1.AST); 
-								  EM_debug("Got Variable declaration: " + $id1 + " with type " + $id2, $$.AST->pos());
+seqExp: exp[exp1]				{ $$.AST = A_ExpList($exp1.AST, 0);
+								  EM_debug("Got exp at end of seqExp", $$.AST->pos());
+								}
+	| exp[exp1] SEMICOLON seqExp[list1]	{ 
+								  $$.AST = A_ExpList($exp1.AST, $list1.AST); 
+								  EM_debug("Got exp with more entries in seqExp.", $$.AST->pos());
+								} 
+	|							{ $$.AST = 0;
+								  EM_debug("Got empty seqExp expression", Position::undefined());
+								}
+	;
+decList: dec[dec1] decList[dl]	{ $$.AST = A_DecList($dec1.AST, $dl.AST); 
+								  EM_debug("Got dec with more decs in decList", $$.AST->pos());
+								}
+	| dec[dec1]					{ $$.AST = A_DecList($dec1.AST, 0);
+								  EM_debug("Got dec at end of decList", $$.AST->pos());
+								}
+	| fundecList[fdl] dec[dec1] decList[dL]	{
+								  $$.AST = A_DecList(A_FunctionDec($fdl.AST->pos(), $fdl.AST), A_DecList($dec1.AST, $dL.AST));
+								  EM_debug("Got fundecList with more decs in decList", $$.AST->pos());
+								}
+	| fundecList[fdl] dec[dec1] {
+								  $$.AST = A_DecList(A_FunctionDec($fdl.AST->pos(), $fdl.AST), A_DecList($dec1.AST, 0));
+								  EM_debug("Got fundecList with another dec at end of decList", $$.AST->pos());
+								}
+	| fundecList[fdl]			{ $$.AST = A_DecList(A_FunctionDec($fdl.AST->pos(), $fdl.AST), 0);
+								  EM_debug("Got fundecList at end of decList", $$.AST->pos());
+								}
+	;
+fundecList: fundec[dec1]		{ $$.AST = A_FundecList($dec1.AST, 0);
+								  EM_debug("Got fundec at end of fundecList", $$.AST->pos());
+								}
+	| fundec[dec1] fundecList[dL]	{
+								  $$.AST = A_FundecList($dec1.AST, $dL.AST);
+								  EM_debug("Got fundec with more function defintions in fundecList", $$.AST->pos());
+								}
+	; 
+dec: vardec[vd]					{ // VARIABLE DECLARATION
+								  $$.AST = $vd.AST;
+								}
+   ;
+vardec:  VAR ID[id1] COLON typeid[type] ASSIGN exp[exp1] {
+								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), $type.id, $exp1.AST); 
+								  EM_debug("Got Variable declaration: " + $id1 + " with type " + Symbol_to_string($type.id), $$.AST->pos());
 								}
 	| VAR ID[id1] ASSIGN exp[exp1] {
 								  $$.AST = A_VarDec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), to_Symbol("NA"), $exp1.AST); 
-								  EM_debug("Got Variable declaration: " + $id1, $$.AST->pos());
+								  EM_debug("Got Variable declaration: " + $id1 + " with implicit-type declaration", $$.AST->pos());
 								}
    ;
+fundec: FUNCTION ID[id1] LPAREN tyfields[tf] RPAREN COLON typeid[type] EQ exp[exp1] {
+								  // FUNCTION DECLARATION
+								  $$.AST = A_Fundec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), $tf.AST, $type.id, $exp1.AST); 
+								  EM_debug("Got Function declaration for function: " + $id1, $$.AST->pos());
+								}
+	| FUNCTION ID[id1] LPAREN tyfields[tf] RPAREN EQ exp[exp1] {
+								  $$.AST = A_Fundec(Position::range(Position::fromLex(@id1), $exp1.AST->pos()), to_Symbol($id1), $tf.AST, to_Symbol("Procedure"), $exp1.AST); 
+								  EM_debug("Got Procedure declaration for function: " + $id1, $$.AST->pos());
+								} 
+	;
+tyfields: ID[id1] COLON typeid[type] {
+								  $$.AST = A_FieldList(A_Field(Position::range(Position::fromLex(@id1), Position::fromLex(@type)), to_Symbol($id1), $type.id), 0);	
+								  EM_debug("Got TyField", $$.AST->pos());
+								}
+	| ID[id1] COLON typeid[type] COMMA tyfields[tf] {
+								  $$.AST = A_FieldList(A_Field(Position::range(Position::fromLex(@id1), Position::fromLex(@type)), to_Symbol($id1), $type.id), $tf.AST);	
+								  EM_debug("Got TyField with TyFieldList", $$.AST->pos());
+								}
+	|							{ $$.AST = 0;
+								  EM_debug("Got empty TyField", Position::undefined());
+								}
+	;
 
+typeid: ID[id1]					{ $$.id = to_Symbol($id1);
+							      EM_debug("Got type-id: " + $id1, Position::fromLex(@id1));	
+								}
+	;
+
+	
 %%
 
 void

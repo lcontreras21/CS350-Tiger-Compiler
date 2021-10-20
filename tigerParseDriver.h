@@ -4,7 +4,6 @@
 #include "AST.h"
 // Define the types of the attributes of various kinds of nodes in the parse tree
 struct expAttrs {
-		Ty_ty type;
 		A_exp AST;
 };
 
@@ -13,12 +12,10 @@ struct lvalueAttrs {
 };
 
 struct expListAttrs {
-		Ty_ty type;
 		A_expList AST;
 };
 
 struct seqExpAttrs {
-		Ty_ty type;
 		A_expList AST;
 };
 
@@ -26,8 +23,28 @@ struct decListAttrs {
 		A_decList AST;
 };
 
+struct fundecListAttrs {
+		A_fundecList AST;
+};
+
 struct decAttrs {
 		A_dec AST;
+};
+
+struct vardecAttrs {
+		A_dec AST;
+};
+
+struct fundecAttrs {
+		A_fundec AST;
+};
+
+struct tyfieldAttrs {
+		A_fieldList AST;
+};
+
+struct typeidAttrs {
+		Symbol id;
 };
 
 #include "tiger-grammar.tab.hh"

@@ -153,3 +153,36 @@ void A_assignExp_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_p
 	_var->set_parent_pointers_for_me_and_my_descendants(this);	
 	_exp->set_parent_pointers_for_me_and_my_descendants(this);	
 }
+
+void A_functionDec_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	theFunctions->set_parent_pointers_for_me_and_my_descendants(this);	
+}
+
+void A_fundecList_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_head->set_parent_pointers_for_me_and_my_descendants(this);	
+	if (_tail != 0) {
+		_tail->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
+
+void A_fundec_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	if (_params != 0) {
+		_params->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+	_body->set_parent_pointers_for_me_and_my_descendants(this);	
+}
+
+void A_fieldList_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+	_head->set_parent_pointers_for_me_and_my_descendants(this);	
+	if (_tail != 0) {
+		_tail->set_parent_pointers_for_me_and_my_descendants(this);	
+	}
+}
+
+void A_field_::set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent_or_null_if_i_am_the_root) {
+	stored_parent = my_parent_or_null_if_i_am_the_root;
+}

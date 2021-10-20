@@ -127,3 +127,7 @@ int A_varDec_::init_result_reg() {
 int A_assignExp_::init_result_reg() {
 	return _exp->result_reg();	
 }
+
+int A_functionDec_::init_result_reg() {
+	return min_reg;
+}

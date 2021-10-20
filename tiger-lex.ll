@@ -194,6 +194,7 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 "end"				{ loc.step(); return yy::tigerParser::make_END_LET(loc);		}
 "var"				{ loc.step(); return yy::tigerParser::make_VAR(loc);			}
 ":"					{ loc.step(); return yy::tigerParser::make_COLON(loc);			}
+"function"			{ loc.step(); return yy::tigerParser::make_FUNCTION(loc);		}
 {identifier}		{ loc.step(); return yy::tigerParser::make_ID(yytext, loc);		}
 {integer}			{ loc.step(); return yy::tigerParser::make_INT(textToInt(yytext), loc);
    /* textToInt is defined above */

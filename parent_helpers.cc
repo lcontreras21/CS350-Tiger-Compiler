@@ -50,12 +50,17 @@ int A_decList_::length() {
 //--------------------------------------------------------------------------------
 string A_callExp_::func_returnq(ST<function_info> tiger_library) {
 	// Lookup function and get function_info struct
-	function_info func_struct = lookup(_func, tiger_library);
-	Ty_ty return_type = func_struct.my_return_type();
-	if (return_type == Ty_Void()) {
-		return "";
+	if (is_name_there(_func, tiger_library)) {
+		function_info func_struct = lookup(_func, tiger_library);
+		Ty_ty return_type = func_struct.my_return_type();
+		if (return_type == Ty_Void()) {
+			return "";
+		} else {
+			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)\n";
+		}
 	} else {
-		return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)\n";
+		EM_error("HERA_code: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
+		return "";
 	}
 }
 
@@ -122,6 +127,18 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	} else {
 	// Otherwise, go up the tree and find what THIS Vars stack offset is
 		return stored_parent->calculate_my_SP(this);
+	}
+}
+
+int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
+	return _params->calculate_my_SP(this); 
+}
+
+int A_fieldList_::calculate_my_SP(AST_node_ *_parent_or_child) {
+	if (_tail == 0) {
+		return 1;
+	} else {
+		return 1 + _tail->calculate_my_SP(this);
 	}
 }
 
