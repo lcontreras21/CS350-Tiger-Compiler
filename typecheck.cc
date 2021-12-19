@@ -294,7 +294,7 @@ Ty_ty A_simpleVar_::init_typecheck() {
 		var_info var_struct = lookup(_sym, var_type_lib);
 		return var_struct.my_type();
 	} else {
-		EM_error("Typecheck: Variable " + Symbol_to_string(_sym) + " has not been declared");
+		EM_error("Typecheck simpleVar: Variable " + Symbol_to_string(_sym) + " has not been declared");
 		return Ty_Error();
 	}
 }
@@ -319,7 +319,7 @@ Ty_ty A_letExp_::init_typecheck() {
 	} else {
 		ST<var_info> copy_lib = var_type_lib;
 		ST<function_info> copy_func_lib = tiger_library;
-		Ty_ty decs_type = _decs->typecheck();
+		Ty_ty decs_type = _decs->typecheck(); // Should have added all declared stuff to libraries
 		if (decs_type != Ty_Error()) {
 			Ty_ty _body_type = _body->let_typecheck();
 			tiger_library = copy_func_lib;
@@ -464,7 +464,7 @@ Ty_ty A_fundec_::init_typecheck() {
 	}
 }
 
-int fieldList_count = 0;
+int fieldList_count = 3;
 
 Ty_ty A_fieldList_::init_typecheck() {
 	// Go through each field
@@ -472,7 +472,7 @@ Ty_ty A_fieldList_::init_typecheck() {
 	if (_tail != 0) {
 		return _tail->typecheck();
 	} 
-	fieldList_count = 0;
+	fieldList_count = 3;
 	return curr_type;
 }
 

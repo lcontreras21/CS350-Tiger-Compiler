@@ -491,6 +491,7 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
+	virtual int calculate_my_SP(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	int my_num;

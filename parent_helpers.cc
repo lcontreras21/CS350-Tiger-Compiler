@@ -86,14 +86,22 @@ int A_callExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	return 0;
 }
 
+int A_forExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
+	if (_parent_or_child == _body) {
+		return 2 + stored_parent->calculate_my_SP(this);
+	} else {
+		return stored_parent->calculate_my_SP(this);
+	}	
+}
+
 int A_letExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// If called by _body, trying to find TOTAL SP value
 	if (_parent_or_child == _body) {
 		// Might not be any declarations 
 		if (_decs == 0) {
-			return 0;
+			return stored_parent->calculate_my_SP(this);
 		} else {
-			return _decs->calculate_my_SP(this);
+			return _decs->calculate_my_SP(this) + stored_parent->calculate_my_SP(this);;
 		}
 	} else {
 		return stored_parent->calculate_my_SP(this);
@@ -131,7 +139,11 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 }
 
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
-	return _params->calculate_my_SP(this); 
+	if (_params != 0) {
+		return 3 + _params->calculate_my_SP(this); 
+	} else {
+		return 3;
+	}
 }
 
 int A_fieldList_::calculate_my_SP(AST_node_ *_parent_or_child) {

@@ -346,7 +346,7 @@ string A_breakExp_::HERA_code() {
 string A_forExp_::HERA_code() {
 	// Strings used for loop management
 	int this_loop_counter = loop_counter;
-	int this_SP_counter = SP_counter;
+	int this_SP_counter = calculate_my_SP(this);
 	my_num = this_loop_counter;
 	loop_counter++;
 	string start_label = "loop_start_" + std::to_string(this_loop_counter);
@@ -414,8 +414,7 @@ string A_simpleVar_::HERA_code() {
 			// Check if var is writable, otherwise produce error
 			bool writable = var_struct.am_i_writable();
 			if (writable) {
-				output = "// Reassigning Variable: " + Symbol_to_string(_sym) + " + SP: " + std::to_string(var_struct.my_SP())
-					   + "\n    STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+				output = indent_math + "STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)     // Reassigning Variable " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
 			} else {
 				EM_error("Tried to write to a variable that is not writable. This happens most often when trying to write to the loop variable in an IF statement");
 			}
@@ -424,8 +423,7 @@ string A_simpleVar_::HERA_code() {
 			// Access sp number from declaration
 			// int my_sp_location = 
 			// Load it into R4
-			output = "// Accessing Variable: " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP())  
-					   + "\n    LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\n";
+			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)      // Accessing Variable " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
 		}
 		return output;
 	} else {
@@ -436,7 +434,9 @@ string A_simpleVar_::HERA_code() {
 string A_letExp_::HERA_code() {
 	// INC SP by number of things being declared
 	int my_SP = _decs->calculate_my_SP(this); 
-	string output = "// Start of Let Expression " + std::to_string(let_counter) + ". Stack starting at SP: " + std::to_string(SP_counter) + ". Initializing " + std::to_string(my_SP) + " variables.\n";
+	string this_counter = std::to_string(let_counter);
+	let_counter++;
+	string output = "// Start of Let Expression " + this_counter + ". Stack starting at SP: " + std::to_string(SP_counter) +  ". Initializing " + std::to_string(my_SP) + " variable(s).\n";
 	if (my_SP > 0) {
 		output = output + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
 	}
@@ -449,7 +449,8 @@ string A_letExp_::HERA_code() {
 	// Make changes to STs and store decs into Stack
 		// Should happen in A_decList_::HERA_code and in A_decs_
 	if (_decs != 0) {
-		output = output + _decs->HERA_code();
+		output = output + _decs->HERA_code()
+			   + indent_math + "// Finished declaring variables in Let Expression " + this_counter + ". Stack now at SP: " + std::to_string(SP_counter);
 	}
 	// Do _body HERA_code
 	if (_body != 0) {
@@ -468,7 +469,7 @@ string A_letExp_::HERA_code() {
 	var_library = copy_var_lib;
 	type_library = copy_type_lib;
 	tiger_library = copy_tiger_lib;
-	output = output + "// END of Let Expression " + std::to_string(let_counter) + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
+	output = output + "// END of Let Expression " + this_counter + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
 	return output;
 }
 
@@ -505,7 +506,7 @@ string A_varDec_::HERA_code() {
 	var_library = MergeAndShadow(var, var_library);
 	// Add variable to stack
 	string output = _init->HERA_code()  
-				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)\n";
+				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)     // Declaring Variable: " + Symbol_to_string(_var) + "\n";
 	return output;
 }
 
@@ -561,9 +562,7 @@ string A_fundec_::HERA_code() {
 		string output;
 		output  = "// Start of Function Definition: " + Symbol_to_string(_name) + "\n"
 				+ "LABEL(" + Symbol_to_string(_name) + ")\n"
-				+ indent_math + "// Saving PC_ret, FP_alt\n"
-				+ indent_math + "INC(SP, 3)\n";
-		SP_counter = SP_counter + 2;
+				+ indent_math + "// Saving PC_ret, FP_alt\n";
 		output =  output 
 				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
 				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
@@ -572,9 +571,7 @@ string A_fundec_::HERA_code() {
 				+ indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP)\n"
 				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
 				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
-				+ indent_math + "DEC(SP, 3)\n"
 				+ indent_math + "RETURN(FP_alt, PC_ret)\n";
-		SP_counter = SP_counter - 2;
 
 		var_library = temp_lib;
 		return output;	
