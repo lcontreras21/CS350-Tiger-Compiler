@@ -1,4 +1,5 @@
 #include "AST.h"
+#include "ST.h"
 
 /*
 	Functions used by *children to find out information about their parent
@@ -154,7 +155,6 @@ int A_fieldList_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	}
 }
 
-
 //--------------------------------------------------------------------------------
 
 int AST_node_::am_i_in_assignExp_(AST_node_ *child) {
@@ -176,4 +176,58 @@ int A_varExp_::am_i_in_assignExp_(AST_node_ *child) {
 
 int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
 	return stored_parent->am_i_in_assignExp_(this);
+}
+
+
+//--------------------------------------------------------------------------------
+
+ST<var_info> AST_node_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_root_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_forExp_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_simpleVar_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_letExp_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_varDec_::get_my_varlib(AST_node_ *child) {
+
+}
+
+ST<var_info> A_fundec_::get_my_varlib(AST_node_ *child) {
+
+}
+
+//--------------------------------------------------------------------------------
+
+ST<function_info> AST_node_::get_my_funclib(AST_node_ *child) {
+	// Return parent?
+}
+
+ST<function_info> A_root_::get_my_funclib(AST_node_ *child) {
+	// Return tiger_library
+	return tiger_library;
+}
+
+ST<function_info> A_letExp_::get_my_funclib(AST_node_ *child) {
+	// :
+}
+
+ST<function_info> A_callExp_::get_my_funclib(AST_node_ *child) {
+
+}
+
+ST<function_info> A_fundec_::get_my_funclib(AST_node_ *child) {
+
 }

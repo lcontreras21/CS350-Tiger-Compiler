@@ -227,6 +227,8 @@ public:
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	virtual ST<var_info> get_my_funclib(AST_node_ *child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -280,6 +282,8 @@ public:
 	int am_i_in_loop(AST_node_ *child);
 	int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	virtual ST<var_info> get_my_funclib(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -422,6 +426,8 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	virtual ST<var_info> get_my_varlib(AST_node *child);
+	virtual ST<var_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_decList _decs;
@@ -443,6 +449,7 @@ private:
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	string func_returnq(ST<function_info> tiger_library);
 	string _args_HERA_code(int counter);
+	virtual ST<var_info> get_my_funclib(AST_node_ *child);
 };
 
 class A_controlExp_ : public A_exp_ {
@@ -492,6 +499,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	int my_num;
@@ -540,6 +548,7 @@ public:
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node *child);
 private:
 	Symbol _sym;
 };
@@ -628,6 +637,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	virtual ST<var_info> get_my_varlib(AST_node *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
@@ -682,6 +692,8 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	virtual ST<var_info> get_my_varlib(AST_node *child);
+	virtual ST<var_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	bool firstPass = true;
