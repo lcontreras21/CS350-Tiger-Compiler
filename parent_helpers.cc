@@ -182,37 +182,38 @@ int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
 //--------------------------------------------------------------------------------
 
 ST<var_info> AST_node_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_root_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_forExp_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_simpleVar_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_letExp_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_varDec_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 ST<var_info> A_fundec_::get_my_varlib(AST_node_ *child) {
-
+    return ST<var_info>();
 }
 
 //--------------------------------------------------------------------------------
 
 ST<function_info> AST_node_::get_my_funclib(AST_node_ *child) {
 	// Return parent?
+	return ST<function_info>();
 }
 
 ST<function_info> A_root_::get_my_funclib(AST_node_ *child) {
@@ -221,13 +222,13 @@ ST<function_info> A_root_::get_my_funclib(AST_node_ *child) {
 }
 
 ST<function_info> A_letExp_::get_my_funclib(AST_node_ *child) {
-	// :
+	return ST<function_info>();
 }
 
 ST<function_info> A_callExp_::get_my_funclib(AST_node_ *child) {
-
+    return ST<function_info>();
 }
 
 ST<function_info> A_fundec_::get_my_funclib(AST_node_ *child) {
-
+    return ST<function_info>();
 }

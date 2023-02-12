@@ -228,7 +228,7 @@ public:
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 	virtual ST<var_info> get_my_varlib(AST_node_ *child);
-	virtual ST<var_info> get_my_funclib(AST_node_ *child);
+	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -283,7 +283,7 @@ public:
 	int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 	virtual ST<var_info> get_my_varlib(AST_node_ *child);
-	virtual ST<var_info> get_my_funclib(AST_node_ *child);
+	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 
@@ -426,8 +426,8 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node *child);
-	virtual ST<var_info> get_my_funclib(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	A_decList _decs;
@@ -435,12 +435,8 @@ private:
 };
 
 class A_callExp_ : public A_exp_ {
-	public:
-		A_callExp_(A_pos pos, Symbol func, A_expList args);
-	virtual string print_rep(int indent, bool with_attributes);
-private:
-	Symbol _func;
-	A_expList _args;
+public:
+    A_callExp_(A_pos pos, Symbol func, A_expList args);
 	virtual string HERA_code();
 	virtual string HERA_data();
 	virtual int init_result_reg();
@@ -449,7 +445,11 @@ private:
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	string func_returnq(ST<function_info> tiger_library);
 	string _args_HERA_code(int counter);
-	virtual ST<var_info> get_my_funclib(AST_node_ *child);
+	virtual ST<function_info> get_my_funclib(AST_node_ *child);
+	virtual string print_rep(int indent, bool with_attributes);
+private:
+	Symbol _func;
+	A_expList _args;
 };
 
 class A_controlExp_ : public A_exp_ {
@@ -530,7 +530,15 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	int result_reg() {
+		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
+		return stored_result_reg;
+	}
+	string result_reg_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->result_reg());
+	}
 private:
+	int stored_result_reg = -1;
 	A_expList _seq;
 };
 
@@ -548,7 +556,7 @@ public:
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	virtual ST<var_info> get_my_varlib(AST_node *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
 private:
 	Symbol _sym;
 };
@@ -578,11 +586,21 @@ public:
 	A_expList_(A_exp head, A_expList tail);
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_data();
+	virtual int init_result_reg();
 	A_exp _head;
 	A_expList _tail;
 	Ty_ty let_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int length();
+	int result_reg() {
+		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
+		return stored_result_reg;
+	}
+	string result_reg_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->result_reg());
+	}
+private:
+	int stored_result_reg = -1;
 };
 
 // The componends of a A_recordExp, e.g. point{X = 4, Y = 12}
@@ -610,6 +628,15 @@ class A_dec_ : public AST_node_ {
 public:
 	A_dec_(A_pos p);
 	virtual int init_result_reg();
+	int result_reg() {
+		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
+		return stored_result_reg;
+	}
+	string result_reg_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->result_reg());
+	}
+private:
+	int stored_result_reg = -1;
 };
 
 class A_decList_ : public A_dec_ {
@@ -637,7 +664,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
@@ -692,8 +719,8 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node *child);
-	virtual ST<var_info> get_my_funclib(AST_node_ *child);
+	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	bool firstPass = true;

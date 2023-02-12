@@ -22,8 +22,8 @@ int A_exp_::init_result_reg() {
 
 int A_opExp_::init_result_reg() {
 	/* Have _left, _right children */
-	int left_reg = _left->init_result_reg();
-	int right_reg = _right->init_result_reg();
+	int left_reg = _left->result_reg();
+	int right_reg = _right->result_reg();
 	if (left_reg == right_reg) {
 		return left_reg + 1;
 	} else {
@@ -31,40 +31,27 @@ int A_opExp_::init_result_reg() {
 	}
 }
 
-int expList_init_result_reg(A_expList _list) {
-	int max_reg = 4;
-	A_expList pointer = _list;
-	if (pointer == 0) {
-		return max_reg;
+int A_expList_::init_result_reg() {
+    int curr_value;
+	if (_tail == 0) {
+		curr_value = _head ? _head->result_reg() : -1;
 	} else {
-		while (pointer != 0) {
-			int head_reg = pointer->_head->init_result_reg();
-			if (head_reg > max_reg) {
-				max_reg = head_reg;
-			}
-			pointer = pointer->_tail;
-		}
-		return max_reg;
+		curr_value = std::max(_head ? _head->result_reg() : -1, _tail->result_reg());
 	}
-
+	return std::max(curr_value, min_reg);
 }
 
 int A_callExp_::init_result_reg() {
-	/* Have _args */
-	/* Return highest register in expList 
-	 Iterate through each _head and check
-	 Can create pointer and go like that
-	 */
-	return expList_init_result_reg(_args);
+	return _args->result_reg();
 }
 
 int A_ifExp_::init_result_reg() {
 	// Sethi-Ullman with three instead of two --- ish
 	// Return highest register
 	if (_else_or_null == 0) {
-		return std::max(_test->init_result_reg(), _then->init_result_reg());
+		return std::max(_test->result_reg(), _then->result_reg());
 	} else {
-		return std::max(_test->init_result_reg(), std::max(_then->init_result_reg(), _else_or_null->init_result_reg()));
+		return std::max(_test->result_reg(), std::max(_then->result_reg(), _else_or_null->result_reg()));
 	}
 }
 
@@ -73,12 +60,11 @@ int A_leafExp_::init_result_reg() {
 } 
 
 int A_seqExp_::init_result_reg() {
-	// Return reg of the exp with highest reg number, iterate through
-	return expList_init_result_reg(_seq);
+    return _seq->result_reg();
 }
 
 int A_whileExp_::init_result_reg() {
-	return std::max(_test->init_result_reg(), _body->init_result_reg());
+	return std::max(_test->result_reg(), _body->result_reg());
 }
 
 int A_breakExp_::init_result_reg() {
@@ -86,7 +72,7 @@ int A_breakExp_::init_result_reg() {
 }
 
 int A_forExp_::init_result_reg() {
-	return std::max(_lo->init_result_reg(), std::max(_hi->init_result_reg(), _body->init_result_reg()));
+	return std::max(_lo->result_reg(), std::max(_hi->result_reg(), _body->result_reg()));
 }
 
 int A_varExp_::init_result_reg() {
@@ -101,23 +87,26 @@ int A_dec_::init_result_reg() {
 
 
 int A_decList_::init_result_reg() {
+    int curr_value;
+    int head_reg = _head ? _head->result_reg() : min_reg;
 	if (_tail == 0) {
-		return _head->init_result_reg();
+		curr_value = head_reg;
 	} else {
-		return std::max(_head->init_result_reg(), _tail->init_result_reg());
+		curr_value = std::max(head_reg, _tail->result_reg());
 	}
+	return std::max(curr_value, min_reg);
 }
 
 int A_letExp_::init_result_reg() {
-	if (_decs == 0) {
-		if (_body == 0) {
-			return min_reg;
-		} else {
-			return expList_init_result_reg(_body);
-		} 
+    int curr_value;
+    int decs_reg = _decs ? _decs->result_reg() : min_reg;
+	if (_body == 0) {
+		curr_value = decs_reg;
 	} else {
-		return std::max(_decs->init_result_reg(), expList_init_result_reg(_body));
+		curr_value = std::max(decs_reg, _body->result_reg());
 	}
+	return std::max(curr_value, min_reg);
+
 }
 
 int A_varDec_::init_result_reg() {

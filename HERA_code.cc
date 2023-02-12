@@ -124,7 +124,7 @@ string A_opExp_::HERA_code()
 		/* Handle case when they are equal */ 
 		output_reg_s = "R" + std::to_string(left_reg+1);
 		output = _left->HERA_code() + 
-				 indent_math + "MOVE(" + output_reg_s + ", " + left_reg_s + ")\n" + 
+				 indent_math + "MOVE(" + output_reg_s + ", " + left_reg_s + ") // in opExp\n" +
 				 _right->HERA_code();
 		left_reg_s = output_reg_s;
 	}  else {
@@ -300,17 +300,20 @@ string A_seqExp_::HERA_code() {
 	// Iterate through A_expList _seq and add HERA_codes
 	A_expList seq = _seq;
 	string my_code = "";
-	string reg = "";
+	string reg_str = "";
+	int reg_int = 4;  // TODO Make this set to default min register
 	if (seq == 0) {
 		return my_code;
 	} else {
 		while (seq != 0) {
 			my_code = my_code + seq->_head->HERA_code();
-			reg = seq->_head->result_reg_s();
+			reg_int = seq->_head->result_reg();
+			reg_str = seq->_head->result_reg_s();
 			seq = seq->_tail;
 		}
-		// Move last exp to reg of seq
-		my_code = my_code + indent_math + "MOVE(" + result_reg_s() + ", " + reg + ")\n";
+		// Move last exp to reg of seq if not already there
+		string move_statement = result_reg() == reg_int ? "" : indent_math + "MOVE(" + result_reg_s() + ", " + reg_str + ")\n";
+		my_code = my_code + move_statement;
 		return my_code;
 
 	}
@@ -340,7 +343,7 @@ string A_whileExp_::HERA_code() {
 
 string A_breakExp_::HERA_code() {
 	int earliest_while = am_i_in_loop(this);
-	return indent_math + "BR(loop_end_" + std::to_string(earliest_while) + ")\n";
+	return indent_math + "BR(loop_end_" + std::to_string(earliest_while) + ")  // Break in LOOP\n";
 }
 
 string A_forExp_::HERA_code() {
@@ -450,7 +453,7 @@ string A_letExp_::HERA_code() {
 		// Should happen in A_decList_::HERA_code and in A_decs_
 	if (_decs != 0) {
 		output = output + _decs->HERA_code()
-			   + indent_math + "// Finished declaring variables in Let Expression " + this_counter + ". Stack now at SP: " + std::to_string(SP_counter);
+			   + indent_math + "// Finished declaring variables in Let Expression " + this_counter + ". Stack now at SP: " + std::to_string(SP_counter) + "\n";
 	}
 	// Do _body HERA_code
 	if (_body != 0) {
@@ -460,6 +463,11 @@ string A_letExp_::HERA_code() {
 			body = body->_tail;
 		}
 	}
+	// Move result to final reg if necessary
+	if (this->result_reg() != _body->result_reg()) {
+        output = output + indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n";
+	}
+
 	// DEC SP by same amount as was increased
 	if (my_SP > 0) {
 		output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
@@ -506,7 +514,7 @@ string A_varDec_::HERA_code() {
 	var_library = MergeAndShadow(var, var_library);
 	// Add variable to stack
 	string output = _init->HERA_code()  
-				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)     // Declaring Variable: " + Symbol_to_string(_var) + "\n";
+				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)     // Storing Variable: " + Symbol_to_string(_var) + "\n";
 	return output;
 }
 
