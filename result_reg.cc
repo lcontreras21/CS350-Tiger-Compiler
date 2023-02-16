@@ -34,15 +34,15 @@ int A_opExp_::init_result_reg() {
 int A_expList_::init_result_reg() {
     int curr_value;
 	if (_tail == 0) {
-		curr_value = _head ? _head->result_reg() : -1;
+		curr_value = _head->result_reg();
 	} else {
-		curr_value = std::max(_head ? _head->result_reg() : -1, _tail->result_reg());
+		curr_value = std::max(_head->result_reg(), _tail->result_reg());
 	}
 	return std::max(curr_value, min_reg);
 }
 
 int A_callExp_::init_result_reg() {
-	return _args->result_reg();
+	return _args ? _args->result_reg() : min_reg;
 }
 
 int A_ifExp_::init_result_reg() {
@@ -60,7 +60,7 @@ int A_leafExp_::init_result_reg() {
 } 
 
 int A_seqExp_::init_result_reg() {
-    return _seq->result_reg();
+    return _seq ? _seq->result_reg() : min_reg;
 }
 
 int A_whileExp_::init_result_reg() {

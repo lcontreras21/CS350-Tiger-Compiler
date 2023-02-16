@@ -255,7 +255,7 @@ public:
 	// Attributes for all expressions: result_reg() is the register number to use;
 	//  in the first call, it is defined by the init_result_reg for the class,
 	//  and then reused each time we ask for it.
-	int    result_reg() {
+	int result_reg() {
 		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
 		return stored_result_reg;
 	}

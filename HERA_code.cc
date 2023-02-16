@@ -494,7 +494,6 @@ string A_varDec_::HERA_code() {
 	// Get SP for this declaration by asking parent 
 	int my_SP = calculate_my_SP(this);
 	ST<var_info> var;
-	MergeAndShadow(var, var_library);
 	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
 		// Use type of _init to initialize type 
 		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP, true));
