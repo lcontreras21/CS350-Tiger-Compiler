@@ -54,10 +54,9 @@ Have ** on their name
 			A_subscriptVar_
 		A_dec_
 			A_varDec_
-			A_functionDec_
+			A_functionDec_**
 			A_typeDec_
 			A_decList
-			A_functionDec_**
 		A_fundec_**
 		A_expList_**
 		A_efield_
@@ -74,10 +73,6 @@ Have ** on their name
 
 
 */
-
-// Create var_library to keep track of var tpes
-
-ST<var_info> var_type_lib = ST<var_info>();
 
 Ty_ty AST_node_::init_typecheck() {
 	EM_error("Typecheck on node not yet having typecheck method");
@@ -179,8 +174,11 @@ Ty_ty A_callExp_::init_typecheck() {
 			return Ty_Error(); 
 		}
 		// Check if types are the same
-		if (args_exps->_head->typecheck() != arg_types->head->ty) {
-		   	EM_error("Arg " + std::to_string(arg_counter) + " type does not match in function call " + str(_func));
+		Ty_ty head_type = args_exps->_head->typecheck();
+		Ty_ty expected_type = arg_types->head->ty;
+		if (head_type != expected_type) {
+		   	EM_error("Typechecking callExp: Arg " + std::to_string(arg_counter) + " type does not match in function " +
+		   	         "call " + str(_func) + ". Got " + to_String(head_type) + " but expected " + to_String(expected_type));
 			return Ty_Error();
 		} 
 		arg_types = arg_types->tail;
@@ -265,9 +263,6 @@ Ty_ty A_breakExp_::init_typecheck() {
 Ty_ty A_forExp_::init_typecheck() {
 	// _lo, _hi must be Ty_Int()
 	// _body must return Ty_Void()
-	ST<var_info> copy_lib = var_type_lib;
-	var_type_lib = MergeAndShadow(var_type_lib, 
-			ST<var_info>(_var, var_info(Ty_Int(), 0, false)));
 	Ty_ty _body_type = _body->typecheck();
 	if (_lo->typecheck() != Ty_Int()) {
 		EM_error("For expression must have type int in lower bound");
@@ -279,7 +274,6 @@ Ty_ty A_forExp_::init_typecheck() {
 		EM_error("For expression must have type void in body bound");
 		return Ty_Error();
 	}
-	var_type_lib = copy_lib;
 	return Ty_Void();
 }
 
@@ -288,10 +282,14 @@ Ty_ty A_varExp_::init_typecheck() {
 }
 
 Ty_ty A_simpleVar_::init_typecheck() {
+    EM_debug("Typechecking simpleVar: " + Symbol_to_string(_sym));
+
+    ST<var_info> my_variable_library = get_my_variable_library(this);
+    EM_debug("Typechecking simpleVar: " + Symbol_to_string(_sym) + " ST: " + my_variable_library.__repr__());
 	// Lookup in symbol type what the stored type is
 	// If not in symbol table, return Ty_Error
-	if (is_name_there(_sym, var_type_lib)) {
-		var_info var_struct = lookup(_sym, var_type_lib);
+	if (is_name_there(_sym, my_variable_library)) {
+		var_info var_struct = lookup(_sym, my_variable_library);
 		return var_struct.my_type();
 	} else {
 		EM_error("Typecheck simpleVar: Variable " + Symbol_to_string(_sym) + " has not been declared");
@@ -299,41 +297,7 @@ Ty_ty A_simpleVar_::init_typecheck() {
 	}
 }
 
-Ty_ty A_expList_::let_typecheck() {
-	Ty_ty head_type = _head->typecheck();
-	if (_tail == 0) {
-		return head_type;
-	} else {
-		return _tail->let_typecheck();
-	}
-}
-
-Ty_ty A_letExp_::init_typecheck() {
-	// _decs and _body might both be empty
-	if (_decs == 0) {
-		if (_body == 0) {
-			return Ty_Void();
-		} else {
-			return _body->let_typecheck();
-		}
-	} else {
-		ST<var_info> copy_lib = var_type_lib;
-		ST<function_info> copy_func_lib = tiger_library;
-		Ty_ty decs_type = _decs->typecheck(); // Should have added all declared stuff to libraries
-		if (decs_type != Ty_Error()) {
-			Ty_ty _body_type = _body->let_typecheck();
-			tiger_library = copy_func_lib;
-			var_type_lib = copy_lib;
-			return _body_type;
-		} else {
-			tiger_library = copy_func_lib;
-			var_type_lib = copy_lib;
-			return Ty_Error();
-		}
-	}
-}
-
-Ty_ty A_decList_::init_typecheck() {
+Ty_ty A_expList_::init_typecheck() {
 	Ty_ty head_type = _head->typecheck();
 	if (_tail == 0) {
 		return head_type;
@@ -342,12 +306,51 @@ Ty_ty A_decList_::init_typecheck() {
 	}
 }
 
+int let_counter = 0;
+
+Ty_ty A_letExp_::init_typecheck() {
+    if (this->my_let_number < 0) {
+        this->my_let_number = let_counter;
+        let_counter++;
+    }
+
+    Ty_ty return_type;
+
+    ST<function_info> copy_func_lib = tiger_library;
+
+    EM_debug("Typechecking letExp #" + get_my_let_number_s() + " declarations");
+    Ty_ty dec_type = _decs ? _decs->typecheck() : Ty_Void();
+    if (dec_type != Ty_Error()) {
+        EM_debug("Typechecking letExp #" + get_my_let_number_s() + " body");
+        return_type = _body ? _body->typecheck() : Ty_Void();
+    } else {
+        EM_warning("Typechecking error in letExp #" + get_my_let_number_s() + " declarations");
+        return_type = Ty_Error();
+    }
+
+    tiger_library = copy_func_lib;
+    return return_type;
+}
+
+Ty_ty A_decList_::init_typecheck() {
+    EM_debug("Typechecking decList head");
+
+	Ty_ty head_type = _head->typecheck();
+	if (_tail != 0) {
+	    EM_debug("Typechecking decList tail");
+		return _tail->typecheck();
+	}
+	return head_type;
+}
+
 
 Ty_ty A_varDec_::init_typecheck() {
+    EM_debug("Typechecking varDec " + Symbol_to_string(_var));
+
 	// If no _typ available, return type of _init
 	Ty_ty implicit_type = _init->typecheck();
+
 	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
-		var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(implicit_type, 0, true)));
 		return implicit_type;
 	} else {
 		// Lookup declared type in type_library
@@ -355,14 +358,14 @@ Ty_ty A_varDec_::init_typecheck() {
 			type_info type_struct = lookup(_typ, type_library);
 			Ty_ty return_type = type_struct.my_type();
 			if (return_type != implicit_type) {
-				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type. Not adding to Variable Symbol Table.");
+				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type. " +
+				         "Not adding to Variable Symbol Table.");
 				return Ty_Error();
 			} else {
-				var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_var, var_info(return_type, 0, true)));
 				return return_type;
 			}
 		} else {
-			EM_error("Var " + Symbol_to_string(_var) + " declared type is not in type ST");
+			EM_error("Var " + Symbol_to_string(_var) + " declared type is not in Type Library");
 			return Ty_Error();
 		}
 	}
@@ -395,18 +398,20 @@ this time entering the parameters as VarEntrys in the value environment.
 
 Ty_ty A_functionDec_::init_typecheck() {
 	// Go through functions twice, for each pass
-	Ty_ty firstPass = theFunctions->typecheck();
+	EM_debug("Typechecking FunctionDec");
+
+	Ty_ty firstPass = theFunctions->init_typecheck();
 	Ty_ty secondPass = theFunctions->typecheck();
 	if (firstPass != Ty_Error()) {
 		if (secondPass != Ty_Error()) {
 			// Passed All TypeChecking
 			return secondPass;
 		} else {
-			EM_error("Type Checking error while doing the second Pass for function declarations.");
+			EM_error("Typechecking error while doing the second Pass for function declarations.");
 			return Ty_Error();
 		} 
 	} else {
-		EM_error("Type Checking error while doing the first Pass for function declarations.");
+		EM_error("Typechecking error while doing the first Pass for function declarations.");
 		return Ty_Error();
 	}
 }
@@ -415,25 +420,26 @@ Ty_ty A_fundecList_::init_typecheck() {
 	// Go through each fundec
 	_head->typecheck();
 	if (_tail != 0) {
-		return _tail->typecheck();
+		return _tail->init_typecheck();
 	}
-	return _head->typecheck();
+	return _head->init_typecheck();
 }
 
 Ty_ty A_fundec_::init_typecheck() {
 	// First Pass: Add function name, params, return type to function library.	
 	//		Don't type check the body
-	//		After adding _params to var_library, save it in private field and reset it. Use that in second pass. This is to avoid using param from another function in your own body
-	// Second Pass: Check the body not that parameters have been addded
+	//		Save it in private field and reset it. Use that in second pass. This is to avoid using param from another function in your own body
+	// Second Pass: Check the body not that parameters have been added
 	if (firstPass) {
+	    EM_debug("Typechecking FunDec in first pass");
 		firstPass = false;
 		// Get return type from type library, if there
 		if (is_name_there(_result, type_library)) {
 
 			type_info type_struct = lookup(_result, type_library);
 			Ty_ty this_type = type_struct.my_type();
+
 			// Type check _params, adding them to var_lib
-			ST<var_info> temp_lib = var_type_lib;
 			Ty_fieldList params;
 			if (_params != 0) {
 				_params->typecheck();
@@ -441,8 +447,6 @@ Ty_ty A_fundec_::init_typecheck() {
 			} else {
 				params = 0;
 			}
-			current_var_lib = var_type_lib;
-			var_type_lib = temp_lib;
 
 			ST<function_info> new_func = ST<function_info>(_name, function_info(Ty_Function(this_type, params)));	
 			this_func_ST = new_func;
@@ -454,17 +458,14 @@ Ty_ty A_fundec_::init_typecheck() {
 		}
 		return Ty_Void();
 	} else {
+	    EM_debug("Typechecking FunDec in second pass");
 		// Second Pass
 		// Load stored Symbol Table and typecheck body
-		ST<var_info> temp_lib = var_type_lib;
-		var_type_lib = current_var_lib;
 		Ty_ty body_type = _body->typecheck();
-		var_type_lib = temp_lib;
 		return body_type;
 	}
 }
 
-int fieldList_count = 3;
 
 Ty_ty A_fieldList_::init_typecheck() {
 	// Go through each field
@@ -472,7 +473,6 @@ Ty_ty A_fieldList_::init_typecheck() {
 	if (_tail != 0) {
 		return _tail->typecheck();
 	} 
-	fieldList_count = 3;
 	return curr_type;
 }
 
@@ -484,8 +484,6 @@ Ty_ty A_field_::init_typecheck() {
 		if (is_name_there(_typ, type_library)) { 
 			type_info type_struct = lookup(_typ, type_library);
 			Ty_ty this_type = type_struct.my_type();
-			var_type_lib = MergeAndShadow(var_type_lib, ST<var_info>(_name, var_info(this_type, fieldList_count, true)));
-			fieldList_count++;
 			return this_type;
 		} else {
 			EM_error("Var " + Symbol_to_string(_name) + " in function declaration does not have type in type library.");
@@ -511,7 +509,8 @@ Ty_field A_field_::init_Ty_field() {
 		Ty_ty this_type = type_struct.my_type();
 		return Ty_Field(_name, this_type);
 	} else {
-		EM_error("Init_Ty_field: Var " + Symbol_to_string(_name) + " in function declaration does not have type in type library.");
+		EM_error("Init_Ty_field: Var " + Symbol_to_string(_name) + " in function declaration does not have type in" +
+		         "type library.");
 		return Ty_Field(_name, Ty_Error());
 	}
 }

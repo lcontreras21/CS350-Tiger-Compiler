@@ -1,5 +1,6 @@
 #if ! defined ST_H
 #define ST_H 1
+#include "types.h"
 
 // General Symbol Table abstraction
 //  Fall 2001 - Spring 2002, by davew@cs.haverford.edu
@@ -122,7 +123,6 @@ void ST_examples();  // show some interesting examples to understand how ST work
 
 
 // Struct to store type information for functions
-#include "types.h"
 struct function_info {
 public:
 	// Give Ty_Function(Ty_ty return_type, Ty_fieldList(Ty_ty type, Ty_fieldList()));
@@ -141,10 +141,13 @@ public:
 	var_info(Ty_ty the_type, int the_SP, bool writable);
 	Ty_ty _type;
 	int _SP;
-	bool _writable; 
+	bool _writable;
+
 	Ty_ty my_type();
 	int my_SP();
 	bool am_i_writable();
+	string __repr__();
+	string __str__();
 };
 
 struct type_info {

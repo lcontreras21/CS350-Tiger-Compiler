@@ -173,14 +173,15 @@ int main(int argc, char **argv)
 
 			if (! EM_recorded_any_errors()) {
 				// Typecheck first
-				Ty_ty x = driver.AST->typecheck();
-				EM_debug("Typechecking Successful", driver.AST->pos());
+				EM_debug("Starting Typechecking", driver.AST->pos());
+				Ty_ty final_type = driver.AST->typecheck();
+				EM_debug("Finished Typechecking and got final type " + to_String(final_type), driver.AST->pos());
 				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
 				code = code + driver.AST->HERA_data();
 				EM_debug("Finished compiling HERA_data", driver.AST->pos());
 				code = code + driver.AST->HERA_code();
 				EM_debug("Finished compiling HERA_code", driver.AST->pos());
-				code = code + "\n#include <Tiger-stdlib-stack.hera>\n"; 
+				code = code + "\n#include <Tiger-stdlib-stack.hera>\n";
 				if (! EM_recorded_any_errors()) {
 					cout << code;
 					return 0; // no errors

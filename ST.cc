@@ -19,6 +19,14 @@ var_info::var_info(Ty_ty the_type, int the_SP, bool writable) {
 	_writable = writable;
 };
 
+string var_info::__repr__() {
+	return "var_info(" + to_String(_type) + ", " + std::to_string(_SP) + ", " + std::to_string(_writable) + ")";
+}
+
+string var_info::__str__() {
+	return this->__repr__();
+}
+
 Ty_ty var_info::my_type() {
 	return _type;
 }

@@ -6,8 +6,6 @@ int if_counter = 0;
 int comp_counter = 0;
 int loop_counter = 0;
 int SP_counter = 0;
-int let_counter = 0;
-ST<var_info> var_library = ST<var_info>();
 
 /*
  * HERA_code methods
@@ -77,7 +75,7 @@ static string HERA_comp_op(A_oper op) {
 	case A_geOp:
 		return "BGE";
 	default:
-		EM_error("Unhandled case in HERA_comp_op");
+		EM_error("ERROR: Unhandled case in HERA_comp_op");
 		return "0";
 	}
 }
@@ -97,7 +95,7 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 		if (op == A_eqOp || op == A_neqOp || op == A_ltOp || op == A_leOp || op == A_gtOp || op == A_geOp) {
 			return "1";
 		} else {
-			EM_error("Unhandled case in HERA_math_op", false, p);
+			EM_error("ERROR: Unhandled case in HERA_math_op", false, p);
 			return "0";
 		}
 	}
@@ -320,6 +318,8 @@ string A_seqExp_::HERA_code() {
 }
 
 string A_whileExp_::HERA_code() {
+    EM_debug("Compiling whileExp");
+
 	// Evaluate _test
 	// Check if zero
 	// If it is, branch to end
@@ -365,14 +365,6 @@ string A_forExp_::HERA_code() {
 				  + indent_math + "STORE(" + _lo->result_reg_s() + ", " + _lo_sp_loc + ", FP)\n"
 				  + _hi->HERA_code()
 				  + indent_math + "STORE(" + _hi->result_reg_s() + ", " + _hi_sp_loc + ", FP)\n";
-	// Changing ST here after it has been initialized in HERA_code. Prevents weird scoping issues?
-	// Make a copy of ST var_library
-	ST<var_info> previous_scope = var_library;
-	// Add the _var to the ST var_library with it's type and SP number
-	ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false));
-	// var_library = MergeAndShadow(var_library, for_var);
-	var_library = MergeAndShadow(for_var, var_library);
-
 
 	// Start of Loop
 	output = output + indent_math + "LABEL(" + start_label + ")\n";
@@ -395,8 +387,6 @@ string A_forExp_::HERA_code() {
 	output = output + indent_math + "LABEL(" + end_label + ")\n"
 					+ indent_math + "DEC(SP, 2)\n"
 					+ "// End of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
-	// Finally restore the scope to the original
-	var_library = previous_scope;
 	return output;
 }
 
@@ -405,48 +395,54 @@ string A_varExp_::HERA_code() {
 }
 
 string A_simpleVar_::HERA_code() {
+    EM_debug("Compiling simpleVar " + Symbol_to_string(_sym));
+
+    ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
 	// Two cases: In A_varDec_ or A_assignExp_
 	int inAssignExp = am_i_in_assignExp_(this);
 	// Returns register of new assignment value if in assignexp, otherwise < 0
 
 	string output = "";
-	if (is_name_there(_sym, var_library)) {
-		var_info var_struct = lookup(_sym, var_library);
-
+	if (is_name_there(_sym, my_variable_library)) {
+		var_info var_struct = lookup(_sym, my_variable_library);
+        string variable_comment = Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
 		if (inAssignExp > 0) {
 			// Check if var is writable, otherwise produce error
 			bool writable = var_struct.am_i_writable();
 			if (writable) {
-				output = indent_math + "STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)     // Reassigning Variable " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
+				output = indent_math + "STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)" +
+				         indent_math + "// Reassigning Variable " + variable_comment;
 			} else {
-				EM_error("Tried to write to a variable that is not writable. This happens most often when trying to write to the loop variable in an IF statement");
+				EM_error("ERROR: Tried to write to a variable that is not writable. This happens most often when trying to"
+				         " write to the loop variable in an IF statement");
 			}
 		} else {
 			// In varDec_
 			// Access sp number from declaration
-			// int my_sp_location = 
 			// Load it into R4
-			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)      // Accessing Variable " + Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
+			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)" +
+			         indent_math + "// Accessing Variable " + variable_comment;
 		}
 		return output;
 	} else {
+	    EM_error("ERROR: A_simpleVar: Could not find " + Symbol_to_string(_sym));
 		return "";
 	}
 }
 
 string A_letExp_::HERA_code() {
+    EM_debug("Compiling letExp");
+
 	// INC SP by number of things being declared
-	int my_SP = _decs->calculate_my_SP(this); 
-	string this_counter = std::to_string(let_counter);
-	let_counter++;
+	int my_SP = _decs ? _decs->calculate_my_SP(this) : 0;
+    string this_counter = get_my_let_number_s();
 	string output = "// Start of Let Expression " + this_counter + ". Stack starting at SP: " + std::to_string(SP_counter) +  ". Initializing " + std::to_string(my_SP) + " variable(s).\n";
 	if (my_SP > 0) {
 		output = output + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
 	}
 	// Increment the SP_counter
 	SP_counter = SP_counter + my_SP;
-	// Save current var_library, type_library, function_library to restore later
-	ST<var_info> copy_var_lib = var_library;
+	// Save current type_library, function_library to restore later
 	ST<type_info> copy_type_lib = type_library;
 	ST<function_info> copy_tiger_lib = tiger_library;
 	// Make changes to STs and store decs into Stack
@@ -474,7 +470,6 @@ string A_letExp_::HERA_code() {
 	}
 	SP_counter = SP_counter - my_SP;
 	// Restore all scopes to original
-	var_library = copy_var_lib;
 	type_library = copy_type_lib;
 	tiger_library = copy_tiger_lib;
 	output = output + "// END of Let Expression " + this_counter + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
@@ -482,38 +477,27 @@ string A_letExp_::HERA_code() {
 }
 
 string A_decList_::HERA_code() {
+    EM_debug("Compiling decList");
+    string output = _head->HERA_code();
 	if (_tail == 0) {
-		return _head->HERA_code();
+		return output;
 	} else {
-		string head_code = _head->HERA_code();
-		return head_code + _tail->HERA_code();	
+		return output + _tail->HERA_code();
 	}
 }
 
 string A_varDec_::HERA_code() {
-	// Get SP for this declaration by asking parent 
-	int my_SP = calculate_my_SP(this);
-	ST<var_info> var;
-	if (Symbols_are_equal(_typ, to_Symbol("NA"))) {
-		// Use type of _init to initialize type 
-		var = ST<var_info>(_var, var_info(_init->typecheck(), my_SP, true));
-	} else {
-		// Lookup the type for _typ in ST type_library
-		if (is_name_there(_typ, type_library)) {
-			type_info type_struct = lookup(_typ, type_library);
-			Ty_ty type = type_struct.my_type();
-			var = ST<var_info>(_var, var_info(type, my_SP, true));
-			// Add var into the stack
-		} else {
-			EM_error("HERA_code: Type not found for VarDec with type " + Symbol_to_string(_typ));
-			return "";
-		}
-	}
-	// Add variable to type library
-	var_library = MergeAndShadow(var, var_library);
+    EM_debug("Compiling varDec: " + Symbol_to_string(_var));
+
+    ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
+    EM_debug("Compiling varDec: " + Symbol_to_string(_var) + " ST: " + my_variable_library.__repr__());
+    string my_sp_number = std::to_string(calculate_my_SP(this));
+    string variable_comment = Symbol_to_string(_var) + " at SP: " + my_sp_number + "\n";
+
 	// Add variable to stack
-	string output = _init->HERA_code()  
-				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + std::to_string(my_SP) + ", FP)     // Storing Variable: " + Symbol_to_string(_var) + "\n";
+	string output = _init->HERA_code()
+				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + my_sp_number + ", FP)"
+				  + indent_math + "// Declaring variable " + variable_comment;
 	return output;
 }
 
@@ -560,17 +544,11 @@ string A_fundec_::HERA_code() {
 		firstPass = true;
 		return "";
 	} else {
-
-		ST<var_info> temp_lib = var_library;
-		
-		var_library = current_var_lib;
-
 		// Add params to ST and make available in body, make copy of vars
 		string output;
 		output  = "// Start of Function Definition: " + Symbol_to_string(_name) + "\n"
 				+ "LABEL(" + Symbol_to_string(_name) + ")\n"
-				+ indent_math + "// Saving PC_ret, FP_alt\n";
-		output =  output 
+				+ indent_math + "// Saving PC_ret, FP_alt\n"
 				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
 				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
 				+ indent_math + "// Body of Function\n"
@@ -579,9 +557,7 @@ string A_fundec_::HERA_code() {
 				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
 				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
 				+ indent_math + "RETURN(FP_alt, PC_ret)\n";
-
-		var_library = temp_lib;
-		return output;	
+		return output;
 	}
 }
 

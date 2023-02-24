@@ -38,9 +38,9 @@ private:
 
 // Print errors, warnings, or compiler debugging info
 // for debug, message will only be printed if for_which_lab >= which_cs350_lab in tiger.cc
-void EM_error  (string message, bool fatal=false, Position position = Position::undefined());
-void EM_warning(string message, Position position = Position::undefined());
-void EM_debug  (string message, Position position = Position::undefined());
+void EM_error  (string message, bool fatal=false, Position position = Position::undefined(), string level="<-- ERROR -->");
+void EM_warning(string message, Position position = Position::undefined(), string level="__WARNING__");
+void EM_debug  (string message, Position position = Position::undefined(), string level="DEBUG");
 
 // In the end, did we record any errors?
 bool EM_recorded_any_errors();

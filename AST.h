@@ -216,7 +216,7 @@ public:
 
 	// Shadow the default EM_error, etc., so that it automatically uses this->pos by default
 	void EM_error  (string message, bool fatal=false) {   ::EM_error(message, fatal, this->pos()); }
-	void EM_warning(string message, bool fatal=false) { ::EM_warning(message, this->pos()); }
+	void EM_warning(string message, bool fatal=false) {   ::EM_warning(message, this->pos()); }
 	void EM_debug  (string message, bool fatal=false) {   ::EM_debug(message, this->pos()); }
 
 	
@@ -227,12 +227,21 @@ public:
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
 	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
 	virtual int compute_depth();   // just for an example, not needed to compile
+	virtual ST<var_info> set_my_variable_library(AST_node_ *child);
+
+	// Override in decList/fundecList and decs when its children or parent asking
+    virtual ST<var_info> get_my_variable_library(AST_node_ *child) {
+        if (is_name_there(to_Symbol("Empty"), this->my_variable_library)) {
+            this->my_variable_library = set_my_variable_library(child);
+        }
+        return this->my_variable_library;
+    }
+
 	Ty_ty typecheck() {
 		if (this->stored_type == Ty_Placeholder()) this->stored_type = this->init_typecheck();
 		return stored_type;
@@ -245,7 +254,8 @@ protected:  // so that derived class's set_parent should be able to get at store
 private:
 	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
-	Ty_ty stored_type = Ty_Placeholder(); 
+	Ty_ty stored_type = Ty_Placeholder();
+	ST<var_info> my_variable_library = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 };
 
 class A_exp_ : public AST_node_ {
@@ -282,7 +292,7 @@ public:
 	int am_i_in_loop(AST_node_ *child);
 	int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	ST<var_info> set_my_variable_library(AST_node_ *child);
 	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
@@ -379,6 +389,7 @@ public:
 	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
+
 private:
 	A_var _var;
 };
@@ -419,19 +430,27 @@ private:
 
 class A_letExp_ : public A_exp_ {
 public:
-	A_letExp_(A_pos pos, A_decList decs, A_expList body);
+A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	virtual string print_rep(int indent, bool with_attributes);
 	virtual string HERA_code();
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+    ST<var_info> set_my_variable_library(AST_node_ *_parent_or_child);
+	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+
+	string get_my_let_number_s() {return std::to_string(my_let_number);}
 private:
+    int my_let_number = -1;
 	A_decList _decs;
 	A_expList _body;
+
+    ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_decs = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 };
 
 class A_callExp_ : public A_exp_ {
@@ -499,7 +518,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	ST<var_info> set_my_variable_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	int my_num;
@@ -556,7 +575,6 @@ public:
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
 private:
 	Symbol _sym;
 };
@@ -589,7 +607,7 @@ public:
 	virtual int init_result_reg();
 	A_exp _head;
 	A_expList _tail;
-	Ty_ty let_typecheck();
+	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int length();
 	int result_reg() {
@@ -635,6 +653,7 @@ public:
 	string result_reg_s() { // return in string form, e.g. "R2"
 		return "R" + std::to_string(this->result_reg());
 	}
+	ST<var_info> set_my_variable_library(AST_node_ *child);
 private:
 	int stored_result_reg = -1;
 };
@@ -649,10 +668,16 @@ public:
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	ST<var_info> set_my_variable_library(AST_node_ *_parent_or_child);
+	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	int length();
-
+private:
 	A_dec _head;
 	A_decList _tail;
+
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 };
 
 class A_varDec_ : public A_dec_ {
@@ -664,12 +689,17 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	ST<var_info> set_my_variable_library(AST_node_ *child);
+	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
 	Symbol _typ;
 	A_exp _init;
+
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+
 	// Appel had this here:
 	//	bool escape;
 	// but it's really just an inherited attribute set during escape analysis,
@@ -719,13 +749,14 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual ST<var_info> get_my_varlib(AST_node_ *child);
+	ST<var_info> set_my_variable_library(AST_node_ *child);
 	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	bool firstPass = true;
 	ST<var_info> current_var_lib;
 	ST<function_info> this_func_ST;
+
 	Symbol _name;
 	A_fieldList _params;
 	Symbol _result;
@@ -763,6 +794,7 @@ public:
 	Ty_fieldList init_Ty_fieldList();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	ST<var_info> set_my_variable_library(AST_node_ *parent);
 private:
 	A_field _head;
 	A_fieldList _tail;
@@ -775,6 +807,7 @@ public:
 	Ty_ty init_typecheck();
 	Ty_field init_Ty_field();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	ST<var_info> set_my_variable_library(AST_node_ *parent);
 private:
 	bool firstPass = true;
 	Symbol _name;
