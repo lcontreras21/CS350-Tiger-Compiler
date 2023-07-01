@@ -208,7 +208,7 @@ string A_callExp_::HERA_code()
 	// Using parameter on the stack version
 	
 	// Check if func has return
-	string return_val = this->func_returnq(tiger_library);	
+	string return_val = this->func_returnq(stored_parent->get_my_function_library(this));
 	int stack_size = 3;
 	if (_args != 0) {
 		stack_size = stack_size + _args->length();

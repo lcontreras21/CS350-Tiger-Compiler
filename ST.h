@@ -130,6 +130,9 @@ public:
 	Ty_ty type_of_function;
 	Ty_ty my_return_type();
 	Ty_fieldList my_args();
+	
+	string __repr__();
+	string __str__();
 };
 
 //ST<function_info> get_tiger_lib();

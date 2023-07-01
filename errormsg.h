@@ -4,6 +4,11 @@
 #include "util.h"
 
 #define USING_LOCATION_FROM_BISON 1
+// Log Levels:
+// 1: debug
+// 2: warning
+// 3: error
+extern int LOG_LEVEL;
 
 #if USING_LOCATION_FROM_BISON
 #include "location.hh"  // auto-built by bison, when used with the location option turned on

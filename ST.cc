@@ -63,6 +63,14 @@ Ty_fieldList function_info::my_args() {
 	return type_of_function->u.function.parameter_types;
 }
 
+string function_info::__repr__() {
+	return "function_info(" + to_String(type_of_function) + ")";
+}
+
+string function_info::__str__() {
+	return this->__repr__();
+}
+
 typedef ST<function_info> lib_func;
 
 ST<function_info> tiger_library = FuseOneScope(

@@ -49,10 +49,10 @@ int A_decList_::length() {
 }
 
 //--------------------------------------------------------------------------------
-string A_callExp_::func_returnq(ST<function_info> tiger_library) {
+string A_callExp_::func_returnq(ST<function_info> parent_function_library) {
 	// Lookup function and get function_info struct
-	if (is_name_there(_func, tiger_library)) {
-		function_info func_struct = lookup(_func, tiger_library);
+	if (is_name_there(_func, parent_function_library)) {
+		function_info func_struct = lookup(_func, parent_function_library);
 		Ty_ty return_type = func_struct.my_return_type();
 		if (return_type == Ty_Void()) {
 			return "";
@@ -60,7 +60,7 @@ string A_callExp_::func_returnq(ST<function_info> tiger_library) {
 			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)\n";
 		}
 	} else {
-		EM_error("HERA_code: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
+		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
 		return "";
 	}
 }
@@ -176,28 +176,4 @@ int A_varExp_::am_i_in_assignExp_(AST_node_ *child) {
 
 int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
 	return stored_parent->am_i_in_assignExp_(this);
-}
-
-//--------------------------------------------------------------------------------
-
-ST<function_info> AST_node_::get_my_funclib(AST_node_ *child) {
-	// Return parent?
-	return ST<function_info>();
-}
-
-ST<function_info> A_root_::get_my_funclib(AST_node_ *child) {
-	// Return tiger_library
-	return tiger_library;
-}
-
-ST<function_info> A_letExp_::get_my_funclib(AST_node_ *child) {
-	return ST<function_info>();
-}
-
-ST<function_info> A_callExp_::get_my_funclib(AST_node_ *child) {
-    return ST<function_info>();
-}
-
-ST<function_info> A_fundec_::get_my_funclib(AST_node_ *child) {
-    return ST<function_info>();
 }
