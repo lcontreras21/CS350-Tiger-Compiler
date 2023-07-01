@@ -36,7 +36,7 @@ have **
 			A_subscriptVar_
 		A_dec_**
 			A_varDec_**
-			A_functionDec_
+			A_functionDec_** TODO
 			A_typeDec_
 			A_decList_**
 		A_fundec_**
@@ -46,8 +46,8 @@ have **
 		A_fundecList_
 		A_namety_
 		A_nametyList_
-		A_field_
-		A_fieldList_
+		A_field_**
+		A_fieldList_**
 		A_ty_
 			A_nameTy_
 			A_arrayty_
@@ -102,7 +102,6 @@ ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *child) {
 
         EM_debug("Variablizing letExp #" + get_my_let_number_s() + " getting parent library");
         ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
-        EM_debug(parent_variable_library.__repr__());
 
         if (child == _decs) {
             return parent_variable_library;
@@ -111,7 +110,6 @@ ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *child) {
             return MergeAndShadow(dec_variable_library, parent_variable_library);
         }
     } else {
-        // Called by parent?
         EM_error("Variablizing letExp #" + get_my_let_number_s() + " error: child does not match _decs, or _body");
         return ST<var_info>();
     }
@@ -189,7 +187,6 @@ ST<var_info> A_decList_::get_my_variable_library(AST_node_ *_parent_or_child) {
         EM_debug("Variablizing decList: " + action + " library when asked by " + who);
         if (is_empty) {
             *my_variable_library_ptr = set_my_variable_library(_parent_or_child);
-            EM_debug(repr(*my_variable_library_ptr));
         }
         return *my_variable_library_ptr;
     } else {
@@ -210,7 +207,6 @@ ST<var_info> A_decList_::set_my_variable_library(AST_node_ *_parent_or_child) {
         ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
         if (_parent_or_child == _head) {
             EM_debug("Variablizing decList from head");
-            EM_debug(repr(parent_variable_library));
             return parent_variable_library;
         } else {
             EM_debug("Variablizing decList from tail");
@@ -219,6 +215,81 @@ ST<var_info> A_decList_::set_my_variable_library(AST_node_ *_parent_or_child) {
         }
     } else {
         EM_error("Variablizing decList error: _parent_or_child param does not match _head or _tail");
+        return ST<var_info>();
+    }
+}
+
+ST<var_info> A_functionDec_::get_my_variable_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent || _parent_or_child == theFunctions) {
+        string who = _parent_or_child == stored_parent ? "parent" : "theFunctions";
+
+        ST<var_info>* my_variable_library_ptr = _parent_or_child == stored_parent ? &this->my_variable_library_asked_by_parent : &this->my_variable_library_asked_by_functions;
+        bool is_empty = is_name_there(to_Symbol("Empty"), *my_variable_library_ptr);
+        string action = is_empty ? "setting" : "getting";
+        EM_debug("Variablizing functionDec: " + action + " library when asked by " + who);
+        if (is_empty) {
+            *my_variable_library_ptr = set_my_variable_library(_parent_or_child);
+        }
+        return *my_variable_library_ptr;
+    } else {
+        EM_error("Variablizing functionDec error: _parent_or_child param does not match parent or theFunctions");
+        return ST<var_info>();
+    }
+}
+
+ST<var_info> A_functionDec_::set_my_variable_library(AST_node_ *_parent_or_child) {
+    EM_debug("Variablizing functionDec");
+    
+    if (_parent_or_child == stored_parent) {
+        return ST<var_info>();
+    } else if (_parent_or_child == theFunctions) {
+        return stored_parent->get_my_variable_library(this);
+    } else {
+        EM_error("functionDec: child param does not match stored_parent or theFunctions");
+        return ST<var_info>();
+    }
+}
+
+ST<var_info> A_fundecList_::get_my_variable_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent || _parent_or_child == _head || _parent_or_child == _tail) {
+        string who = _parent_or_child == stored_parent ? "parent" : (_parent_or_child == _head ? "head": "tail");
+
+        ST<var_info>* my_variable_library_ptr = _parent_or_child == stored_parent ? &this->my_variable_library_asked_by_parent : (_parent_or_child == _head ? &this->my_variable_library_asked_by_head : &this->my_variable_library_asked_by_tail);
+        bool is_empty = is_name_there(to_Symbol("Empty"), *my_variable_library_ptr);
+        string action = is_empty ? "setting" : "getting";
+        EM_debug("Variablizing fundecList: " + action + " library when asked by " + who);
+        if (is_empty) {
+            *my_variable_library_ptr = set_my_variable_library(_parent_or_child);
+            EM_debug(repr(*my_variable_library_ptr));
+        }
+        return *my_variable_library_ptr;
+    } else {
+        EM_error("Variablizing fundecList error: _parent_or_child param does not match _head or _tail");
+        return ST<var_info>();
+    }
+}
+
+ST<var_info> A_fundecList_::set_my_variable_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent) {
+        EM_debug("Variablizing fundecList from parent");
+        // A letExp is asking about its declarations
+        ST<var_info> dec_variable_library  = _head->get_my_variable_library(this);
+        ST<var_info> tail_variable_library = _tail ? _tail->get_my_variable_library(this) : ST<var_info>();
+        return MergeAndShadow(tail_variable_library, dec_variable_library);
+    } else if (_parent_or_child == _head || _parent_or_child == _tail) {
+        // A dec is asking about previous declarations or variables available to let
+        ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
+        if (_parent_or_child == _head) {
+            EM_debug("Variablizing fundecList from head");
+            EM_debug(repr(parent_variable_library));
+            return parent_variable_library;
+        } else {
+            EM_debug("Variablizing fundecList from tail");
+            ST<var_info> dec_variable_library  = _head->get_my_variable_library(this);
+            return MergeAndShadow(dec_variable_library, parent_variable_library);
+        }
+    } else {
+        EM_error("Variablizing fundecList error: _parent_or_child param does not match _head or _tail");
         return ST<var_info>();
     }
 }
