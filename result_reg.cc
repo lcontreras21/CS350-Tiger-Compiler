@@ -36,7 +36,18 @@ int A_expList_::init_result_reg() {
 	if (_tail == 0) {
 		curr_value = _head->result_reg();
 	} else {
-		curr_value = std::max(_head->result_reg(), _tail->result_reg());
+		curr_value = _tail->result_reg();
+	}
+	return curr_value;
+}
+
+int A_expList_::init_reg_usage() {
+    int curr_value;
+    int head_reg = _head ? _head->result_reg() : min_reg;
+	if (_tail == 0) {
+		curr_value = head_reg;
+	} else {
+		curr_value = std::max(head_reg, _tail->result_reg());
 	}
 	return std::max(curr_value, min_reg);
 }
@@ -103,7 +114,7 @@ int A_letExp_::init_result_reg() {
 	if (_body == 0) {
 		curr_value = decs_reg;
 	} else {
-		curr_value = std::max(decs_reg, _body->result_reg());
+		curr_value = std::max(decs_reg, _body->reg_usage());
 	}
 	return std::max(curr_value, min_reg);
 

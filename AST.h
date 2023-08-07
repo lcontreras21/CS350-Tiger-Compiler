@@ -629,8 +629,17 @@ public:
 	string result_reg_s() { // return in string form, e.g. "R2"
 		return "R" + std::to_string(this->result_reg());
 	}
+	int reg_usage() {
+		if (this->stored_reg_usage < 0) this->stored_reg_usage = this->init_reg_usage();
+		return this->stored_reg_usage;
+	}
+	string reg_usage_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->reg_usage());
+	}
+	int init_reg_usage();
 private:
 	int stored_result_reg = -1;
+	int stored_reg_usage = -1;
 };
 
 // The componends of a A_recordExp, e.g. point{X = 4, Y = 12}
@@ -709,6 +718,8 @@ public:
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
@@ -717,6 +728,10 @@ private:
 
 	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_init = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+
 
 	// Appel had this here:
 	//	bool escape;
@@ -741,6 +756,7 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
 	ST<var_info> set_my_variable_library(AST_node_ *child);

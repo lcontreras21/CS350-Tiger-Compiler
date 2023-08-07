@@ -35,7 +35,7 @@ have **
 			A_fieldVar_
 			A_subscriptVar_
 		A_dec_
-			A_varDec_
+			A_varDec_**
 			A_functionDec_**
 			A_typeDec_
 			A_decList_**
@@ -156,6 +156,41 @@ ST<function_info> A_decList_::set_my_function_library(AST_node_ *_parent_or_chil
         }
     } else {
         EM_error("Functionalizing decList error: _parent_or_child param does not match _head or _tail");
+        return ST<function_info>();
+    }
+}
+
+ST<function_info> A_varDec_::get_my_function_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent || _parent_or_child == _init) {
+        string who = _parent_or_child == stored_parent ? "parent" : "init";
+
+        ST<function_info>* my_function_library_ptr = _parent_or_child == stored_parent ? &this->my_function_library_asked_by_parent : &this->my_function_library_asked_by_init;
+        bool is_empty = is_name_there(to_Symbol("Empty"), *my_function_library_ptr);
+        string action = is_empty ? "setting" : "getting";
+        EM_debug("Functionalizing varDec: " + action + " library when asked by " + who);
+        if (is_empty) {
+            *my_function_library_ptr = set_my_function_library(_parent_or_child);
+        }
+        return *my_function_library_ptr;
+    } else {
+        EM_error("Functionalizing varDec error: _parent_or_child param does not match _init");
+        return ST<function_info>();
+    }
+}
+
+ST<function_info> A_varDec_::set_my_function_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent) {
+        EM_debug("Functionalizing varDec from parent");
+        ST<function_info> my_function_library  = ST<function_info>();
+        return my_function_library;
+    } else if (_parent_or_child == _init) {
+        // _init is asking about functions in its scope
+        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+
+        EM_debug("Functionalizing varDec from _init");
+        return parent_function_library;
+    } else {
+        EM_error("Functionalizing varDec error: _parent_or_child param does not match _init");
         return ST<function_info>();
     }
 }
