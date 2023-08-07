@@ -57,7 +57,7 @@ string A_callExp_::func_returnq(ST<function_info> parent_function_library) {
 		if (return_type == Ty_Void()) {
 			return "";
 		} else {
-			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)\n";
+			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
 		}
 	} else {
 		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
@@ -70,7 +70,7 @@ string A_callExp_::func_returnq(ST<function_info> parent_function_library) {
 
 int AST_node_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// Agnostic, so can only really traverse UP the tree
-	// Should be fine?
+	// Should be fine? // LOL no but fix later (famous last words)
 	return stored_parent->calculate_my_SP(this); 
 }
 
@@ -137,6 +137,10 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// Otherwise, go up the tree and find what THIS Vars stack offset is
 		return stored_parent->calculate_my_SP(this);
 	}
+}
+
+int A_functionDec_::calculate_my_SP(AST_node_ *_parent_or_child)  {
+    return 0;
 }
 
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {

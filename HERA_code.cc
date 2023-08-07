@@ -216,15 +216,15 @@ string A_callExp_::HERA_code()
 	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	SP_counter = SP_counter + stack_size;
 	my_code = my_code 
-			+ indent_math + "MOVE(Rt, FP_alt)\n"
-			+ indent_math + "MOVE(FP_alt, SP)\n" 
-			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n" 
-			+ indent_math + "STORE(Rt, 2, FP_alt)\n"
+			+ indent_math + "MOVE(Rt, FP_alt)\n"                                //
+			+ indent_math + "MOVE(FP_alt, SP)\n"                                //
+			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n"     //
+//			+ indent_math + "STORE(Rt, 2, FP_alt)\n"                            //
 			+ _args_HERA_code(3) 
 			+ indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
 			+ return_val
-			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
-			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	
+//			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"                         //
+			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	//
 	SP_counter = SP_counter - stack_size;
 	my_code = my_code + "// End of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	return my_code;
@@ -405,13 +405,13 @@ string A_simpleVar_::HERA_code() {
 	string output = "";
 	if (is_name_there(_sym, my_variable_library)) {
 		var_info var_struct = lookup(_sym, my_variable_library);
-        string variable_comment = Symbol_to_string(_sym) + " at SP: " + std::to_string(var_struct.my_SP()) + "\n";
+        string variable_comment = Symbol_to_string(_sym) + "' at SP: " + std::to_string(var_struct.my_SP()) + "\n";
 		if (inAssignExp > 0) {
 			// Check if var is writable, otherwise produce error
 			bool writable = var_struct.am_i_writable();
 			if (writable) {
 				output = indent_math + "STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)" +
-				         indent_math + "// Reassigning Variable " + variable_comment;
+				         indent_math + "// Reassigning Variable '" + variable_comment;
 			} else {
 				EM_error("ERROR: Tried to write to a variable that is not writable. This happens most often when trying to"
 				         " write to the loop variable in an IF statement");
@@ -421,7 +421,7 @@ string A_simpleVar_::HERA_code() {
 			// Access sp number from declaration
 			// Load it into R4
 			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)" +
-			         indent_math + "// Accessing Variable " + variable_comment;
+			         indent_math + "// Accessing Variable '" + variable_comment;
 		}
 		return output;
 	} else {
@@ -460,7 +460,7 @@ string A_letExp_::HERA_code() {
 		}
 	}
 	// Move result to final reg if necessary
-	if (this->result_reg() != _body->result_reg()) {
+\	if (this->result_reg() != _body->result_reg()) {
         output = output + indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n";
 	}
 
