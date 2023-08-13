@@ -174,9 +174,6 @@ string A_opExp_::HERA_code()
 }
 
 string A_callExp_::_args_HERA_code(int counter) {
-	// Using parameter on the stack version
-	// Go through expList and move SP counter
-	// Call HERA_code and store(reg, SP_counter, FP_alt)
 	string output = "";
 	A_expList args = _args;
 	while(args != 0) {
@@ -186,34 +183,19 @@ string A_callExp_::_args_HERA_code(int counter) {
 		counter++;
 	}
 	return output;
-	
-	//---------------------------------------
-
-	/* Code for parater as registers
-	// Go through _head->code and move to R counter
-	//   Then repeat with _tail 
-	counter++;
-	string output = _head->HERA_code() + 
-					indent_math + "MOVE(R" + std::to_string(counter) + ", " + _head->result_reg_s() + ")\n";
-	if (_tail == 0) {
-		return output;
-	} else {
-		return output + _tail->func_HERA_code(counter);
-	}
-	*/
 }
 
-string A_callExp_::HERA_code()
-{
-	// Using parameter on the stack version
-	
+string A_callExp_::HERA_code() {
 	// Check if func has return
 	string return_val = this->func_returnq(stored_parent->get_my_function_library(this));
 	int stack_size = 3;
 	if (_args != 0) {
 		stack_size = stack_size + _args->length();
 	}
-	string my_code = "// Start of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
+
+    string unique_func_name = get_my_unique_function_name();
+
+	string my_code = "// Start of Function Call for function " + unique_func_name + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	SP_counter = SP_counter + stack_size;
 	my_code = my_code 
 			+ indent_math + "MOVE(Rt, FP_alt)\n"                                //
@@ -221,38 +203,22 @@ string A_callExp_::HERA_code()
 			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n"     //
 //			+ indent_math + "STORE(Rt, 2, FP_alt)\n"                            //
 			+ _args_HERA_code(3) 
-			+ indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
+			+ indent_math + "CALL(FP_alt, " + unique_func_name + ")\n"
 			+ return_val
 //			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"                         //
 			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	//
 	SP_counter = SP_counter - stack_size;
-	my_code = my_code + "// End of Function Call for function " + Symbol_to_string(_func) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
+	my_code = my_code + "// End of Function Call for function " + unique_func_name + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	return my_code;
-
-	//---------------------------------------
-	
-
-	/*
-	// Code for parameters as registers
-	string my_code;
-	if (_args != 0) {
-		my_code = _args->func_HERA_code(0);
-	}
-	my_code = my_code + indent_math + "CALL(FP_alt, " + Symbol_to_string(_func) + ")\n"
-			+ indent_math + "MOVE(" + this->result_reg_s() + ", R1)\n"; 
-	return my_code;
-	*/
 }
 
-string A_stringExp_::HERA_code()
-{
+string A_stringExp_::HERA_code() {
 	/* Add preamble string memory allocation */
 	string this_str_label = "string_" + std::to_string(count);
 	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
 }
 
-string A_boolExp_::HERA_code()
-{
+string A_boolExp_::HERA_code() {
 	if (value) {
 		return indent_math + "SET(" + result_reg_s() + ", 1)\n";
 	} else {
@@ -260,8 +226,7 @@ string A_boolExp_::HERA_code()
 	}  
 }
 
-string A_ifExp_::HERA_code()
-{	
+string A_ifExp_::HERA_code() {
 	// A few string vars for label creation
 	int this_if_counter = if_counter;
 	if_counter = if_counter +1;
@@ -460,7 +425,7 @@ string A_letExp_::HERA_code() {
 		}
 	}
 	// Move result to final reg if necessary
-\	if (this->result_reg() != _body->result_reg()) {
+	if (this->result_reg() != _body->result_reg()) {
         output = output + indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n";
 	}
 
@@ -544,10 +509,13 @@ string A_fundec_::HERA_code() {
 		firstPass = true;
 		return "";
 	} else {
+
+        string unique_func_name = get_my_unique_function_name();
+
 		// Add params to ST and make available in body, make copy of vars
-		string output;
-		output  = "// Start of Function Definition: " + Symbol_to_string(_name) + "\n"
-				+ "LABEL(" + Symbol_to_string(_name) + ")\n"
+    		string output;
+		output  = "// Start of Function Definition: " + unique_func_name + "\n"
+				+ "LABEL(" + unique_func_name + ")\n"
 				+ indent_math + "// Saving PC_ret, FP_alt\n"
 				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
 				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
