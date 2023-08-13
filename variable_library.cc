@@ -260,7 +260,6 @@ ST<var_info> A_fundecList_::get_my_variable_library(AST_node_ *_parent_or_child)
         EM_debug("Variablizing fundecList: " + action + " library when asked by " + who);
         if (is_empty) {
             *my_variable_library_ptr = set_my_variable_library(_parent_or_child);
-            EM_debug(repr(*my_variable_library_ptr));
         }
         return *my_variable_library_ptr;
     } else {
@@ -281,7 +280,6 @@ ST<var_info> A_fundecList_::set_my_variable_library(AST_node_ *_parent_or_child)
         ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
         if (_parent_or_child == _head) {
             EM_debug("Variablizing fundecList from head");
-            EM_debug(repr(parent_variable_library));
             return parent_variable_library;
         } else {
             EM_debug("Variablizing fundecList from tail");

@@ -478,6 +478,16 @@ public:
 	string func_returnq(ST<function_info> tiger_library);  // TODO
 	string _args_HERA_code(int counter);
 	virtual string print_rep(int indent, bool with_attributes);
+
+	string get_my_unique_function_name() {
+        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        if (not is_name_there(_func, parent_function_library)) {
+            EM_error("Function " + str(_func) + " is not in Tiger Standard Library. Define or check again");
+        }
+        function_info func_struct = lookup(_func, parent_function_library);
+        int func_id = func_struct.id;
+        return Symbol_to_string(this->_func) + (func_struct.tiger_function ? "" : "_" + std::to_string(func_id));
+	}
 private:
 	Symbol _func;
 	A_expList _args;
@@ -809,6 +819,16 @@ public:
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+
+	string get_my_unique_function_name() {
+        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        if (not is_name_there(_name, parent_function_library)) {
+            EM_error("Function " + str(_name) + " is not in Tiger Standard Library. Define or check again");
+        }
+        function_info func_struct = lookup(_name, parent_function_library);
+        int func_id = func_struct.id;
+        return Symbol_to_string(this->_name) + "_" + std::to_string(func_id);
+	}
 private:
 	bool firstPass = true;
 	ST<var_info> current_var_lib;
