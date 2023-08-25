@@ -409,11 +409,6 @@ string A_letExp_::HERA_code() {
 	}
 	// Increment the SP_counter
 	SP_counter = SP_counter + my_SP;
-	// Save current type_library, function_library to restore later
-	ST<type_info> copy_type_lib = type_library;
-	ST<function_info> copy_tiger_lib = tiger_library;
-	// Make changes to STs and store decs into Stack
-		// Should happen in A_decList_::HERA_code and in A_decs_
 	if (_decs != 0) {
 		output = output + _decs->HERA_code()
 			   + indent_math + "// Finished declaring variables in Let Expression " + this_counter + ". Stack now at SP: " + std::to_string(SP_counter) + "\n";
@@ -436,9 +431,6 @@ string A_letExp_::HERA_code() {
 		output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
 	}
 	SP_counter = SP_counter - my_SP;
-	// Restore all scopes to original
-	type_library = copy_type_lib;
-	tiger_library = copy_tiger_lib;
 	output = output + "// END of Let Expression " + this_counter + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
 	return output;
 }
@@ -531,8 +523,6 @@ string A_fundec_::HERA_code() {
 	*/
 	// Make copy of function and variable library
 	if (not firstPass) {
-		// Add function to tiger_library
-		tiger_library = FuseOneScope(tiger_library, this_func_ST);
 		firstPass = true;
 		return "";
 	} else {

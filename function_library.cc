@@ -318,7 +318,7 @@ the function). [handled by function_library pass through]
 
 The second pass processes the bodies of all functions in the mutually recursive declaration, taking advantage of the
 environment augmented with all the function headers. For each body, the formal parameter list is processed again,
-this time entering the parameters as varDecs in the value environment. [handled by var_library pass through]
+this time entering the parameters as varDecs in the value environment.
 */
 
 Ty_fieldList A_fieldList_::init_Ty_fieldList() {
