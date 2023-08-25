@@ -116,7 +116,6 @@ ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *child) {
 }
 
 ST<var_info> A_forExp_::set_my_variable_library(AST_node_ *child) {
-    // TODO
     ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
 
     int this_SP_counter = calculate_my_SP(this);
