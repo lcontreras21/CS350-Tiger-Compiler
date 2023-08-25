@@ -181,3 +181,12 @@ int A_varExp_::am_i_in_assignExp_(AST_node_ *child) {
 int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
 	return stored_parent->am_i_in_assignExp_(this);
 }
+
+//--------------------------------------------------------------------------------
+
+int A_fieldList_::length() {
+    if (_tail == 0) {
+        return 1;
+    }
+    return 1 + _tail->length();
+}
