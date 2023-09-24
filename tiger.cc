@@ -167,7 +167,7 @@ int main(int argc, char **argv)
 					 true, Position::undefined()); // true = fatal error
 			}
 
-			EM_debug("Parsing Successful\n", driver.AST->pos());
+			EM_debug("Parsing Successful", driver.AST->pos());
 
 
 			// Could do static checks, e.g. type checking, here if we want to do them all before any code generation
@@ -178,12 +178,12 @@ int main(int argc, char **argv)
 				// Typecheck first
 				EM_debug("Starting Typechecking", driver.AST->pos());
 				Ty_ty final_type = driver.AST->typecheck();
-				EM_debug("Finished Typechecking and got final type: " + to_String(final_type)  + "\n", driver.AST->pos());
+				EM_debug("Finished Typechecking and got final type " + to_String(final_type), driver.AST->pos());
 				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
 				code = code + driver.AST->HERA_data();
-				EM_debug("Finished compiling HERA_data\n", driver.AST->pos());
+				EM_debug("Finished compiling HERA_data", driver.AST->pos());
 				code = code + driver.AST->HERA_code();
-				EM_debug("Finished compiling HERA_code\n", driver.AST->pos());
+				EM_debug("Finished compiling HERA_code", driver.AST->pos());
 				code = code + "\n#include <Tiger-stdlib-stack.hera>\n";
 				if (! EM_recorded_any_errors()) {
 					cout << code;
