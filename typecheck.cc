@@ -394,6 +394,47 @@ Ty_ty A_fundecList_::init_typecheck() {
 	return _head->typecheck();
 }
 
+//Ty_ty A_fundec_::init_typecheck() {
+//	// First Pass: Add function name, params, return type to function library.	
+//	//		Don't type check the body
+//	//		Save it in private field and reset it. Use that in second pass. This is to avoid using param from another function in your own body
+//	// Second Pass: Check the body not that parameters have been added
+//	if (firstPass) {
+//	    EM_debug("Typechecking FunDec in first pass");
+//		firstPass = false;
+//		// Get return type from type library, if there
+//		if (is_name_there(_result, type_library)) {
+//
+//			type_info type_struct = lookup(_result, type_library);
+//			Ty_ty this_type = type_struct.my_type();
+//
+//			// Type check _params, adding them to var_lib
+//			Ty_fieldList params;
+//			if (_params != 0) {
+//				_params->typecheck();
+//				params = _params->init_Ty_fieldList();
+//			} else {
+//				params = 0;
+//			}
+//
+//			ST<function_info> new_func = ST<function_info>(_name, function_info(Ty_Function(this_type, params)));	
+//			this_func_ST = new_func;
+//			tiger_library = FuseOneScope(tiger_library, new_func);
+//			return this_type;
+//		} else {
+//			EM_error("Function declaration " + Symbol_to_string(_name) + " does not have a valid return type");
+//			return Ty_Error();
+//		}
+//		return Ty_Void();
+//	} else {
+//	    EM_debug("Typechecking FunDec in second pass");
+//		// Second Pass
+//		// Load stored Symbol Table and typecheck body
+//		Ty_ty body_type = _body->typecheck();
+//		return body_type;
+//	}
+//}
+
 Ty_ty A_fundec_::init_typecheck() {
     EM_debug("Typechecking fundec '" + Symbol_to_string(_name) + "' params");
     if (_params) {

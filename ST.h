@@ -164,6 +164,7 @@ public:
 	Ty_ty _type;
 	Ty_ty my_type();	
 };
+extern ST<var_info> var_library;
 extern ST<type_info> type_library;
 
 #include "ST.t"
