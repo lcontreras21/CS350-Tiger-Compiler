@@ -819,9 +819,6 @@ public:
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	string store_HERA_code(int reg_count_to_replace, int offset);
-	string load_HERA_code(int reg_count_to_load, int offset);
-
 
 	string get_my_unique_function_name() {
         ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
@@ -878,7 +875,6 @@ public:
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *parent);
-	int length();
 private:
 	A_field _head;
 	A_fieldList _tail;

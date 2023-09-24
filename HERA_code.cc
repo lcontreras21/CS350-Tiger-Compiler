@@ -195,19 +195,17 @@ string A_callExp_::HERA_code() {
 
     string unique_func_name = get_my_unique_function_name();
 
-	string my_code = "// Start of Function Call for function " + unique_func_name +
-	                 ". Current SP at: " + std::to_string(SP_counter) + "\n";
+	string my_code = "// Start of Function Call for function " + unique_func_name + ". Current SP at: " + std::to_string(SP_counter) + "\n";
 	SP_counter = SP_counter + stack_size;
-
 	my_code = my_code 
-			+ indent_math + "MOVE(Rt, FP_alt)\n"                                // Save the current FP into temp Reg
-			+ indent_math + "MOVE(FP_alt, SP)\n"                                // Set FP to beginning of functions memory block
-			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n"     // Allocate functions memory block
-			+ indent_math + "STORE(Rt, 2, FP_alt)\n"                            // Store FP into the
+			+ indent_math + "MOVE(Rt, FP_alt)\n"                                //
+			+ indent_math + "MOVE(FP_alt, SP)\n"                                //
+			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n"     //
+//			+ indent_math + "STORE(Rt, 2, FP_alt)\n"                            //
 			+ _args_HERA_code(3) 
 			+ indent_math + "CALL(FP_alt, " + unique_func_name + ")\n"
 			+ return_val
-			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"                         //
+//			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"                         //
 			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	//
 	SP_counter = SP_counter - stack_size;
 	my_code = my_code + "// End of Function Call for function " + unique_func_name + ". Current SP at: " + std::to_string(SP_counter) + "\n";
@@ -495,31 +493,6 @@ string A_fundecList_::HERA_code() {
 	}
 }
 
-string A_fundec_::store_HERA_code(int reg_count_to_replace, int offset) {
-    // STORE R number of registers at (3 + N number of function parameters) stack offset
-    string output;
-    int first_reg = 3;
-    while (first_reg <= reg_count_to_replace) {
-        output += indent_math + "STORE(R" + std::to_string(first_reg) + ", " + std::to_string(offset) + ", FP)\n";
-        first_reg++;
-        offset++;
-    }
-    return output;
-}
-
-string A_fundec_::load_HERA_code(int reg_count_to_load, int offset) {
-    // STORE R number of registers at (3 + N number of function parameters) stack offset
-    string output;
-    int actual_offset = offset + reg_count_to_load - 3;
-    while (reg_count_to_load >= 3) {
-        int actual_offset = offset + reg_count_to_load - 3;
-        output += indent_math + "LOAD(R" + std::to_string(reg_count_to_load) + ", " + std::to_string(actual_offset) + ", FP)\n";
-        reg_count_to_load--;
-        actual_offset--;
-    }
-    return output;
-}
-
 string A_fundec_::HERA_code() {
 	/* To define a function to be called with these conventions, we use these steps, as needed:
 		• Increment SP to make space for local storage
@@ -536,27 +509,21 @@ string A_fundec_::HERA_code() {
 		firstPass = true;
 		return "";
 	} else {
+
         string unique_func_name = get_my_unique_function_name();
-        string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
-        string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
+
 		// Add params to ST and make available in body, make copy of vars
-        string output;
+    		string output;
 		output  = "// Start of Function Definition: " + unique_func_name + "\n"
 				+ "LABEL(" + unique_func_name + ")\n"
 				+ indent_math + "// Saving PC_ret, FP_alt\n"
-				+ indent_math + "INC(SP, " + std::to_string(_body->result_reg() - 2) + ")\n"
 				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
 				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
-				+ indent_math + "// Saving registers\n"
-				+ store_reg_str
 				+ indent_math + "// Body of Function\n"
-				+ _body->HERA_code()
-				+ indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP) \t// Put result value over 1st parameter\n"
-				+ indent_math + "// Restore registers\n"
-				+ load_reg_str
+				+ indent_math + _body->HERA_code()
+				+ indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP)\n"
 				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
 				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
-				+ indent_math + "DEC(SP, " + std::to_string(_body->result_reg() - 2) + ")\n"
 				+ indent_math + "RETURN(FP_alt, PC_ret)\n";
 		return output;
 	}

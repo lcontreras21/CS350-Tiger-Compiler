@@ -97,7 +97,7 @@ ST<function_info> A_letExp_::set_my_function_library(AST_node_ *child) {
         EM_debug("Functionalizing letExp #" + get_my_let_number_s() + " when asked by parent to be empty");
         return ST<function_info>();
     } else if (child == _decs || child == _body) {
-        string who = child == _decs ? "decs" : "body";
+        string who = child == _decs ? " decs" : " body";
         EM_debug("Functionalizing letExp #" + get_my_let_number_s() + " when asked by " + who);
 
         EM_debug("Functionalizing letExp #" + get_my_let_number_s() + " getting parent library");
