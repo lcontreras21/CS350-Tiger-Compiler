@@ -227,14 +227,22 @@ public:
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
 	virtual int compute_depth();   // just for an example, not needed to compile
 	virtual ST<var_info> set_my_variable_library(AST_node_ *child);
+	virtual ST<function_info> set_my_function_library(AST_node_ *child);
+	virtual int get_my_letExp_number(AST_node_ *child);
 
 	// Override in decList/fundecList and decs when its children or parent asking
+    virtual ST<function_info> get_my_function_library(AST_node_ *child) {
+        if (is_name_there(to_Symbol("Empty"), this->my_function_library)) {
+            this->my_function_library = set_my_function_library(child);
+        }
+        return this->my_function_library;
+    }
+
     virtual ST<var_info> get_my_variable_library(AST_node_ *child) {
         if (is_name_there(to_Symbol("Empty"), this->my_variable_library)) {
             this->my_variable_library = set_my_variable_library(child);
@@ -256,6 +264,7 @@ private:
 	A_pos stored_pos;
 	Ty_ty stored_type = Ty_Placeholder();
 	ST<var_info> my_variable_library = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<function_info> my_function_library = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 class A_exp_ : public AST_node_ {
@@ -293,9 +302,10 @@ public:
 	int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
-	virtual ST<function_info> get_my_funclib(AST_node_ *child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
+	int get_my_letExp_number(AST_node_ *child);
 
 	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
 	virtual int compute_depth();  // just for an example, not needed to compile
@@ -439,9 +449,11 @@ A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
     ST<var_info> set_my_variable_library(AST_node_ *_parent_or_child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
-	virtual ST<function_info> get_my_funclib(AST_node_ *child);
+	ST<function_info> set_my_function_library(AST_node_ *_parent_or_child);
+	ST<function_info> get_my_function_library(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
+    int get_my_letExp_number(AST_node_ *child);
 	string get_my_let_number_s() {return std::to_string(my_let_number);}
 private:
     int my_let_number = -1;
@@ -451,6 +463,10 @@ private:
     ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_decs = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+
+	ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_decs = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 class A_callExp_ : public A_exp_ {
@@ -462,10 +478,19 @@ public:
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	string func_returnq(ST<function_info> tiger_library);
+	string func_returnq(ST<function_info> tiger_library);  // TODO
 	string _args_HERA_code(int counter);
-	virtual ST<function_info> get_my_funclib(AST_node_ *child);
 	virtual string print_rep(int indent, bool with_attributes);
+
+	string get_my_unique_function_name() {
+        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        if (not is_name_there(_func, parent_function_library)) {
+            EM_error("Function " + str(_func) + " is not in Tiger Standard Library. Define or check again");
+        }
+        function_info func_struct = lookup(_func, parent_function_library);
+        int func_id = func_struct.id;
+        return Symbol_to_string(this->_func) + (func_struct.tiger_function ? "" : "_" + std::to_string(func_id));
+	}
 private:
 	Symbol _func;
 	A_expList _args;
@@ -617,8 +642,17 @@ public:
 	string result_reg_s() { // return in string form, e.g. "R2"
 		return "R" + std::to_string(this->result_reg());
 	}
+	int reg_usage() {
+		if (this->stored_reg_usage < 0) this->stored_reg_usage = this->init_reg_usage();
+		return this->stored_reg_usage;
+	}
+	string reg_usage_s() { // return in string form, e.g. "R2"
+		return "R" + std::to_string(this->reg_usage());
+	}
+	int init_reg_usage();
 private:
 	int stored_result_reg = -1;
+	int stored_reg_usage = -1;
 };
 
 // The componends of a A_recordExp, e.g. point{X = 4, Y = 12}
@@ -670,6 +704,8 @@ public:
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *_parent_or_child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 	int length();
 private:
 	A_dec _head;
@@ -678,6 +714,10 @@ private:
 	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_tail = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 class A_varDec_ : public A_dec_ {
@@ -691,6 +731,8 @@ public:
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	Symbol _var;
@@ -699,6 +741,10 @@ private:
 
 	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_init = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+
 
 	// Appel had this here:
 	//	bool escape;
@@ -723,9 +769,20 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
+	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+
+	ST<var_info> set_my_variable_library(AST_node_ *child);
+	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 private:
 	A_fundecList theFunctions;
+
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_functions = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_functions = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 class A_fundecList_ : public AST_node_ {
@@ -736,9 +793,21 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+
+	ST<var_info> set_my_variable_library(AST_node_ *child);
+	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 private:
 	A_fundec _head;
 	A_fundecList _tail;
+
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_tail = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
@@ -750,8 +819,22 @@ public:
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
-	virtual ST<function_info> get_my_funclib(AST_node_ *child);
+	ST<function_info> set_my_function_library(AST_node_ *child);
+	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+	string store_HERA_code(int reg_count_to_replace, int offset);
+	string load_HERA_code(int reg_count_to_load, int offset);
+
+
+	string get_my_unique_function_name() {
+        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        if (not is_name_there(_name, parent_function_library)) {
+            EM_error("Function " + str(_name) + " is not in Tiger Standard Library. Define or check again");
+        }
+        function_info func_struct = lookup(_name, parent_function_library);
+        int func_id = func_struct.id;
+        return Symbol_to_string(this->_name) + "_" + std::to_string(func_id);
+	}
 private:
 	bool firstPass = true;
 	ST<var_info> current_var_lib;
@@ -761,6 +844,9 @@ private:
 	A_fieldList _params;
 	Symbol _result;
 	A_exp _body;
+
+    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
 //  Giving a name to a type with Namety -- this is a declaration of a type
@@ -795,6 +881,7 @@ public:
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *parent);
+	int length();
 private:
 	A_field _head;
 	A_fieldList _tail;

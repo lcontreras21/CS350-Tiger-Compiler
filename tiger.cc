@@ -9,6 +9,8 @@ using std::endl;
 #include "ST.h"  /* to run ST_test */
 #include "tigerParseDriver.h"
 
+int LOG_LEVEL = 1;
+
 /* Turned this off while having trouble switching to C++ approach; this used to work in C version */
 #if defined COMPILE_LEX_TEST
 // array of token number / token name pairs
@@ -111,7 +113,7 @@ int main(int argc, char **argv)
 #endif
 	String filename;
 	int arg_consumed = 0;
-  
+
 	if (argc>arg_consumed+1 && string(argv[1]).length()>= 2 && (argv[1][0] == '-' && argv[1][1] == 'd')) { // Debug option
 		arg_consumed++;
 		debug = true;
@@ -121,12 +123,13 @@ int main(int argc, char **argv)
 			print_ASTs_with_attributes = show_ast = true;
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'c')
 			crash_on_fatal = true;
+		else if (string(argv[1]).length()>= 3 && (argv[1][2] == '1' || argv[1][2] == '2' || argv[1][2] == '3'))
+			LOG_LEVEL = argv[1][2] - '0';
 #if defined COMPILE_LEX_TEST
 		else if (string(argv[1]).length()>= 3 && argv[1][2] == 'l')
 			just_do_lex_and_then_stop = true;
 #endif
 	}
-
 
 	if (argc>arg_consumed+1)
 	{
@@ -164,7 +167,7 @@ int main(int argc, char **argv)
 					 true, Position::undefined()); // true = fatal error
 			}
 
-			EM_debug("Parsing Successful", driver.AST->pos());
+			EM_debug("Parsing Successful\n", driver.AST->pos());
 
 
 			// Could do static checks, e.g. type checking, here if we want to do them all before any code generation
@@ -175,12 +178,12 @@ int main(int argc, char **argv)
 				// Typecheck first
 				EM_debug("Starting Typechecking", driver.AST->pos());
 				Ty_ty final_type = driver.AST->typecheck();
-				EM_debug("Finished Typechecking and got final type " + to_String(final_type), driver.AST->pos());
+				EM_debug("Finished Typechecking and got final type: " + to_String(final_type)  + "\n", driver.AST->pos());
 				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
 				code = code + driver.AST->HERA_data();
-				EM_debug("Finished compiling HERA_data", driver.AST->pos());
+				EM_debug("Finished compiling HERA_data\n", driver.AST->pos());
 				code = code + driver.AST->HERA_code();
-				EM_debug("Finished compiling HERA_code", driver.AST->pos());
+				EM_debug("Finished compiling HERA_code\n", driver.AST->pos());
 				code = code + "\n#include <Tiger-stdlib-stack.hera>\n";
 				if (! EM_recorded_any_errors()) {
 					cout << code;

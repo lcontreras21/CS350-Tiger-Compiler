@@ -74,6 +74,7 @@ public:
 	friend symbol_info &lookup<symbol_info>(const nametype &must_find_this, const ST<symbol_info> &in_this_table);
 	string __repr__();
 	string __str__()  { return this->__repr__(); }
+	int length();
 	
 	class duplicate_symbol { // error type for exceptions
 	public:
@@ -126,14 +127,21 @@ void ST_examples();  // show some interesting examples to understand how ST work
 struct function_info {
 public:
 	// Give Ty_Function(Ty_ty return_type, Ty_fieldList(Ty_ty type, Ty_fieldList()));
-	function_info(Ty_ty the_type_of_function);
+	function_info(Ty_ty the_type_of_function, int the_id = -1, bool is_tiger_function = true);
 	Ty_ty type_of_function;
+	int id;
+	bool tiger_function;
+
 	Ty_ty my_return_type();
 	Ty_fieldList my_args();
+
+	string __repr__();
+	string __str__();
 };
 
 //ST<function_info> get_tiger_lib();
 extern ST<function_info> tiger_library;
+extern int function_count;
 
 // Struct to store type and SP information for variables
 struct var_info {
@@ -156,7 +164,6 @@ public:
 	Ty_ty _type;
 	Ty_ty my_type();	
 };
-extern ST<var_info> var_library;
 extern ST<type_info> type_library;
 
 #include "ST.t"

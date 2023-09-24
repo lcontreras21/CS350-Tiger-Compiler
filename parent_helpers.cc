@@ -49,18 +49,18 @@ int A_decList_::length() {
 }
 
 //--------------------------------------------------------------------------------
-string A_callExp_::func_returnq(ST<function_info> tiger_library) {
+string A_callExp_::func_returnq(ST<function_info> parent_function_library) {
 	// Lookup function and get function_info struct
-	if (is_name_there(_func, tiger_library)) {
-		function_info func_struct = lookup(_func, tiger_library);
+	if (is_name_there(_func, parent_function_library)) {
+		function_info func_struct = lookup(_func, parent_function_library);
 		Ty_ty return_type = func_struct.my_return_type();
 		if (return_type == Ty_Void()) {
 			return "";
 		} else {
-			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)\n";
+			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
 		}
 	} else {
-		EM_error("HERA_code: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
+		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
 		return "";
 	}
 }
@@ -70,7 +70,7 @@ string A_callExp_::func_returnq(ST<function_info> tiger_library) {
 
 int AST_node_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// Agnostic, so can only really traverse UP the tree
-	// Should be fine?
+	// Should be fine? // LOL no but fix later (famous last words)
 	return stored_parent->calculate_my_SP(this); 
 }
 
@@ -139,6 +139,10 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	}
 }
 
+int A_functionDec_::calculate_my_SP(AST_node_ *_parent_or_child)  {
+    return 0;
+}
+
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	if (_params != 0) {
 		return 3 + _params->calculate_my_SP(this); 
@@ -180,24 +184,27 @@ int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
 
 //--------------------------------------------------------------------------------
 
-ST<function_info> AST_node_::get_my_funclib(AST_node_ *child) {
-	// Return parent?
-	return ST<function_info>();
+int A_fieldList_::length() {
+    if (_tail == 0) {
+        return 1;
+    }
+    return 1 + _tail->length();
 }
 
-ST<function_info> A_root_::get_my_funclib(AST_node_ *child) {
-	// Return tiger_library
-	return tiger_library;
+
+//--------------------------------------------------------------------------------
+
+int AST_node_::get_my_letExp_number(AST_node_ *child) {
+	return stored_parent->get_my_letExp_number(this);
 }
 
-ST<function_info> A_letExp_::get_my_funclib(AST_node_ *child) {
-	return ST<function_info>();
+int A_root_::get_my_letExp_number(AST_node_ *child) {
+	// Should this be an error?
+	EM_error("Got decList without being in a letExp");
+	return -1;
 }
 
-ST<function_info> A_callExp_::get_my_funclib(AST_node_ *child) {
-    return ST<function_info>();
-}
-
-ST<function_info> A_fundec_::get_my_funclib(AST_node_ *child) {
-    return ST<function_info>();
+int A_letExp_::get_my_letExp_number(AST_node_ *child) {
+    // Should have been calculated during typechecking
+    return this->my_let_number;
 }
