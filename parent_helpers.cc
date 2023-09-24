@@ -190,21 +190,3 @@ int A_fieldList_::length() {
     }
     return 1 + _tail->length();
 }
-
-
-//--------------------------------------------------------------------------------
-
-int AST_node_::get_my_letExp_number(AST_node_ *child) {
-	return stored_parent->get_my_letExp_number(this);
-}
-
-int A_root_::get_my_letExp_number(AST_node_ *child) {
-	// Should this be an error?
-	EM_error("Got decList without being in a letExp");
-	return -1;
-}
-
-int A_letExp_::get_my_letExp_number(AST_node_ *child) {
-    // Should have been calculated during typechecking
-    return this->my_let_number;
-}
