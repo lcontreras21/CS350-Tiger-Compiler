@@ -23,7 +23,7 @@ have **
 			A_opExp_
 			A_assignExp_
 			A_letExp_**
-			A_callExp_
+			A_callExp_**
 			A_controlExp_
 				A_ifExp_
 				A_whileExp_
@@ -68,6 +68,9 @@ ST<function_info> A_root_::set_my_function_library(AST_node_ *child) {
     EM_debug("Functionalizing root, returning Tiger Library");
     return tiger_library;  // Return the full set of Tiger standard functions
 }
+
+//ST<function_info> set_my_function_library(AST_node_ *child);
+//ST<function_info> my_function_library = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 
 ST<function_info> A_letExp_::get_my_function_library(AST_node_ *_parent_or_child) {
     if (_parent_or_child == stored_parent || _parent_or_child == _decs || _parent_or_child == _body) {
@@ -144,10 +147,10 @@ ST<function_info> A_decList_::set_my_function_library(AST_node_ *_parent_or_chil
         // A dec is asking about previous declarations
         ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
         if (_parent_or_child == _head) {
-            EM_debug("Functionalizing decList when asked by head");
+            EM_debug("Functionalizing decList from head");
             return parent_function_library;
         } else {
-            EM_debug("Functionalizing decList when asked by tail");
+            EM_debug("Functionalizing decList from tail");
             ST<function_info> dec_function_library  = _head->get_my_function_library(this);
             return MergeAndShadow(dec_function_library, parent_function_library);
         }
@@ -245,15 +248,13 @@ ST<function_info> A_fundecList_::set_my_function_library(AST_node_ *_parent_or_c
         ST<function_info> tail_function_library = _tail ? _tail->get_my_function_library(this) : ST<function_info>();
         return MergeAndShadow(tail_function_library, dec_function_library);
     } else if (_parent_or_child == _head || _parent_or_child == _tail) {
-        // A fundec is asking about previous fundecs or about fundecs in current fundeclist (functionDec group)
+        // A dec is asking about previous declarations or variables available to let
         ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
         if (_parent_or_child == _head) {
-            EM_debug("Functionalizing fundecList when asked by head");
-            ST<function_info> tail_function_library = _tail ? _tail->get_my_function_library(this) : ST<function_info>();
-            ST<function_info> dec_function_library  = _head->get_my_function_library(this);
-            return MergeAndShadow(tail_function_library, MergeAndShadow(dec_function_library, parent_function_library));
+            EM_debug("Functionalizing fundecList from head");
+            return parent_function_library;
         } else {
-            EM_debug("Functionalizing fundecList when asked by tail");
+            EM_debug("Functionalizing fundecList from tail");
             ST<function_info> dec_function_library  = _head->get_my_function_library(this);
             return MergeAndShadow(dec_function_library, parent_function_library);
         }
@@ -264,7 +265,7 @@ ST<function_info> A_fundecList_::set_my_function_library(AST_node_ *_parent_or_c
 }
 
 ST<function_info> A_fundec_::get_my_function_library(AST_node_ *_parent_or_child) {
-    EM_debug("Functionalizing fundec '" + Symbol_to_string(_name) + "': getting library");
+    EM_debug("Functionalizing fundec " + Symbol_to_string(_name) + ": getting library");
     if (_parent_or_child == stored_parent || _parent_or_child == _body) {
         ST<function_info>* my_function_library_ptr = _parent_or_child == stored_parent ? &this->my_function_library_asked_by_parent : &this->my_function_library_asked_by_body;
         if (is_name_there(to_Symbol("Empty"), *my_function_library_ptr)) {
@@ -272,11 +273,10 @@ ST<function_info> A_fundec_::get_my_function_library(AST_node_ *_parent_or_child
         }
         return *my_function_library_ptr;
     } else {
-        EM_error("Functionalizing fundec '" + Symbol_to_string(_name) + "' error: _parent_or_child param does not match stored_parent or _body");
+        EM_error("Functionalizing fundec " + Symbol_to_string(_name) + " error: _parent_or_child param does not match stored_parent or _body");
         return ST<function_info>();
     }
 }
-
 
 ST<function_info> A_fundec_::set_my_function_library(AST_node_ *_parent_or_child) {
     // Get return type from type library, if there
@@ -285,7 +285,7 @@ ST<function_info> A_fundec_::set_my_function_library(AST_node_ *_parent_or_child
         type_info type_struct = lookup(_result, type_library);
         my_return_type = type_struct.my_type();
     } else {
-        EM_error("Functionalizing fundec error: '" + Symbol_to_string(_name) + "' does not have a valid return type");
+        EM_error("Functionalizing fundec error: " + Symbol_to_string(_name) + " does not have a valid return type");
         return ST<function_info>();
     }
 
@@ -294,16 +294,14 @@ ST<function_info> A_fundec_::set_my_function_library(AST_node_ *_parent_or_child
         if (_params != 0) {
             param_types = _params->init_Ty_fieldList();
         }
-        EM_debug("Functionalizing fundec '" + Symbol_to_string(_name) + "' when asked by parent");
-        function_count++;
-        bool is_tiger_function = false;
-        ST<function_info> declared_function_library = ST<function_info>(_name, function_info(Ty_Function(my_return_type, param_types), function_count, is_tiger_function));
+        EM_debug("Functionalizing fundec " + Symbol_to_string(_name) + " when asked by parent");
+        ST<function_info> declared_function_library = ST<function_info>(_name, function_info(Ty_Function(my_return_type, param_types)));	
         return declared_function_library;
     } else if(_parent_or_child == _body) {
-        EM_debug("Functionalizing fundec '" + Symbol_to_string(_name) + "' when asked by init");
+        EM_debug("Functionalizing fundec " + Symbol_to_string(_name) + " when asked by init");
 	    return stored_parent->get_my_function_library(this);
     } else {
-        EM_error("Functionalizing fundec '" + Symbol_to_string(_name) + "' error: _parent_or_child param does not match stored_parent or _body");
+        EM_error("Functionalizing fundec " + Symbol_to_string(_name) + " error: _parent_or_child param does not match stored_parent or _body");
         return ST<function_info>();
     }
 }

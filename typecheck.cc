@@ -436,21 +436,24 @@ Ty_ty A_fundecList_::init_typecheck() {
 //}
 
 Ty_ty A_fundec_::init_typecheck() {
-    EM_debug("Typechecking fundec '" + Symbol_to_string(_name) + "' params");
+    EM_debug("Typechecking fundec params");
+
+    Ty_ty param_type = Ty_Void();
     if (_params) {
-        Ty_ty param_type = _params->typecheck();
-        if (param_type == Ty_Error()) {
-            return Ty_Error();
-        }
+        param_type = _params->typecheck();
+    }
+
+    if (param_type == Ty_Error()) {
+        return Ty_Error();
     }
     
-    EM_debug("Typechecking fundec '" + Symbol_to_string(_name) + "' return type matches body of fundec");
+    EM_debug("Typechecking fundec return type matches body of fundec");
     // Assert that the body of the function matches the return type stored in the function library
     Ty_ty my_return_type_expected = Ty_Void();
     if (is_name_there(_result, type_library)) {
         type_info type_struct = lookup(_result, type_library);
         Ty_ty this_type = type_struct.my_type();
-        my_return_type_expected = this_type;
+        my_return_type_expected =  this_type;
     } else {
         EM_error("Var " + Symbol_to_string(_name) + " in function declaration does not have type in type library.");
     }
@@ -459,7 +462,7 @@ Ty_ty A_fundec_::init_typecheck() {
     if (my_return_type_actual == my_return_type_expected) {
         return my_return_type_actual;
     } else {
-        EM_error("Typechecking fundec '" + Symbol_to_string(_name) + "' return type given does not match actual return type");
+        EM_error("Typechecking fundec return type given does not match actual return type");
         return Ty_Error();
     }
 }
