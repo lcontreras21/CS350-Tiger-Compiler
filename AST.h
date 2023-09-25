@@ -233,6 +233,7 @@ public:
 	virtual int compute_depth();   // just for an example, not needed to compile
 	virtual ST<var_info> set_my_variable_library(AST_node_ *child);
 	virtual ST<function_info> set_my_function_library(AST_node_ *child);
+	virtual int get_my_letExp_number(AST_node_ *child);
 
 	// Override in decList/fundecList and decs when its children or parent asking
     virtual ST<function_info> get_my_function_library(AST_node_ *child) {
@@ -304,6 +305,7 @@ public:
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
 	string print_rep(int indent, bool with_attributes);
+	int get_my_letExp_number(AST_node_ *child);
 
 	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
 	virtual int compute_depth();  // just for an example, not needed to compile
@@ -451,6 +453,7 @@ A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	ST<function_info> get_my_function_library(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
+    int get_my_letExp_number(AST_node_ *child);
 	string get_my_let_number_s() {return std::to_string(my_let_number);}
 private:
     int my_let_number = -1;
