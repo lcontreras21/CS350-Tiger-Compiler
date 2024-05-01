@@ -1,8 +1,9 @@
 # Note there are some "sleep" commands here because otherwise Eclipse sometimes doesn't realize the files are there
 
 CC=g++
-CFLAGS=--std=c++1y -g -I/home/courses/include -Wall -Wno-sign-compare -Wno-unused-function -Wno-unused-variable#that last due to auto-generated code from flex
-LDFLAGS=-L/home/courses/lib -lcourses
+CFLAGS=--std=c++1y -g -I/home/courses/include -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Wall -Wno-sign-compare -Wno-unused-function -Wno-unused-variable#that last due to auto-generated code from flex
+LDFLAGS=-L/home/courses/lib
+LDLIBS=-lcourses
 REBUILD_AFTER_CLEAN=Debug/util.o
 
 # This is not as efficient as a working, sophisticated makefile, or working Eclipse build,
@@ -18,14 +19,14 @@ rebuilt: Debug
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc
 	rm Debug/*.o 2>/dev/null || true
-	${CC} ${CFLAGS} *.cc ${LDFLAGS} -o Debug/tiger
+	${CC} ${CFLAGS} *.cc ${LDFLAGS} ${LDLIBS} -o Debug/tiger
 
 conflict: always
 	bison -v conflict.yy
 	flex tiger-lex.ll
 	mv lex.yy.c lex.yy.cc
 	rm Debug/*.o 2>/dev/null || true
-	${CC} ${CFLAGS} conflict.tab.cc lex.yy.cc util.cc ${LDFLAGS} -o conflict
+	${CC} ${CFLAGS} conflict.tab.cc lex.yy.cc util.cc ${LDFLAGS} ${LDLIBS} -o conflict
 
 always:
 

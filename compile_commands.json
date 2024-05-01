@@ -1,0 +1,439 @@
+[
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "errormsg.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "errormsg.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "depth.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "depth.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "AST.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "AST.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "parent_helpers.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "parent_helpers.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "typecheck.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "typecheck.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "ST.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "ST.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "result_reg.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "result_reg.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "parent.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "parent.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "function_library.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "function_library.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "types.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "types.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "tiger-grammar.tab.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "tiger-grammar.tab.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "AST-print.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "AST-print.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "tigerParseDriver.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "tigerParseDriver.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "HERA_code.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "HERA_code.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "util.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "util.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "lex.yy.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "lex.yy.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "layout_frames.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "layout_frames.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "static_checks.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "static_checks.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "height.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "height.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "variable_library.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "variable_library.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "tiger.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "tiger.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "HERA_data.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "HERA_data.cc"
+    },
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "--std=c++1y",
+            "-g",
+            "-I/home/courses/include",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+            "-Wall",
+            "-Wno-sign-compare",
+            "-Wno-unused-function",
+            "-Wno-unused-variable",
+            "-o",
+            "Debug/tiger",
+            "AST-print-attributes.cc"
+        ],
+        "directory": "/home/lcontreras/Repos/Haverford-CS-Projects/cs350-home",
+        "file": "AST-print-attributes.cc"
+    }
+]
