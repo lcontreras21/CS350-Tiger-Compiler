@@ -290,10 +290,7 @@ ST<function_info> A_fundec_::set_my_function_library(AST_node_ *_parent_or_child
     }
 
     if (_parent_or_child == stored_parent) {
-        Ty_fieldList param_types = 0;
-        if (_params != 0) {
-            param_types = _params->init_Ty_fieldList();
-        }
+        Ty_fieldList param_types = _params ? _params->init_Ty_fieldList() : 0;
         EM_debug("Functionalizing fundec '" + Symbol_to_string(_name) + "' when asked by parent");
         function_count++;
         bool is_tiger_function = false;

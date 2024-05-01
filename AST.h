@@ -819,6 +819,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
+	ST<var_info> get_my_variable_library(AST_node_ *child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	ST<function_info> get_my_function_library(AST_node_ *child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
@@ -845,6 +846,8 @@ private:
 	Symbol _result;
 	A_exp _body;
 
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };

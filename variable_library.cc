@@ -92,19 +92,22 @@ ST<var_info> A_letExp_::get_my_variable_library(AST_node_ *_parent_or_child) {
     }
 }
 
-ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *child) {
-    if (child == stored_parent) {
+ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *_parent_or_child) {
+    if (_parent_or_child == stored_parent) {
         EM_debug("Variablizing letExp #" + get_my_let_number_s() + " when asked by parent to be empty");
         return ST<var_info>();
-    } else if (child == _decs || child == _body) {
+    } else if (_parent_or_child == _decs || _parent_or_child == _body) {
+        string who = _parent_or_child == _decs ? " decs" : " body";
+        EM_debug("Variablizing letExp #" + get_my_let_number_s() + " when asked by " + who);
+
         EM_debug("Variablizing letExp #" + get_my_let_number_s() + " getting parent library");
         ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
         EM_debug("Variablizing letExp #" + get_my_let_number_s() + " got parent library");
 
-        if (child == _decs) {
+        if (_parent_or_child == _decs) {
             EM_debug("Variablizing letExp #" + get_my_let_number_s() + " when asked by _decs");
             return parent_variable_library;
-        } else if (child == _body) {
+        } else if (_parent_or_child == _body) {
             EM_debug("Variablizing letExp #" + get_my_let_number_s() + " when asked by _body");
             ST<var_info> dec_variable_library = _decs ? _decs->get_my_variable_library(this) : ST<var_info>();
             return MergeAndShadow(dec_variable_library, parent_variable_library);
@@ -303,17 +306,30 @@ ST<var_info> A_fundecList_::set_my_variable_library(AST_node_ *_parent_or_child)
     }
 }
 
+ST<var_info> A_fundec_::get_my_variable_library(AST_node_ *_parent_or_child) {
+    EM_debug("Variablizing fundec " + Symbol_to_string(_name) + ": getting library");
+    if (_parent_or_child == stored_parent || _parent_or_child == _body) {
+        ST<var_info>* my_variable_library_ptr = _parent_or_child == stored_parent ? &this->my_variable_library_asked_by_parent : &this->my_variable_library_asked_by_body;
+        if (is_name_there(to_Symbol("Empty"), *my_variable_library_ptr)) {
+            *my_variable_library_ptr = set_my_variable_library(_parent_or_child);
+        }
+        return *my_variable_library_ptr;
+    } else {
+        EM_error("Variablizing fundec error: _parent_or_child param does not match parent or _body");
+        return ST<var_info>();
+    }
+}
+
 ST<var_info> A_fundec_::set_my_variable_library(AST_node_ *child) {
-    ST<var_info> declared_variable_library = ST<var_info>();
+    EM_debug("Variablizing fundec " + Symbol_to_string(_name) + ": setting library");
     if (child == stored_parent) {
         // When the decList is asking about this fundec, nothing should be available
         EM_debug("Variablizing fundec from parent");
-        return declared_variable_library;
+        return ST<var_info>();
     } else if (child == _body) {
         EM_debug("Variablizing fundec from body");
         // Body of function definition is asking about any variables available such as function params and scope variables
         ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
-
         ST<var_info> param_variable_library = _params ? _params->get_my_variable_library(this) : ST<var_info>();
         return MergeAndShadow(param_variable_library, parent_variable_library);
     } else {
