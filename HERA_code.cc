@@ -36,8 +36,8 @@ const string indent_math = "    ";  // might want to use something different for
 	A_fundec_
 */
 
-string AST_node_::HERA_code()  // Default used during development; could be removed in final version
-{
+string AST_node_::HERA_code() {  // Default used during development; could be removed in final version
+    EM_debug("Compiling AST_node");
 	string message = "HERA_code() requested for AST node type not yet having a HERA_code() method";
 	EM_error(message);
 	return "#error " + message;  //if somehow we try to HERA-C-Run this, it will fail
@@ -45,8 +45,8 @@ string AST_node_::HERA_code()  // Default used during development; could be remo
 
 string func_HERA_code = "";
 
-string A_root_::HERA_code()
-{
+string A_root_::HERA_code() {
+    EM_debug("Compiling root");
 	string output = "\nCBON()\n\n" + main_expr->HERA_code()  // was SETCB for HERA 2.3
 		+ "\nHALT()\n" + func_HERA_code;
 
@@ -55,8 +55,8 @@ string A_root_::HERA_code()
 
 
 
-string A_intExp_::HERA_code()
-{
+string A_intExp_::HERA_code() {
+    EM_debug("Compiling intExp");
 	return indent_math + "SET(" + result_reg_s() + ", " + str(value) +")\n";
 }
 
@@ -80,8 +80,7 @@ static string HERA_comp_op(A_oper op) {
 	}
 }
 
-static string HERA_math_op(Position p, A_oper op) // needed for opExp
-{
+static string HERA_math_op(Position p, A_oper op) { // needed for opExp
 	switch (op) {
 	case A_plusOp:
 		return "ADD";
@@ -101,8 +100,8 @@ static string HERA_math_op(Position p, A_oper op) // needed for opExp
 	}
 }
 
-string A_opExp_::HERA_code()
-{
+string A_opExp_::HERA_code() {
+    EM_debug("Compiling opExp");
 	/* Modify to follow S-U algorithm child with more registers should be first */
 	int left_reg = _left->result_reg();
 	string left_reg_s = _left->result_reg_s();
@@ -186,6 +185,7 @@ string A_callExp_::_args_HERA_code(int counter) {
 }
 
 string A_callExp_::HERA_code() {
+    EM_debug("Compiling callExp");
 	// Check if func has return
 	string return_val = this->func_returnq(stored_parent->get_my_function_library(this));
 	int stack_size = 3;
@@ -215,12 +215,14 @@ string A_callExp_::HERA_code() {
 }
 
 string A_stringExp_::HERA_code() {
+    EM_debug("Compiling stringExp");
 	/* Add preamble string memory allocation */
 	string this_str_label = "string_" + std::to_string(count);
 	return indent_math + "SET(" + result_reg_s() + ", " + this_str_label + ")\n";
 }
 
 string A_boolExp_::HERA_code() {
+    EM_debug("Compiling boolExp");
 	if (value) {
 		return indent_math + "SET(" + result_reg_s() + ", 1)\n";
 	} else {
@@ -229,6 +231,7 @@ string A_boolExp_::HERA_code() {
 }
 
 string A_ifExp_::HERA_code() {
+    EM_debug("Compiling ifExp");
 	// A few string vars for label creation
 	int this_if_counter = if_counter;
 	if_counter = if_counter +1;
@@ -262,6 +265,7 @@ string A_ifExp_::HERA_code() {
 }
 
 string A_seqExp_::HERA_code() {
+    EM_debug("Compiling seqExp");
 	// Iterate through A_expList _seq and add HERA_codes
 	A_expList seq = _seq;
 	string my_code = "";
@@ -309,11 +313,13 @@ string A_whileExp_::HERA_code() {
 }
 
 string A_breakExp_::HERA_code() {
+    EM_debug("Compiling breakExp");
 	int earliest_while = am_i_in_loop(this);
 	return indent_math + "BR(loop_end_" + std::to_string(earliest_while) + ")  // Break in LOOP\n";
 }
 
 string A_forExp_::HERA_code() {
+    EM_debug("Compiling forExp");
 	// Strings used for loop management
 	int this_loop_counter = loop_counter;
 	int this_SP_counter = calculate_my_SP(this);
@@ -461,12 +467,14 @@ string A_varDec_::HERA_code() {
 }
 
 string A_assignExp_::HERA_code() {
+    EM_debug("Compiling assignExp");
 	// Run code for _exp
 	// Have _var store that in the ST
 	return _exp->HERA_code() + _var->HERA_code(); 
 }
 
 string A_functionDec_::HERA_code() {
+    EM_debug("Compiling functionDec");
 	string output; 
 	// Need to do two passes, just like with typechecking, to set up functions in function library for recursive functions
 	// First pass:
@@ -480,6 +488,7 @@ string A_functionDec_::HERA_code() {
 }
 
 string A_fundecList_::HERA_code() {
+    EM_debug("Compiling fundecList");
 	if (_tail == 0) {
 		return _head->HERA_code();
 	} else {
@@ -522,15 +531,19 @@ string A_fundec_::HERA_code() {
 		• RETURN from the function
 	*/
 	// Make copy of function and variable library
+    // TODO: is firstPass still needed? thoughts tell me no
 	if (not firstPass) {
+        EM_debug("Compiling fundec: first pass");
 		firstPass = true;
 		return "";
 	} else {
+        EM_debug("Compiling fundec: second pass");
         string unique_func_name = get_my_unique_function_name();
         string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
         string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
 		// Add params to ST and make available in body, make copy of vars
         string output;
+        EM_debug("go on to make hera code of body");
 		output  = "// Start of Function Definition: " + unique_func_name + "\n"
 				+ "LABEL(" + unique_func_name + ")\n"
 				+ indent_math + "// Saving PC_ret, FP_alt\n"
