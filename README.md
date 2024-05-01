@@ -25,6 +25,25 @@ During the semester I took the course, I only made it through 9 out of the 10 as
 - Milestone 4: (a) Much like result\_reg in AST.h uses init\_result\_reg in result.cc, I have chosen to implement a similar structure to handle typechecking. I have typecheck() and init\_typecheck() where the former calls the latter if the type has not yet been calculated and stored. Otherwise, it just returns the stored type value. (b) For unary negation, I had help from this [documentation](https://www.gnu.org/software/bison/manual/html_node/Contextual-Precedence.html). (d) Using a Global Symbol Table (ST) for Function definitions in the Tiger Standard Library. 
 - Milestone 5: (b) Comparison operators were created in conjunction with the opExp class. Should be able to handle Ints and Strings.
 - Milestone 6: For If, While, Comparison operators, I have global variables to keep track of which they are as a private class property. This is used in Branching and Label generation to create proper control flow. Also partially keeping track of Stack pointer using a global variable. 
-- Milestone 7: 
-- Milestone 8: 
+- Milestone 7: FILLMEIN
+- Milestone 8: Moved to using synthesized variable and function libraries since keeping track of a global library was too intense. 
 - Milestone 9: 
+
+### Remaining Tests and TODO:
+
+#### Concepts:
+ - certain escape characters, make sure I implemented them all in Milestone 3
+ - Nil
+ - allow LetExps to take Nil in the body
+
+#### Genera TODO
+ - Getting tons of WARNING: REFERENCE TO MEMORY AT/JUST-ABOVE SP in later Milestones
+ - Clean up the repo by compartmentalizing some of the files
+ - Add better CLI arg handling
+
+
+#### Test cases:
+ - 7_40_LATER_SU_test.tig
+ - 8b_61_mergesort.tig
+ - 8b_68_HelpMakeOptimalAnagram.tig
+
