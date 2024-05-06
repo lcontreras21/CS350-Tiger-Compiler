@@ -172,46 +172,49 @@ string A_opExp_::HERA_code() {
 	return output;
 }
 
-string A_callExp_::_args_HERA_code(int counter) {
-	string output = "";
-	A_expList args = _args;
-	while(args != 0) {
-		output = output + args->_head->HERA_code() 
-						+ indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(counter) + ", FP_alt)\n";
-		args = args->_tail;
-		counter++;
-	}
-	return output;
-}
-
 string A_callExp_::HERA_code() {
     EM_debug("Compiling callExp");
-	// Check if func has return
-	string return_val = this->func_returnq(stored_parent->get_my_function_library(this));
-	int stack_size = 3;
-	if (_args != 0) {
-		stack_size = stack_size + _args->length();
-	}
+    // From HERA Manual: To call a function that uses this convention, we:
+    // • Set FP_alt←SP and increment SP to allocate initial stack frame (size 3 + #parameters [+ 1 if no parameters for return value])
+    //      Three for Return Address, Dynamic Link, Static Link
+    //      Not having the + 1 leads to a "Warning tried to access at/above SP" message
+    // • Put the parameters on the stack above 3 spaces for links (i.e., starting at FP_alt +3)
+    // • Set up the static link, if one is needed (see discussion later in this section)
+    // • Issue the CALL instruction
+    // • After the call, the return value can be retrieved from FP_alt +3, and SP decremented
 
+    int args_length = _args ? _args->length() : 1; // Set to 1 here for return value
     string unique_func_name = get_my_unique_function_name();
 
-	string my_code = "// Start of Function Call for function " + unique_func_name +
-	                 ". Current SP at: " + std::to_string(SP_counter) + "\n";
-	SP_counter = SP_counter + stack_size;
+	A_expList args = _args;
+    string args_hera_code = "";
+    for (int counter = 3; counter < (_args ? _args->length() : 0); counter++) {
+		args_hera_code += args->_head->HERA_code() 
+					    + indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(counter) + ", FP_alt)\n";
+		args = args->_tail;
+	}
 
-	my_code = my_code 
-			+ indent_math + "MOVE(Rt, FP_alt)\n"                                // Save the current FP into temp Reg
-			+ indent_math + "MOVE(FP_alt, SP)\n"                                // Set FP to beginning of functions memory block
-			+ indent_math + "INC(SP, " + std::to_string(stack_size) + ")\n"     // Allocate functions memory block
-			+ indent_math + "STORE(Rt, 2, FP_alt)\n"                            // Store FP into the
-			+ _args_HERA_code(3) 
+    ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+    string func_return_hera_code = "";
+	if (is_name_there(_func, parent_function_library)) {
+		function_info func_struct = lookup(_func, parent_function_library);
+		Ty_ty return_type = func_struct.my_return_type();
+		if (return_type != Ty_Void()) {
+			func_return_hera_code = indent_math + "LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
+		}
+	} else {
+		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
+	}
+
+	string output = "// Start of Function Call for function " + unique_func_name + "\n"
+			+ indent_math + "MOVE(FP_alt, SP)\n"
+			+ indent_math + "INC(SP, " + std::to_string(3 + args_length) + ")\n"
+            + args_hera_code
 			+ indent_math + "CALL(FP_alt, " + unique_func_name + ")\n"
-			+ return_val
-			+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"                         //
-			+ indent_math + "DEC(SP, " + std::to_string(stack_size) + ")\n";	//
-	SP_counter = SP_counter - stack_size;
-	my_code = my_code + "// End of Function Call for function " + unique_func_name + ". Current SP at: " + std::to_string(SP_counter) + "\n";
-	return my_code;
+            + func_return_hera_code
+			+ indent_math + "DEC(SP, " + std::to_string(3 + args_length) + ")\n"
+	        + "// End of Function Call for function " + unique_func_name + "\n";
+	return output;
 }
 
 string A_stringExp_::HERA_code() {

@@ -1,5 +1,4 @@
 #include "AST.h"
-#include "ST.h"
 
 /*
 	Functions used by *children to find out information about their parent
@@ -49,24 +48,8 @@ int A_decList_::length() {
 }
 
 //--------------------------------------------------------------------------------
-string A_callExp_::func_returnq(ST<function_info> parent_function_library) {
-	// Lookup function and get function_info struct
-	if (is_name_there(_func, parent_function_library)) {
-		function_info func_struct = lookup(_func, parent_function_library);
-		Ty_ty return_type = func_struct.my_return_type();
-		if (return_type == Ty_Void()) {
-			return "";
-		} else {
-			return "    LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
-		}
-	} else {
-		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
-		return "";
-	}
-}
 
-//--------------------------------------------------------------------------------
-
+// calculate_my_SP should only call upwards, and only downwards for the Linked Lists (decList, seqExp, fundecList)
 
 int AST_node_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// Agnostic, so can only really traverse UP the tree

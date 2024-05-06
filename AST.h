@@ -478,8 +478,6 @@ public:
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	string func_returnq(ST<function_info> tiger_library);  // TODO
-	string _args_HERA_code(int counter);
 	virtual string print_rep(int indent, bool with_attributes);
 
 	string get_my_unique_function_name() {
