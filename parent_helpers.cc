@@ -58,16 +58,16 @@ int AST_node_::calculate_my_SP(AST_node_ *_parent_or_child) {
 }
 
 int A_root_::calculate_my_SP(AST_node_ *_parent_or_child) {
-	// Should never be called? Through an error
-	// EM_error("Tried to find SP value for root node. Should be inside a LET expression");
 	return 0;
 }
 
 int A_callExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	if (_parent_or_child == _args) {
-	   return 3 + _args->length(); 	
-	}
-	return 0;
+        int args_length = _args ? _args->length() : 0;
+        return 3 + args_length + stored_parent->calculate_my_SP(this);
+	} else {
+        return 0;
+    }
 }
 
 int A_forExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
@@ -80,26 +80,20 @@ int A_forExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
 
 int A_letExp_::calculate_my_SP(AST_node_ *_parent_or_child) {
 	// If called by _body, trying to find TOTAL SP value
+    int parent_SP = stored_parent->calculate_my_SP(this);
 	if (_parent_or_child == _body) {
-		// Might not be any declarations 
-		if (_decs == 0) {
-			return stored_parent->calculate_my_SP(this);
-		} else {
-			return _decs->calculate_my_SP(this) + stored_parent->calculate_my_SP(this);;
-		}
+        int decs_SP = _decs ? _decs->calculate_my_SP(this) : 0;
+        return decs_SP + parent_SP;
 	} else {
-		return stored_parent->calculate_my_SP(this);
+		return parent_SP;
 	}
 }
 
 int A_decList_::calculate_my_SP(AST_node_ *_parent_or_child) {
-	// If called by parent, should be a let, return the number of VarDecs
 	if (stored_parent == _parent_or_child) {
-		if (_tail == 0) {
-			return _head->calculate_my_SP(this);
-		} else {
-			return _head->calculate_my_SP(this) + _tail->calculate_my_SP(this);
-		}
+        // If called by parent return the number of VarDecs
+        int tail_SP = _tail ? _tail->calculate_my_SP(this) : 0;
+        return _head->calculate_my_SP(this) + tail_SP;
 	} else {
 		// Two case if not called by parent, called by _head or by _tail
 		// If by _head, start of getting the SP for storing in ST var_library
@@ -123,23 +117,30 @@ int A_varDec_::calculate_my_SP(AST_node_ *_parent_or_child) {
 }
 
 int A_functionDec_::calculate_my_SP(AST_node_ *_parent_or_child)  {
+    // Should never get here, I think
     return 0;
 }
 
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
-	if (_params != 0) {
-		return 3 + _params->calculate_my_SP(this); 
-	} else {
-		return 3;
-	}
+    if (_parent_or_child == _params) {
+        return 0;
+    } else {
+        // from body
+        int param_SP = _params ? _params->calculate_my_SP(this) : 0;
+        return param_SP;
+
+    }
 }
 
 int A_fieldList_::calculate_my_SP(AST_node_ *_parent_or_child) {
-	if (_tail == 0) {
-		return 1;
-	} else {
-		return 1 + _tail->calculate_my_SP(this);
-	}
+    // Should only be descending
+    if (_parent_or_child != stored_parent) {
+        EM_error("I shouldn't be here");
+        return -1;
+    } else {
+        int tail_SP = _tail ? _tail->calculate_my_SP(this) : 0;
+        return 1 + tail_SP;
+    }
 }
 
 //--------------------------------------------------------------------------------

@@ -5,7 +5,6 @@
 int if_counter = 0;
 int comp_counter = 0;
 int loop_counter = 0;
-int SP_counter = 0;
 
 /*
  * HERA_code methods
@@ -145,13 +144,13 @@ string A_opExp_::HERA_code() {
 			output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n"; 
 		} else if (_left->typecheck() == Ty_String()) {
 			// String comparison. Function call to tstrcmp
+            int SP_counter = calculate_my_SP(this);
 			output = output 
 				+ "// Start of Function Call for function tstrcmp in opExp. Current SP at: " + std::to_string(SP_counter) 
 				+ indent_math + "MOVE(Rt, FP_alt)\n"
 				+ indent_math + "MOVE(FP_alt, SP)\n" 
-				+ indent_math + "INC(SP, 5)\n";
-			SP_counter = SP_counter + 5;
-			output = output + indent_math + "STORE(Rt, 2, FP_alt)\n"
+				+ indent_math + "INC(SP, 5)\n"
+			    + indent_math + "STORE(Rt, 2, FP_alt)\n"
 				+ indent_math + "STORE(" + left_reg_s + ", 3, FP_alt)\n"
 				+ indent_math + "STORE(" + right_reg_s + ", 4, FP_alt)\n"
 				+ indent_math + "CALL(FP_alt, tstrcmp)\n"
@@ -159,7 +158,6 @@ string A_opExp_::HERA_code() {
 				+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
 				+ indent_math + "DEC(SP, 5)\n"
 				+ indent_math + "CMP(" + output_reg_s + ", R0)\n"; 
-			SP_counter = SP_counter - 5;
 		}
 		// Comparison Operation and Branching. Generic to all comparisons
 		output = output + indent_math + HERA_op + "(" + label + ")\n"
@@ -326,43 +324,43 @@ string A_forExp_::HERA_code() {
 	// Strings used for loop management
 	int this_loop_counter = loop_counter;
 	int this_SP_counter = calculate_my_SP(this);
+
 	my_num = this_loop_counter;
 	loop_counter++;
+
 	string start_label = "loop_start_" + std::to_string(this_loop_counter);
 	string end_label = "loop_end_" + std::to_string(this_loop_counter);
+
 	// SP location strings for loop bounds
 	string _lo_sp_loc = std::to_string(this_SP_counter);
 	string _hi_sp_loc = std::to_string(this_SP_counter+1);
-	SP_counter = SP_counter + 2;
-	// Store the _var in Stack with _lo, and store _hi one above that
-	string output = "// Start of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(SP_counter) + "\n"
-				  + indent_math + "INC(SP, 2)\n"
-				  + _lo->HERA_code() 
-				  + indent_math + "STORE(" + _lo->result_reg_s() + ", " + _lo_sp_loc + ", FP)\n"
-				  + _hi->HERA_code()
-				  + indent_math + "STORE(" + _hi->result_reg_s() + ", " + _hi_sp_loc + ", FP)\n";
 
-	// Start of Loop
-	output = output + indent_math + "LABEL(" + start_label + ")\n";
-		// Load _var from Stack (_lo and _hi
-	output = output + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n" 
-					+ indent_math + "LOAD(R2, " + _hi_sp_loc + ", FP)\n"; 
-		// Compare _lo to _hi, if <= 0 go to end of loop, Otherwise go through loop
-	output = output	+ indent_math + "CMP(R2, R1)\n"
-					+ indent_math + "BL(" + end_label + ")\n";
-		// Run _body HERA_code
-	output = output + _body->HERA_code();
-		// Increment _hi and store in _var in Stack
-	output = output + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n"
+	// Store the _var in Stack with _lo, and store _hi one above that
+	string output = "// Start of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(this_SP_counter) + "\n"
+				    + indent_math + "INC(SP, 2)\n"
+				    + _lo->HERA_code() 
+				    + indent_math + "STORE(" + _lo->result_reg_s() + ", " + _lo_sp_loc + ", FP)\n"
+		            + _hi->HERA_code()
+				    + indent_math + "STORE(" + _hi->result_reg_s() + ", " + _hi_sp_loc + ", FP)\n"
+	                + indent_math + "LABEL(" + start_label + ")\n"
+    // Load _var from Stack (_lo and _hi
+	                + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n" 
+					+ indent_math + "LOAD(R2, " + _hi_sp_loc + ", FP)\n"
+    // Compare _lo to _hi, if <= 0 go to end of loop, Otherwise go through loop
+	                + indent_math + "CMP(R2, R1)\n"
+					+ indent_math + "BL(" + end_label + ")\n"
+    // Run _body HERA_code
+	                + _body->HERA_code()
+    // Increment _hi and store in _var in Stack
+	                + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n"
 					+ indent_math + "INC(R1, 1)\n"
-					+ indent_math + "STORE(R1, " + _lo_sp_loc + ", FP)\n";
-		// Branch back to beginning of loop
-	output = output + indent_math + "BR(" + start_label + ")\n";
-	// End of Loop. Decrement the SP
-	SP_counter = SP_counter - 2;
-	output = output + indent_math + "LABEL(" + end_label + ")\n"
+					+ indent_math + "STORE(R1, " + _lo_sp_loc + ", FP)\n"
+    // Branch back to beginning of loop
+                    + indent_math + "BR(" + start_label + ")\n"
+    // End of Loop. Decrement the SP
+	                + indent_math + "LABEL(" + end_label + ")\n"
 					+ indent_math + "DEC(SP, 2)\n"
-					+ "// End of For Loop: " + std::to_string(my_num) + ". Current SP at: " + std::to_string(SP_counter) + "\n";
+					+ "// End of For Loop: " + std::to_string(my_num) + "\n";
 	return output;
 }
 
@@ -409,63 +407,53 @@ string A_simpleVar_::HERA_code() {
 string A_letExp_::HERA_code() {
     EM_debug("Compiling letExp");
 
-	// INC SP by number of things being declared
-	int my_SP = _decs ? _decs->calculate_my_SP(this) : 0;
-    string this_counter = get_my_let_number_s();
-	string output = "// Start of Let Expression " + this_counter + ". Stack starting at SP: " + std::to_string(SP_counter) +  ". Initializing " + std::to_string(my_SP) + " variable(s).\n";
-	if (my_SP > 0) {
-		output = output + indent_math + "INC(SP, " + std::to_string(my_SP) + ")\n";	
-	}
-	// Increment the SP_counter
-	SP_counter = SP_counter + my_SP;
-	if (_decs != 0) {
-		output = output + _decs->HERA_code()
-			   + indent_math + "// Finished declaring variables in Let Expression " + this_counter + ". Stack now at SP: " + std::to_string(SP_counter) + "\n";
-	}
-	// Do _body HERA_code
+    int current_SP = calculate_my_SP(this);
+    int dec_SP = _decs ? _decs->calculate_my_SP(this) : 0;
+	string dec_SP_s = std::to_string(dec_SP);
+    string current_letExp_counter = get_my_let_number_s();
+
+    string body_hera_code = "";
 	if (_body != 0) {
 		A_expList body = _body;
 		while (body != 0) {
-			output = output + body->_head->HERA_code();
+			body_hera_code = body_hera_code + body->_head->HERA_code();
 			body = body->_tail;
 		}
 	}
-	// Move result to final reg if necessary
-	if (this->result_reg() != _body->result_reg()) {
-        output = output + indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n";
-	}
 
-	// DEC SP by same amount as was increased
-	if (my_SP > 0) {
-		output = output + indent_math + "DEC(SP, " + std::to_string(my_SP) + ")\n";
-	}
-	SP_counter = SP_counter - my_SP;
-	output = output + "// END of Let Expression " + this_counter + ". Stack back at SP: " + std::to_string(SP_counter) + "\n";
+	string output = "// Start of Let Expression " + current_letExp_counter + ". Stack starting at SP: " + std::to_string(current_SP) +  "\n"
+                  + indent_math + "// Initializing " + dec_SP_s + " variable(s).\n"
+                  // Increment the SP counter
+                  + (dec_SP > 0 ? indent_math + "INC(SP, " + dec_SP_s + ")\n" : "")
+                  // Define the declared variables
+                  + (_decs != 0 ? _decs->HERA_code() : "")
+                  + indent_math + "// Finished declaring variables in Let Expression " + current_letExp_counter + ". Stack now at SP: " + std::to_string(dec_SP + current_SP) + "\n"
+                  // Do the Body of the Let
+                  + body_hera_code
+                  // Move result to final reg if necessary
+                  + (this->result_reg() != _body->result_reg() ? indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n" : "")
+                  // Decrement the SP counter
+                  + (dec_SP > 0 ? indent_math + "DEC(SP, " + dec_SP_s + ")\n" : "")
+                  + "// END of Let Expression " + current_letExp_counter + ".";
 	return output;
 }
 
 string A_decList_::HERA_code() {
     EM_debug("Compiling decList");
-    string output = _head->HERA_code();
-	if (_tail == 0) {
-		return output;
-	} else {
-		return output + _tail->HERA_code();
-	}
+    string head_hera_code = _head->HERA_code();
+    string tail_hera_code = _tail == 0 ? "" : _tail->HERA_code();
+    return head_hera_code + tail_hera_code;
 }
 
 string A_varDec_::HERA_code() {
     EM_debug("Compiling varDec: " + Symbol_to_string(_var));
 
-    ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
-    EM_debug("Compiling varDec: " + Symbol_to_string(_var) + " ST: " + my_variable_library.__repr__());
     string my_sp_number = std::to_string(calculate_my_SP(this));
     string variable_comment = Symbol_to_string(_var) + " at SP: " + my_sp_number + "\n";
 
 	// Add variable to stack
 	string output = _init->HERA_code()
-				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + my_sp_number + ", FP)"
-				  + indent_math + "// Declaring variable " + variable_comment;
+				  + indent_math + "STORE(" + _init->result_reg_s() + ", " + my_sp_number + ", FP)" + indent_math + "// Declaring variable " + variable_comment;
 	return output;
 }
 
@@ -527,6 +515,12 @@ string A_fundec_::load_HERA_code(int reg_count_to_load, int offset) {
 string A_fundec_::HERA_code() {
 	/* To define a function to be called with these conventions, we use these steps, as needed:
 		• Increment SP to make space for local storage
+            - local storage: how many registers the body of the function will use ??
+            - If body is [opExp(1, OpExp(1, 1))], that uses two registers, the result would be in R4
+            - Therefore, we'd need to increment by 2 to save.
+            - Need to sub body->result_reg by 2 to get total registers to save
+            - ISSUE: What if body has no result_reg, ie it's 0 what then? Make sure to catch that
+
 		• Save registers, including PC_ret (return address) and FP_alt (dynamic link)
 		• Give the function body (in which parameters come from the stack frame, e.g. FP + 3)
 		• Store the return value at FP + 3
@@ -540,17 +534,17 @@ string A_fundec_::HERA_code() {
 		firstPass = true;
 		return "";
 	} else {
+        // TODO: SP bugs here
         EM_debug("Compiling fundec: second pass");
         string unique_func_name = get_my_unique_function_name();
         string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
         string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
 		// Add params to ST and make available in body, make copy of vars
+        string regs_to_save = std::to_string(_body->result_reg() - 2);
         string output;
-        EM_debug("go on to make hera code of body");
-		output  = "// Start of Function Definition: " + unique_func_name + "\n"
-				+ "LABEL(" + unique_func_name + ")\n"
+		output  = "LABEL(" + unique_func_name + ")\n"
 				+ indent_math + "// Saving PC_ret, FP_alt\n"
-				+ indent_math + "INC(SP, " + std::to_string(_body->result_reg() - 2) + ")\n"
+				+ indent_math + "INC(SP, " + regs_to_save + ")\n"
 				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
 				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
 				+ indent_math + "// Saving registers\n"
@@ -562,8 +556,8 @@ string A_fundec_::HERA_code() {
 				+ load_reg_str
 				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
 				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
-				+ indent_math + "DEC(SP, " + std::to_string(_body->result_reg() - 2) + ")\n"
-				+ indent_math + "RETURN(FP_alt, PC_ret)\n";
+				+ indent_math + "DEC(SP, " + regs_to_save + ")\n"
+				+ indent_math + "RETURN(FP_alt, PC_ret)\n\n";
 		return output;
 	}
 }
