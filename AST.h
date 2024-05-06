@@ -879,7 +879,6 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	Ty_ty init_typecheck();
 	Ty_fieldList init_Ty_fieldList();
-	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *parent);
 	int length();

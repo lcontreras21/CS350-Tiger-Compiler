@@ -145,17 +145,16 @@ string A_opExp_::HERA_code() {
 		} else if (_left->typecheck() == Ty_String()) {
 			// String comparison. Function call to tstrcmp
             int SP_counter = calculate_my_SP(this);
+            // TODO: replace opExp node having tstrcmp to a callExp node
 			output = output 
 				+ "// Start of Function Call for function tstrcmp in opExp. Current SP at: " + std::to_string(SP_counter) 
 				+ indent_math + "MOVE(Rt, FP_alt)\n"
 				+ indent_math + "MOVE(FP_alt, SP)\n" 
 				+ indent_math + "INC(SP, 5)\n"
-			    + indent_math + "STORE(Rt, 2, FP_alt)\n"
 				+ indent_math + "STORE(" + left_reg_s + ", 3, FP_alt)\n"
 				+ indent_math + "STORE(" + right_reg_s + ", 4, FP_alt)\n"
 				+ indent_math + "CALL(FP_alt, tstrcmp)\n"
 				+ indent_math + "LOAD(" + output_reg_s + ", 3, FP_alt)\n"
-				+ indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
 				+ indent_math + "DEC(SP, 5)\n"
 				+ indent_math + "CMP(" + output_reg_s + ", R0)\n"; 
 		}
@@ -181,14 +180,15 @@ string A_callExp_::HERA_code() {
     // • Issue the CALL instruction
     // • After the call, the return value can be retrieved from FP_alt +3, and SP decremented
 
-    int args_length = _args ? _args->length() : 1; // Set to 1 here for return value
+    int args_length = _args ? _args->length() : 0;
     string unique_func_name = get_my_unique_function_name();
 
 	A_expList args = _args;
     string args_hera_code = "";
-    for (int counter = 3; counter < (_args ? _args->length() : 0); counter++) {
+    for (int counter = 0; counter < (_args ? _args->length() : 0); counter++) {
+        int SP_location = counter + 3;  // Add three for SP initial parameter location
 		args_hera_code += args->_head->HERA_code() 
-					    + indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(counter) + ", FP_alt)\n";
+					    + indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(SP_location) + ", FP_alt)\n";
 		args = args->_tail;
 	}
 
@@ -199,6 +199,7 @@ string A_callExp_::HERA_code() {
 		Ty_ty return_type = func_struct.my_return_type();
 		if (return_type != Ty_Void()) {
 			func_return_hera_code = indent_math + "LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
+            args_length = args_length > 0 ? args_length : 1; // Set to 1 here for return value
 		}
 	} else {
 		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
@@ -343,7 +344,7 @@ string A_forExp_::HERA_code() {
 		            + _hi->HERA_code()
 				    + indent_math + "STORE(" + _hi->result_reg_s() + ", " + _hi_sp_loc + ", FP)\n"
 	                + indent_math + "LABEL(" + start_label + ")\n"
-    // Load _var from Stack (_lo and _hi
+    // Load _var from Stack _lo and _hi
 	                + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n" 
 					+ indent_math + "LOAD(R2, " + _hi_sp_loc + ", FP)\n"
     // Compare _lo to _hi, if <= 0 go to end of loop, Otherwise go through loop
@@ -352,7 +353,7 @@ string A_forExp_::HERA_code() {
     // Run _body HERA_code
 	                + _body->HERA_code()
     // Increment _hi and store in _var in Stack
-	                + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP)\n"
+	                + indent_math + "LOAD(R1, " + _lo_sp_loc + ", FP) \t// Incrementing forLoop " + std::to_string(my_num) + " index\n"
 					+ indent_math + "INC(R1, 1)\n"
 					+ indent_math + "STORE(R1, " + _lo_sp_loc + ", FP)\n"
     // Branch back to beginning of loop
@@ -434,7 +435,7 @@ string A_letExp_::HERA_code() {
                   + (this->result_reg() != _body->result_reg() ? indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n" : "")
                   // Decrement the SP counter
                   + (dec_SP > 0 ? indent_math + "DEC(SP, " + dec_SP_s + ")\n" : "")
-                  + "// END of Let Expression " + current_letExp_counter + ".";
+                  + "// END of Let Expression " + current_letExp_counter + ".\n";
 	return output;
 }
 

@@ -123,23 +123,14 @@ int A_functionDec_::calculate_my_SP(AST_node_ *_parent_or_child)  {
 
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
     if (_parent_or_child == _params) {
+        // TODO: Should this be an error?
         return 0;
     } else {
         // from body
-        int param_SP = _params ? _params->calculate_my_SP(this) : 0;
-        return param_SP;
+        int param_SP = _params ? _params->length() : 0;
+        // TODO: what happens if function body is empty?
+        return param_SP + 3 + _body->result_reg() - 2;
 
-    }
-}
-
-int A_fieldList_::calculate_my_SP(AST_node_ *_parent_or_child) {
-    // Should only be descending
-    if (_parent_or_child != stored_parent) {
-        EM_error("I shouldn't be here");
-        return -1;
-    } else {
-        int tail_SP = _tail ? _tail->calculate_my_SP(this) : 0;
-        return 1 + tail_SP;
     }
 }
 
