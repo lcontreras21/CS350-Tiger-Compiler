@@ -12,7 +12,7 @@ The S-U label for an interior node n depends on the labels of its two children (
 	otherwise, the result is max(su1, su2)
 */
 
-/* Set min_reg to where we want sethi-ullman to be based off. At 4, we cna use first three regs for function calls */ 
+/* Set min_reg to where we want sethi-ullman to be based off. At 4, we can use first three regs for function calls */ 
 int min_reg = 4;
 
 int A_exp_::init_result_reg() {
@@ -71,7 +71,7 @@ int A_leafExp_::init_result_reg() {
 } 
 
 int A_seqExp_::init_result_reg() {
-    return _seq ? _seq->result_reg() : min_reg;
+    return _seq ? _seq->reg_usage() : min_reg;
 }
 
 int A_whileExp_::init_result_reg() {

@@ -268,26 +268,26 @@ string A_ifExp_::HERA_code() {
 
 string A_seqExp_::HERA_code() {
     EM_debug("Compiling seqExp");
-	// Iterate through A_expList _seq and add HERA_codes
 	A_expList seq = _seq;
 	string my_code = "";
-	string reg_str = "";
-	int reg_int = 4;  // TODO Make this set to default min register
+
 	if (seq == 0) {
 		return my_code;
-	} else {
-		while (seq != 0) {
-			my_code = my_code + seq->_head->HERA_code();
-			reg_int = seq->_head->result_reg();
-			reg_str = seq->_head->result_reg_s();
-			seq = seq->_tail;
-		}
-		// Move last exp to reg of seq if not already there
-		string move_statement = result_reg() == reg_int ? "" : indent_math + "MOVE(" + result_reg_s() + ", " + reg_str + ")\n";
-		my_code = my_code + move_statement;
-		return my_code;
-
 	}
+
+	// Iterate through A_expList _seq and add HERA_codes
+    while (seq != 0) {
+        my_code += seq->_head->HERA_code();
+        seq = seq->_tail;
+    }
+
+    // Move last exp to reg usage of seq if not already there
+    if (_seq->result_reg() != result_reg()) {
+        string move_statement = indent_math + "MOVE(" + _seq->reg_usage_s() + ", " + _seq->result_reg_s() + ")\n";
+        my_code += move_statement;
+    }
+
+    return my_code;
 }
 
 string A_whileExp_::HERA_code() {

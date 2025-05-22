@@ -194,6 +194,8 @@ typedef class A_efieldList_ *A_efieldList;
 
 extern bool print_ASTs_with_attributes;  // defaults to false; can be overridden in main with "-A" option
 
+extern int min_reg;
+
 
 class AST_node_ {  // abstract class with some common data
 public:
