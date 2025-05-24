@@ -205,12 +205,16 @@ string A_callExp_::HERA_code() {
 		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
 	}
 
+    // NOTE: added hack to save FP_alt for situations where functions call functions
 	string output = "// Start of Function Call for function " + unique_func_name + "\n"
+            + indent_math + "MOVE(Rt, FP_alt)\n"
 			+ indent_math + "MOVE(FP_alt, SP)\n"
 			+ indent_math + "INC(SP, " + std::to_string(3 + args_length) + ")\n"
+            + indent_math + "STORE(Rt, 2, FP_alt)\n"
             + args_hera_code
 			+ indent_math + "CALL(FP_alt, " + unique_func_name + ")\n"
             + func_return_hera_code
+            + indent_math + "LOAD(FP_alt, 2, FP_alt)\n"
 			+ indent_math + "DEC(SP, " + std::to_string(3 + args_length) + ")\n"
 	        + "// End of Function Call for function " + unique_func_name + "\n";
 	return output;
@@ -562,4 +566,3 @@ string A_fundec_::HERA_code() {
 		return output;
 	}
 }
-
