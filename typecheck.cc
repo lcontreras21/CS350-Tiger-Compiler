@@ -113,6 +113,7 @@ Ty_ty A_opExp_::init_typecheck() {
 	Ty_ty return_type = check_return_type(_oper);
 	// If return type is Ty_Bool (comparison Op), just make sure left/right types are the same
 	// Otherwise, type is Ty_Int (arithmetic op), make sure left/right are type int ( maybe Ty_bool?)
+
 	if (return_type == Ty_Bool()) {
 		if (left_type == right_type) {
 			return return_type;
@@ -123,12 +124,20 @@ Ty_ty A_opExp_::init_typecheck() {
 	} else if (return_type == Ty_Int()) {
 		bool error = false;
 		if (left_type != Ty_Int()) {
-			EM_warning("Left side of op does not have Ty_Int()");
-			error = true;
+            if (left_type == Ty_Bool()) {
+                EM_warning("Left side of op has type `Boolean`, still works but flagging");
+            } else {
+                EM_warning("Left side of op does not have valid type");
+                error = true;
+            }
 		}
 		if (right_type != Ty_Int()) {
-			EM_warning("Right side of op does not have Ty_Int()");
-			error = true;
+            if (right_type == Ty_Bool()) {
+                EM_warning("Right side of op has type `Boolean`, still works but flagging");
+            } else {
+                EM_warning("Right side of op does not have valid type");
+                error = true;
+            }
 		}
 		if (error) {
 			EM_error("Type error in op expression");
