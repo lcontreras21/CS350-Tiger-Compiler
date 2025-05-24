@@ -543,7 +543,8 @@ public:
 	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *child);
-	ST<var_info> set_my_variable_library(AST_node_ *child);
+	ST<var_info> set_my_variable_library(AST_node_ *_child);
+	ST<var_info> get_my_variable_library(AST_node_ *_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
 	int my_num;
@@ -551,6 +552,9 @@ private:
 	A_exp _lo;
 	A_exp _hi;
 	A_exp _body;
+
+	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_lo_hi = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
 };
 
 

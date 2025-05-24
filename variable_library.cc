@@ -122,14 +122,34 @@ ST<var_info> A_letExp_::set_my_variable_library(AST_node_ *_parent_or_child) {
     }
 }
 
+ST<var_info> A_forExp_::get_my_variable_library(AST_node_ *_child) {
+    EM_debug("Variablizing forExp " + Symbol_to_string(_var) + ": getting library");
+    if (_child == _lo || _child == _hi || _child == _body) {
+        ST<var_info>* my_variable_library_ptr = _child == _body ? &this->my_variable_library_asked_by_body : &this->my_variable_library_asked_by_lo_hi;
+        if (is_name_there(to_Symbol("Empty"), *my_variable_library_ptr)) {
+            *my_variable_library_ptr = set_my_variable_library(_child);
+        }
+        return *my_variable_library_ptr;
+    } else {
+        EM_error("Variablizing forExp error: _child param does not match _lo, _hi, _body");
+        return ST<var_info>();
+    }
+}
+
 ST<var_info> A_forExp_::set_my_variable_library(AST_node_ *child) {
+    // If the one asking is _body, combine with loop var
+    // Otherwise, return parent library
     ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
 
-    int this_SP_counter = calculate_my_SP(this);
-    ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false));
+    if (child == _lo || child == _hi) {
+        return parent_variable_library;
+    } else {
+        int this_SP_counter = calculate_my_SP(this);
+        ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false));
 
-    // Add variable to variable library
-    return MergeAndShadow(for_var, parent_variable_library);
+        // Add variable to variable library
+        return MergeAndShadow(for_var, parent_variable_library);
+    }
 }
 
 ST<var_info> A_dec_::set_my_variable_library(AST_node_ *child) {

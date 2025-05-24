@@ -377,7 +377,7 @@ string A_simpleVar_::HERA_code() {
     EM_debug("Compiling simpleVar " + Symbol_to_string(_sym));
 
     ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
-	// Two cases: In A_varDec_ or A_assignExp_
+	// Two cases: In A_simpleVar_ or A_assignExp_
 	int inAssignExp = am_i_in_assignExp_(this);
 	// Returns register of new assignment value if in assignexp, otherwise < 0
 
@@ -396,11 +396,10 @@ string A_simpleVar_::HERA_code() {
 				         " write to the loop variable in an IF statement");
 			}
 		} else {
-			// In varDec_
-			// Access sp number from declaration
-			// Load it into R4
-			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)" +
-			         indent_math + "// Accessing Variable '" + variable_comment;
+			// In A_simpleVar_
+			// Access SP number from declaration
+            string min_reg_s = "R" + std::to_string(min_reg);
+			output = indent_math + "LOAD(" + min_reg_s + ", " + std::to_string(var_struct.my_SP()) + ", FP)" + indent_math + "// Accessing Variable '" + variable_comment;
 		}
 		return output;
 	} else {
