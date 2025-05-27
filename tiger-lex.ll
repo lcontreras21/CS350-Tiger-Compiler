@@ -79,7 +79,7 @@ char decToAscii(int n)
 	for (int j=i-1; j>=0; j--) {
 		to_return = to_return + hexaDeciNum[j];
 	}
-	// Convert to Ascii
+	// Convert from Hex to Char value in ASCII table 
 	char ch = stoul(to_return, nullptr, 16);
 	return ch;
 }
@@ -203,17 +203,19 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 
 "\""				{ /* Initial quote of string */ 
 					  to_return = "";
-					  BEGIN(str); }
+					  BEGIN(str); 
+                    }
 <str>{
 "\""				{ /* Closing quote of string */
-					  BEGIN(INITIAL); 
-					  loc.step(); 
-					  return yy::tigerParser::make_STRING(repr(to_return), loc);	}
+					  BEGIN(INITIAL);
+					  loc.step();
+					  return yy::tigerParser::make_STRING(repr(to_return), loc);
+                    }
+
 \\n					{ to_return = to_return + '\n'; }
 \\t					{ to_return = to_return + '\t'; }
-\\[0-9]{3}			{ // Octal escape sequence
+\\[0-9]{3}			{ // Decimal escape sequence
 					  int result;
-					  // Dave says \ddd is decimal when appel says it should be octal
 					  (void) sscanf(yytext+1, "%d", &result);
 					  to_return = to_return + decToAscii(result);
 					}
