@@ -234,6 +234,7 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 [^\\\n\"]+			{ /* Any other part of the string */
 					  to_return = to_return + yytext;
 					}
+\\(([0-9]{2}a-zA-Z])|([0-9][a-zA-Z][0-9])|([a-zA-Z][0-9]{2}))    { EM_error("Illegal decimal sequence", true); }
 }
 
 
