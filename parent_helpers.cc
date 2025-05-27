@@ -9,7 +9,7 @@ EG:
 //--------------------------------------------------------------------------------
 
 int A_root_::am_i_in_loop(AST_node_ *child) {
-	EM_error("Break not found within WHILE expression");
+	EM_error("Break not found within While or For expression");
 	return -1;
 }
 
@@ -23,7 +23,8 @@ int A_whileExp_::am_i_in_loop(AST_node_ *child) {
 
 int A_forExp_::am_i_in_loop(AST_node_ *child) {
 	if (child == _lo or child == _hi) {
-		return my_num;
+        // Only valid if forExp itself is in a loop
+        return stored_parent->am_i_in_loop(this);
 	}
 	return my_num;
 }
