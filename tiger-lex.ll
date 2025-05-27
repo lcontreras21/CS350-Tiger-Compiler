@@ -221,7 +221,16 @@ c_comment \/\*([^*]|\*\**[^*\/])*\*\**\/
 					}
 \\\"				{ to_return = to_return + '\"'; }
 \\\\				{ to_return = to_return + '\\'; }
-\\[ \t\n]*\\		{ /* Special thing defined by Appel */ }
+\\[ \t\n]*\\		{ /* Special thing defined by Appel, does nothing. Allows us to write multi-line strings by writing \ at end of line and \ at the beginning of next */ }
+\\\^[\@\[\]\\\^\_a-zA-Z]{1} { char control_char = yytext[yyleng - 1];
+                              if (control_char >= 96) {
+                                control_char -= 96;
+                              } else if (control_char >= 64) {
+                                control_char -= 64;
+                              }
+                              to_return = to_return + decToAscii(control_char);
+                            }
+
 [^\\\n\"]+			{ /* Any other part of the string */
 					  to_return = to_return + yytext;
 					}
