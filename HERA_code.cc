@@ -46,8 +46,11 @@ string func_HERA_code = "";
 
 string A_root_::HERA_code() {
     EM_debug("Compiling root");
-	string output = "\nCBON()\n\n" + main_expr->HERA_code()  // was SETCB for HERA 2.3
-		+ "\nHALT()\n" + func_HERA_code;
+	string output = "";
+    output += "\nCBON()\n\n" + 
+              main_expr->HERA_code() +// was SETCB for HERA 2.3
+		      "\nHALT()\n\n" + 
+              func_HERA_code;
 
 	return output;
 }
@@ -470,15 +473,12 @@ string A_assignExp_::HERA_code() {
 
 string A_functionDec_::HERA_code() {
     EM_debug("Compiling functionDec");
-	string output; 
-	// Need to do two passes, just like with typechecking, to set up functions in function library for recursive functions
-	// First pass:
-	theFunctions->HERA_code();
-	// Second pass
-	string func_code = theFunctions->HERA_code();
-	output = "// Start of Function Declarations\n" + func_code + "// End of Function Declarations\n";
+	string output = ""; 
+	output = "// Start of Function Declarations\n" + 
+             theFunctions->HERA_code() + 
+             "// End of Function Declarations\n";
 	// Have to add Function Definitions to end of HERA_code, not with all the other code
-	func_HERA_code = func_HERA_code + output;
+	func_HERA_code += output; 
 	return "";
 }
 
@@ -531,37 +531,29 @@ string A_fundec_::HERA_code() {
 		• Restore saved registers, including FP_alt and PC_ret, and decrement SP
 		• RETURN from the function
 	*/
-	// Make copy of function and variable library
-    // TODO: is firstPass still needed? thoughts tell me no
-	if (not firstPass) {
-        EM_debug("Compiling fundec: first pass");
-		firstPass = true;
-		return "";
-	} else {
-        // TODO: SP bugs here
-        EM_debug("Compiling fundec: second pass");
-        string unique_func_name = get_my_unique_function_name();
-        string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
-        string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
-		// Add params to ST and make available in body, make copy of vars
-        string regs_to_save = std::to_string(_body->result_reg() - 2);
-        string output;
-		output  = "LABEL(" + unique_func_name + ")\n"
-				+ indent_math + "// Saving PC_ret, FP_alt\n"
-				+ indent_math + "INC(SP, " + regs_to_save + ")\n"
-				+ indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
-				+ indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
-				+ indent_math + "// Saving registers\n"
-				+ store_reg_str
-				+ indent_math + "// Body of Function\n"
-				+ _body->HERA_code()
-				+ indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP) \t// Put result value over 1st parameter\n"
-				+ indent_math + "// Restore registers\n"
-				+ load_reg_str
-				+ indent_math + "LOAD(PC_ret, 0, FP)\n"
-				+ indent_math + "LOAD(FP_alt, 1, FP)\n"
-				+ indent_math + "DEC(SP, " + regs_to_save + ")\n"
-				+ indent_math + "RETURN(FP_alt, PC_ret)\n\n";
-		return output;
-	}
+    EM_debug("Compiling fundec: second pass");
+
+    string unique_func_name = get_my_unique_function_name();
+    string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
+    string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
+    // Add params to ST and make available in body, make copy of vars
+    string regs_to_save = std::to_string(_body->result_reg() - 2);
+    string output;
+    output  = "LABEL(" + unique_func_name + ")\n"
+            + indent_math + "// Saving PC_ret, FP_alt\n"
+            + indent_math + "INC(SP, " + regs_to_save + ")\n"
+            + indent_math + "STORE(PC_ret, 0, FP) // Return Address\n"
+            + indent_math + "STORE(FP_alt, 1, FP) // Control Link\n"
+            + indent_math + "// Saving registers\n"
+            + store_reg_str
+            + indent_math + "// Body of Function\n"
+            + _body->HERA_code()
+            + indent_math + "STORE(" + _body->result_reg_s() + ", 3, FP) \t// Put result value over 1st parameter\n"
+            + indent_math + "// Restore registers\n"
+            + load_reg_str
+            + indent_math + "LOAD(PC_ret, 0, FP)\n"
+            + indent_math + "LOAD(FP_alt, 1, FP)\n"
+            + indent_math + "DEC(SP, " + regs_to_save + ")\n"
+            + indent_math + "RETURN(FP_alt, PC_ret)\n\n";
+    return output;
 }
