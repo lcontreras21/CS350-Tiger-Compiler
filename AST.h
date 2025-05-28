@@ -226,7 +226,7 @@ public:
 	virtual string HERA_data();  // defaults to empty string 
 	virtual int am_i_in_loop(AST_node_ *child);
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual int am_i_in_assignExp(AST_node_ *child);
 	int height();  // example we'll play with in class, not actually needed to compile
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
@@ -263,7 +263,7 @@ private:
 	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
 	Ty_ty stored_type = Ty_Placeholder();
-	ST<var_info> my_variable_library = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
 	ST<function_info> my_function_library = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
 
@@ -300,7 +300,7 @@ public:
 	Ty_ty init_typecheck();
 	int am_i_in_loop(AST_node_ *child);
 	int calculate_my_SP(AST_node_ *_parent_or_child);
-	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual int am_i_in_assignExp(AST_node_ *child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	AST_node_ *parent();	// We should never call this
@@ -398,7 +398,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual int am_i_in_assignExp(AST_node_ *child);
 
 private:
 	A_var _var;
@@ -432,7 +432,7 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	virtual int am_i_in_assignExp_(AST_node_ *child);
+	virtual int am_i_in_assignExp(AST_node_ *child);
 private:
 	A_var _var;
 	A_exp _exp;
@@ -460,9 +460,9 @@ private:
 	A_decList _decs;
 	A_expList _body;
 
-    ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_decs = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+    ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_decs = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
 
 	ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_decs = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
@@ -476,7 +476,7 @@ public:
 	virtual string HERA_data();
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
-	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	int calculate_my_SP(AST_node_ *_parent_or_child);
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual string print_rep(int indent, bool with_attributes);
 
@@ -597,7 +597,6 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
-	virtual int am_i_in_assignExp_(AST_node_ *child);
 private:
 	Symbol _sym;
 };
@@ -709,9 +708,9 @@ private:
 	A_dec _head;
 	A_decList _tail;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
 
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
@@ -737,8 +736,8 @@ private:
 	Symbol _typ;
 	A_exp _init;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
 
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_init = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
@@ -777,8 +776,8 @@ public:
 private:
 	A_fundecList theFunctions;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_functions = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_functions = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_functions = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };
@@ -800,9 +799,9 @@ private:
 	A_fundec _head;
 	A_fundecList _tail;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_tail = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
@@ -815,7 +814,7 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
-	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
+	int calculate_my_SP(AST_node_ *_parent_or_child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<var_info> get_my_variable_library(AST_node_ *child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
@@ -844,8 +843,8 @@ private:
 	Symbol _result;
 	A_exp _body;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
+	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true, 0));
     ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
 };

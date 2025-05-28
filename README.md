@@ -1,11 +1,25 @@
 # Haverford College 
 ## Computer Science 350: Compiler Design
 
-### Overview:
+## Overview:
 Haverford's CS core curriculum is centered around their proprietary assembly language HERA. In this class, we are tasked with writing a compiler to go from Andrew Appel's Tiger language to the HERA language. The class follows many of the sections in [Appel's compiler design book](https://www.cs.princeton.edu/~appel/modern/c/). 
 
 ### Purpose:
 During the semester I took the course, I only made it through 9 out of the 10 assignments to finish the compiler. Here, I intend to start from the beginning and finish the compiler, incorporating all of the information I have learned since then. 
+
+## Installation
+0. Install `bison`, `flex`, `csh`, `gcc` or compiler of choice
+1. Clone Repo
+2. Make a folder at `/home/courses/`
+3. Unzip HaverfordCS.7z containing standard library and other helper files in that folder
+4. Build and run Tiger
+
+## Running instructions
+- Run `make` to build a new executable
+- Then run, `compiler-tests [0-9][a-z]` to run it on specific milestone(s) test cases
+- Or run `compiler-test *.tig` to run it on a specific tiger file
+- Alternatively Run `Debug/tiger *.tig` to do the same thing
+- Or run `Debug/tiger` to run with standard input
 
 ### Contents:
 - Milestone 1: Subtraction, Parenthesis, and Comments
@@ -25,16 +39,21 @@ During the semester I took the course, I only made it through 9 out of the 10 as
 - Milestone 4: (a) Much like result\_reg in AST.h uses init\_result\_reg in result.cc, I have chosen to implement a similar structure to handle typechecking. I have typecheck() and init\_typecheck() where the former calls the latter if the type has not yet been calculated and stored. Otherwise, it just returns the stored type value. (b) For unary negation, I had help from this [documentation](https://www.gnu.org/software/bison/manual/html_node/Contextual-Precedence.html). (d) Using a Global Symbol Table (ST) for Function definitions in the Tiger Standard Library. 
 - Milestone 5: (b) Comparison operators were created in conjunction with the opExp class. Should be able to handle Ints and Strings.
 - Milestone 6: For If, While, Comparison operators, I have global variables to keep track of which they are as a private class property. This is used in Branching and Label generation to create proper control flow. Also partially keeping track of Stack pointer using a global variable. 
-- Milestone 7: FILLMEIN
+- Milestone 7:
 - Milestone 8: Moved to using synthesized variable and function libraries since keeping track of a global library was too intense. 
 - Milestone 9: 
 
 ### Remaining Tests and TODO:
-
 #### Concepts:
  - certain escape characters, make sure I implemented them all in Milestone 3
  - Nil
  - allow LetExps to take Nil in the body
+
+#### Tests
+-  Checking each test result one by one is tedious. It would be nice to have a test environment where we can:
+    - compare HERA output to expected
+    - compare HERA-C final value to expected
+    - check for errors
 
 #### Genera TODO
  - Getting tons of WARNING: REFERENCE TO MEMORY AT/JUST-ABOVE SP in later Milestones

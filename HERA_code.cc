@@ -1,10 +1,13 @@
 #include "AST.h"
+#include "HERA_code.h"
 #include "ST.h"
+#include <string>
 
 // IfExp Counter for branching expressions
 int if_counter = 0;
 int comp_counter = 0;
 int loop_counter = 0;
+int scope_counter = 0;
 
 /*
  * HERA_code methods
@@ -146,6 +149,7 @@ string A_opExp_::HERA_code() {
 			// String comparison. Function call to tstrcmp
             int SP_counter = calculate_my_SP(this);
             // TODO: replace opExp node having tstrcmp to a callExp node
+            scope_counter++;
 			output = output 
 				+ "// Start of Function Call for function tstrcmp in opExp. Current SP at: " + std::to_string(SP_counter) 
 				+ indent_math + "MOVE(Rt, FP_alt)\n"
@@ -157,6 +161,7 @@ string A_opExp_::HERA_code() {
 				+ indent_math + "LOAD(" + output_reg_s + ", 3, FP_alt)\n"
 				+ indent_math + "DEC(SP, 5)\n"
 				+ indent_math + "CMP(" + output_reg_s + ", R0)\n"; 
+            scope_counter--;
 		}
 		// Comparison Operation and Branching. Generic to all comparisons
 		output = output + indent_math + HERA_op + "(" + label + ")\n"
@@ -196,8 +201,7 @@ string A_callExp_::HERA_code() {
     string func_return_hera_code = "";
 	if (is_name_there(_func, parent_function_library)) {
 		function_info func_struct = lookup(_func, parent_function_library);
-		Ty_ty return_type = func_struct.my_return_type();
-		if (return_type != Ty_Void()) {
+		if (func_struct.my_return_type() != Ty_Void()) {
 			func_return_hera_code = indent_math + "LOAD(" + this->result_reg_s() + ", 3, FP_alt)  // Loading result into R4 for return\n";
             args_length = args_length > 0 ? args_length : 1; // Set to 1 here for return value
 		}
@@ -205,14 +209,15 @@ string A_callExp_::HERA_code() {
 		EM_error("HERA_code parent_helpers: A_callExp: Check return: Function call for function " + Symbol_to_string(_func) + " not found in function library");
 	}
 
-	string output = "// Start of Function Call for function " + unique_func_name + "\n"
-			+ indent_math + "MOVE(FP_alt, SP)\n"
+    scope_counter++;
+	string output = indent_math + "MOVE(FP_alt, SP)\t// Start of Function Call for function " + unique_func_name + "\n"
 			+ indent_math + "INC(SP, " + std::to_string(3 + args_length) + ")\n"
             + args_hera_code
+            + indent_math + "STORE(FP, 2,FP_alt)\t// Create Static Link\n"
 			+ indent_math + "CALL(FP_alt, " + unique_func_name + ")\n"
             + func_return_hera_code
-			+ indent_math + "DEC(SP, " + std::to_string(3 + args_length) + ")\n"
-	        + "// End of Function Call for function " + unique_func_name + "\n";
+			+ indent_math + "DEC(SP, " + std::to_string(3 + args_length) + ")\t// End of Function Call for function " + unique_func_name + "\n";
+    scope_counter--;
 	return output;
 }
 
@@ -370,39 +375,41 @@ string A_varExp_::HERA_code() {
 }
 
 string A_simpleVar_::HERA_code() {
+	// Two cases: In A_varDec_ or A_assignExp_
+	// Returns register of new assignment value if in assignexp, otherwise < 0
     EM_debug("Compiling simpleVar " + Symbol_to_string(_sym));
 
     ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
-	// Two cases: In A_varDec_ or A_assignExp_
-	int inAssignExp = am_i_in_assignExp_(this);
-	// Returns register of new assignment value if in assignexp, otherwise < 0
+	int reg_for_assignExp = stored_parent->am_i_in_assignExp(this);
+    var_info var_struct;  // Initialize dummy var info
+	if (is_name_there(_sym, my_variable_library)) {
+        var_struct = lookup(_sym, my_variable_library);
+    } else {
+        EM_error("ERROR: A_simpleVar: Could not find " + Symbol_to_string(_sym));
+    }
 
 	string output = "";
-	if (is_name_there(_sym, my_variable_library)) {
-		var_info var_struct = lookup(_sym, my_variable_library);
-        string variable_comment = Symbol_to_string(_sym) + "' at SP: " + std::to_string(var_struct.my_SP()) + "\n";
-		if (inAssignExp > 0) {
-			// Check if var is writable, otherwise produce error
-			bool writable = var_struct.am_i_writable();
-			if (writable) {
-				output = indent_math + "STORE(R" + std::to_string(inAssignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)" +
-				         indent_math + "// Reassigning Variable '" + variable_comment;
-			} else {
-				EM_error("ERROR: Tried to write to a variable that is not writable. This happens most often when trying to"
-				         " write to the loop variable in an IF statement");
-			}
-		} else {
-			// In varDec_
-			// Access sp number from declaration
-			// Load it into R4
-			output = indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)" +
-			         indent_math + "// Accessing Variable '" + variable_comment;
-		}
-		return output;
-	} else {
-	    EM_error("ERROR: A_simpleVar: Could not find " + Symbol_to_string(_sym));
-		return "";
-	}
+    string variable_comment = Symbol_to_string(_sym) + "' at SP: " + std::to_string(var_struct.my_SP()) + "\n";
+    if (reg_for_assignExp > 0) {
+        // Check if var is writable, otherwise produce error
+        if (!var_struct.am_i_writable()) {
+            EM_error("ERROR: simpleVar: Tried to write to a variable that is not writable. This happens most often when trying to write to the loop variable in an IF statement");
+        } else {
+            output = indent_math + "STORE(R" + std::to_string(reg_for_assignExp) + ", " + std::to_string(var_struct.my_SP()) + ", FP)\t// Reassigning Variable '" + variable_comment;
+        }
+    } else {
+        // TODO: need to identify if var is in scope or not
+        // If it is, then load as normal
+        // If it is not, then load Static Link as temp FP
+        //      LOAD(Rt, 2, FP)
+        // Recursively call this check
+        //      ie if needed var is not in parent Frame, then load parent's Static Link and check and repeat
+        //          LOAD(Rt, 2, Rt)
+        // LOAD(R_i, n, Rt)
+
+        output = output + indent_math + "LOAD(R4, " + std::to_string(var_struct.my_SP()) + ", FP)\t// Accessing Variable '" + variable_comment;
+    }
+    return output;
 }
 
 string A_letExp_::HERA_code() {
@@ -413,6 +420,9 @@ string A_letExp_::HERA_code() {
 	string dec_SP_s = std::to_string(dec_SP);
     string current_letExp_counter = get_my_let_number_s();
 
+    EM_debug("Compiling letExp decs");
+    string decs_hera_code = _decs != 0 ? _decs->HERA_code() : "";
+    EM_debug("Compiling letExp body");
     string body_hera_code = "";
 	if (_body != 0) {
 		A_expList body = _body;
@@ -427,7 +437,7 @@ string A_letExp_::HERA_code() {
                   // Increment the SP counter
                   + (dec_SP > 0 ? indent_math + "INC(SP, " + dec_SP_s + ")\n" : "")
                   // Define the declared variables
-                  + (_decs != 0 ? _decs->HERA_code() : "")
+                  + decs_hera_code
                   + indent_math + "// Finished declaring variables in Let Expression " + current_letExp_counter + ". Stack now at SP: " + std::to_string(dec_SP + current_SP) + "\n"
                   // Do the Body of the Let
                   + body_hera_code
@@ -469,8 +479,8 @@ string A_functionDec_::HERA_code() {
     EM_debug("Compiling functionDec");
 	string output; 
 	// Need to do two passes, just like with typechecking, to set up functions in function library for recursive functions
-	// First pass:
-	theFunctions->HERA_code();
+	// First pass: ISSUE: IS THIS STILL NEEDED?
+	// theFunctions->HERA_code();
 	// Second pass
 	string func_code = theFunctions->HERA_code();
 	output = "// Start of Function Declarations\n" + func_code + "// End of Function Declarations\n";
@@ -481,11 +491,9 @@ string A_functionDec_::HERA_code() {
 
 string A_fundecList_::HERA_code() {
     EM_debug("Compiling fundecList");
-	if (_tail == 0) {
-		return _head->HERA_code();
-	} else {
-		return _head->HERA_code() + _tail->HERA_code();
-	}
+    string head_hera_code = _head->HERA_code();
+    string tail_hera_code = _tail ? _tail->HERA_code() : "";
+    return head_hera_code + tail_hera_code;
 }
 
 string A_fundec_::store_HERA_code(int reg_count_to_replace, int offset) {
@@ -538,10 +546,12 @@ string A_fundec_::HERA_code() {
         // TODO: SP bugs here
         EM_debug("Compiling fundec: second pass");
         string unique_func_name = get_my_unique_function_name();
-        string store_reg_str = store_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
-        string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));
+        string store_reg_str = store_HERA_code(_body->result_reg(), 4 + (_params ? _params->length() : 0));
+        string load_reg_str = load_HERA_code(_body->result_reg(), 4 + (_params ? _params->length() : 0));
+
 		// Add params to ST and make available in body, make copy of vars
         string regs_to_save = std::to_string(_body->result_reg() - 2);
+
         string output;
 		output  = "LABEL(" + unique_func_name + ")\n"
 				+ indent_math + "// Saving PC_ret, FP_alt\n"

@@ -146,14 +146,19 @@ extern int function_count;
 // Struct to store type and SP information for variables
 struct var_info {
 public:
-	var_info(Ty_ty the_type, int the_SP, bool writable);
+	var_info(Ty_ty the_type, int the_SP, bool writable, int the_scope_number);
+    var_info();
 	Ty_ty _type;
 	int _SP;
 	bool _writable;
+    int _scope_number;
 
 	Ty_ty my_type();
 	int my_SP();
 	bool am_i_writable();
+    int my_scope();
+    int my_scope_number();
+    string my_scope_s();
 	string __repr__();
 	string __str__();
 };

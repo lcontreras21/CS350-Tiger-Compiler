@@ -122,39 +122,34 @@ int A_functionDec_::calculate_my_SP(AST_node_ *_parent_or_child)  {
 }
 
 int A_fundec_::calculate_my_SP(AST_node_ *_parent_or_child) {
-    if (_parent_or_child == _params) {
-        // TODO: Should this be an error?
-        return 0;
-    } else {
-        // from body
-        int param_SP = _params ? _params->length() : 0;
-        // TODO: what happens if function body is empty?
-        return param_SP + 3 + _body->result_reg() - 2;
-
+    if (_parent_or_child != _body) {
+        EM_error("fundec_ got asked to calculate_my_SP for not it's body");
+        return -1;
     }
+    // from body
+    int param_SP = _params ? _params->length() : 0;
+    // TODO: what happens if function body is empty?
+    return param_SP + 3 + _body->result_reg() - 2;
+
 }
 
 //--------------------------------------------------------------------------------
 
-int AST_node_::am_i_in_assignExp_(AST_node_ *child) {
-	return stored_parent->am_i_in_assignExp_(this);	
+int AST_node_::am_i_in_assignExp(AST_node_ *child) {
+	return stored_parent->am_i_in_assignExp(this);	
 }
 
-int A_root_::am_i_in_assignExp_(AST_node_ *child) {
-	// Should this be an error?
-	return -2;
-}
-
-int A_assignExp_::am_i_in_assignExp_(AST_node_ *child) {
-	return _exp->result_reg();
-}
-
-int A_varExp_::am_i_in_assignExp_(AST_node_ *child) {
+int A_root_::am_i_in_assignExp(AST_node_ *child) {
+    EM_error("Asked if simpleVar is in assignExp, and found it wasn't below varExp/assignExp");
 	return -1;
 }
 
-int A_simpleVar_::am_i_in_assignExp_(AST_node_ *child) {
-	return stored_parent->am_i_in_assignExp_(this);
+int A_assignExp_::am_i_in_assignExp(AST_node_ *child) {
+	return _exp->result_reg();
+}
+
+int A_varExp_::am_i_in_assignExp(AST_node_ *child) {
+	return -1;
 }
 
 //--------------------------------------------------------------------------------
@@ -183,3 +178,6 @@ int A_letExp_::get_my_letExp_number(AST_node_ *child) {
     // Should have been calculated during typechecking
     return this->my_let_number;
 }
+
+//--------------------------------------------------------------------------------
+

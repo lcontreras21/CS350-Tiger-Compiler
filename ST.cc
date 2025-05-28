@@ -13,10 +13,18 @@ Ty_ty type_info::my_type() {
 }
 
 // Variable Library
-var_info::var_info(Ty_ty the_type, int the_SP, bool writable) {
+var_info::var_info(Ty_ty the_type, int the_SP, bool writable, int the_scope_number) {
 	_type = the_type;
 	_SP = the_SP;	
 	_writable = writable;
+    _scope_number = the_scope_number;
+};
+
+var_info::var_info() {
+	_type = Ty_Error();
+	_SP = -1;	
+	_writable = false;
+    _scope_number = -1;
 };
 
 string var_info::__repr__() {

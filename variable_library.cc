@@ -1,4 +1,5 @@
 #include "AST.h"
+#include "HERA_code.h"
 #include "ST.h"
 
 /*
@@ -126,7 +127,7 @@ ST<var_info> A_forExp_::set_my_variable_library(AST_node_ *child) {
     ST<var_info> parent_variable_library = stored_parent->get_my_variable_library(this);
 
     int this_SP_counter = calculate_my_SP(this);
-    ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false));
+    ST<var_info> for_var = ST<var_info>(_var, var_info(Ty_Int(), this_SP_counter, false, scope_counter));
 
     // Add variable to variable library
     return MergeAndShadow(for_var, parent_variable_library);
@@ -152,20 +153,19 @@ ST<var_info> A_varDec_::get_my_variable_library(AST_node_ *_parent_or_child) {
 }
 
 ST<var_info> A_varDec_::set_my_variable_library(AST_node_ *_parent_or_child) {
-    ST<var_info> declared_variable_library;
-
 	if (_parent_or_child == stored_parent) {
+        ST<var_info> declared_variable_library;
         int my_SP = calculate_my_SP(this);
         if (Symbols_are_equal(_typ, to_Symbol("NA"))) {  // No explicit type declared
             // Use type of _init to initialize type
             // Initialize type to Ty_Placeholder to not cause a race condition during typechecking
-            declared_variable_library = ST<var_info>(_var, var_info(_init->typecheck(), my_SP, true));
+            declared_variable_library = ST<var_info>(_var, var_info(_init->typecheck(), my_SP, true, scope_counter));
         } else {
             // Lookup the type for _typ in ST type_library
             if (is_name_there(_typ, type_library)) {
                 type_info type_struct = lookup(_typ, type_library);
                 Ty_ty type = type_struct.my_type();
-                declared_variable_library = ST<var_info>(_var, var_info(type, my_SP, true));
+                declared_variable_library = ST<var_info>(_var, var_info(type, my_SP, true, scope_counter));
             } else {
                 EM_error("Variablizing varDec error: Type not found for VarDec" + Symbol_to_string(_var) + "with type " + Symbol_to_string(_typ));
                 return ST<var_info>();
@@ -366,7 +366,7 @@ ST<var_info> A_field_::set_my_variable_library(AST_node_ *parent) {
     if (is_name_there(_typ, type_library)) {
         type_info type_struct = lookup(_typ, type_library);
         Ty_ty this_type = type_struct.my_type();
-        ST<var_info> param_variable_library = ST<var_info>(_name, var_info(this_type, fieldList_count, true));
+        ST<var_info> param_variable_library = ST<var_info>(_name, var_info(this_type, fieldList_count, true, scope_counter));
 
         // Increment the fieldList counter for the next params if any
         fieldList_count++;

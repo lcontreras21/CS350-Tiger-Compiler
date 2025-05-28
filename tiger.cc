@@ -104,16 +104,16 @@ void lex_test()
 }
 #endif
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   try {
-	bool debug = false, show_ast = false, crash_on_fatal;
+	bool debug = false, show_ast = false, crash_on_fatal = false;
 #if defined COMPILE_LEX_TEST
 	bool just_do_lex_and_then_stop = false;
 #endif
 	String filename;
 	int arg_consumed = 0;
 
+    // pass Debug arg as -d. Additional args as -da, -dA, -dc, -d[1-3]
 	if (argc>arg_consumed+1 && string(argv[1]).length()>= 2 && (argv[1][0] == '-' && argv[1][1] == 'd')) { // Debug option
 		arg_consumed++;
 		debug = true;
@@ -159,6 +159,8 @@ int main(int argc, char **argv)
 	} else
 #endif
 	{
+        // TODO: add arg to select which sections to print logs for [Parsing, Typechecking, Data, Code]
+        LOG_LEVEL = 3;
 		tigerParseDriver driver;
 		int result = driver.parse(filename);
 		if (!EM_recorded_any_errors()) {
@@ -179,12 +181,15 @@ int main(int argc, char **argv)
 				EM_debug("Starting Typechecking", driver.AST->pos());
 				Ty_ty final_type = driver.AST->typecheck();
 				EM_debug("Finished Typechecking and got final type: " + to_String(final_type)  + "\n", driver.AST->pos());
-				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
-				code = code + driver.AST->HERA_data();
+				String code = "";
+                code += "#include <Tiger-stdlib-stack-data.hera>\n";
+                code += "#include <HERA-print.h>\n\n";
+				code += driver.AST->HERA_data();
+                LOG_LEVEL = 1;
 				EM_debug("Finished compiling HERA_data\n", driver.AST->pos());
-				code = code + driver.AST->HERA_code();
+				code += driver.AST->HERA_code();
 				EM_debug("Finished compiling HERA_code\n", driver.AST->pos());
-				code = code + "\n#include <Tiger-stdlib-stack.hera>\n";
+				code += "\n#include <Tiger-stdlib-stack.hera>\n";
 				if (! EM_recorded_any_errors()) {
 					cout << code;
 					return 0; // no errors

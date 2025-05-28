@@ -1,6 +1,5 @@
 #include "util.h"
 #include "AST.h"
-#include "errormsg.h"
 #include "ST.h"
 //#include "typecheck.h"
 
