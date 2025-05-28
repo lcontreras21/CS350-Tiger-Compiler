@@ -5,22 +5,7 @@ CompileFlags:
   CompilationDatabase: auto
 
   # Add extra flags to override or complement compile_commands.json
-  Add: [-Wall, -Wextra, -Wpedantic, -I/home/courses/include]
+  Add: [-Wall, -Wextra, -Wpedantic, -I/home/courses/include, -I/home/courses/lib]
 
-Diagnostics:
-  # Enable Clang-Tidy if it's available
-  ClangTidy:
-    Add: [performance-*, bugprone-*]
-    Remove: [cppcoreguidelines-pro-type-vararg, hicpp-vararg]
-    CheckOptions:
-      modernize-use-nullptr.NullMacros: ['NULL']
-
-  # Enable or disable diagnostic display enhancements
-  UnusedIncludes: Strict
-  Suppress: [pp_includes_not_found]
-
-Completion:
-  AllScopes: true
-  FilterAndSort: true
-  Limit: 100
-  Snippets: true
+Index:
+  Background: Skip

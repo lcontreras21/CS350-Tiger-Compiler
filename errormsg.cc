@@ -113,7 +113,7 @@ void EM_error(string message, bool fatal, Position position, string level)
 	//	if (position < 0)
 	//		position = EM_tokPos;
 	EM_errCount++;
-	if (LOG_LEVEL >= 3) {
+	if (LOG_LEVEL <= 3) {
 	    EM_core(message, position, level);
 	}
 	if (fatal || (EM_maxErrs > 0 && EM_errCount >= EM_maxErrs)) {
@@ -136,7 +136,7 @@ void EM_warning(string message, Position pos, string level)
 
 void EM_debug(string message, Position pos, string level)
 {
-	if (EM_showingDebug && LOG_LEVEL == 1) {
+	if (EM_showingDebug && LOG_LEVEL <= 1) {
 		EM_core(message, pos, level);
 	}
 }
