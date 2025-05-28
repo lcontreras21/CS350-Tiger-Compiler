@@ -138,6 +138,7 @@ public:
 	string __repr__();
 	string __str__();
 };
+ST<function_info> empty_function_info();
 
 //ST<function_info> get_tiger_lib();
 extern ST<function_info> tiger_library;
@@ -157,6 +158,7 @@ public:
 	string __repr__();
 	string __str__();
 };
+ST<var_info> empty_var_info();
 
 struct type_info {
 public:

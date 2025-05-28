@@ -265,8 +265,8 @@ private:
 	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
 	Ty_ty stored_type = Ty_Placeholder();
-	ST<var_info> my_variable_library = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<function_info> my_function_library = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<var_info> my_variable_library = empty_var_info();
+	ST<function_info> my_function_library = empty_function_info();
 };
 
 class A_exp_ : public AST_node_ {
@@ -462,13 +462,13 @@ private:
 	A_decList _decs;
 	A_expList _body;
 
-    ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_decs = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+    ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_decs = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_body = empty_var_info();
 
-	ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_decs = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_decs = empty_function_info();
+	ST<function_info> my_function_library_asked_by_body = empty_function_info();
 };
 
 class A_callExp_ : public A_exp_ {
@@ -553,8 +553,8 @@ private:
 	A_exp _hi;
 	A_exp _body;
 
-	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_lo_hi = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_body = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_lo_hi = empty_var_info();
 };
 
 
@@ -715,13 +715,13 @@ private:
 	A_dec _head;
 	A_decList _tail;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_head = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_tail = empty_var_info();
 
-    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_tail = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_head = empty_function_info();
+	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
 };
 
 class A_varDec_ : public A_dec_ {
@@ -743,11 +743,11 @@ private:
 	Symbol _typ;
 	A_exp _init;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_child = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
+	ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_child = empty_var_info();
 
-    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_init = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_init = empty_function_info();
 
 
 	// Appel had this here:
@@ -783,10 +783,10 @@ public:
 private:
 	A_fundecList theFunctions;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_functions = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_functions = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_functions = empty_var_info();
+    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_functions = empty_function_info();
 };
 
 class A_fundecList_ : public AST_node_ {
@@ -806,12 +806,12 @@ private:
 	A_fundec _head;
 	A_fundecList _tail;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_head = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_tail = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_head = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_tail = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_head = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_tail = empty_var_info();
+    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_head = empty_function_info();
+	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
 };
 
 class A_fundec_ : public AST_node_ {  // possibly this would be happier as a subclass of "A_dec_"?
@@ -850,10 +850,10 @@ private:
 	Symbol _result;
 	A_exp _body;
 
-	ST<var_info> my_variable_library_asked_by_parent = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-	ST<var_info> my_variable_library_asked_by_body = ST<var_info>(to_Symbol("Empty"), var_info(Ty_Void(), 0, true));
-    ST<function_info> my_function_library_asked_by_parent = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
-	ST<function_info> my_function_library_asked_by_body = ST<function_info>(to_Symbol("Empty"), function_info(Ty_Function(Ty_Void(), 0)));
+	ST<var_info> my_variable_library_asked_by_parent = empty_var_info();
+	ST<var_info> my_variable_library_asked_by_body = empty_var_info();
+    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
+	ST<function_info> my_function_library_asked_by_body = empty_function_info();
 };
 
 //  Giving a name to a type with Namety -- this is a declaration of a type

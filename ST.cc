@@ -19,6 +19,13 @@ var_info::var_info(Ty_ty the_type, int the_SP, bool writable) {
 	_writable = writable;
 };
 
+ST<var_info> empty_var_info() {
+    Symbol empty_symbol = to_Symbol("Empty");
+    var_info empty_library = var_info(Ty_Void(), 0, true);
+
+    return ST<var_info>(empty_symbol, empty_library);
+};
+
 string var_info::__repr__() {
 	return "var_info(" + to_String(_type) + ", " + std::to_string(_SP) + ", " + std::to_string(_writable) + ")";
 }
@@ -54,6 +61,13 @@ function_info::function_info(Ty_ty the_type_of_function, int the_id, bool is_tig
 	type_of_function = the_type_of_function;
 	id = the_id;
 	tiger_function = is_tiger_function;
+};
+
+ST<function_info> empty_function_info() {
+    Symbol empty_symbol = to_Symbol("Empty");
+    function_info empty_library = function_info(Ty_Function(Ty_Void(), 0));
+    
+    return ST<function_info>(empty_symbol, empty_library);
 };
 
 Ty_ty function_info::my_return_type() {
