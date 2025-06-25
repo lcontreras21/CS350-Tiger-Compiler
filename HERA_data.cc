@@ -54,18 +54,11 @@ string A_ifExp_::HERA_data() {
 }
 
 string A_seqExp_::HERA_data() {
-	// Iterate through A_expList _seq and add HERA_datas
-	A_expList seq = _seq;
 	string my_code = "";
-	if (seq == 0) {
+	if (_seq == 0) {
 		return my_code;
-	} else {
-		while (seq != 0) {
-			my_code = my_code + seq->_head->HERA_data();
-			seq = seq->_tail;
-		}
-		return my_code;
-	}
+	} 
+    return _seq->HERA_data();
 }
 
 string A_whileExp_::HERA_data() {

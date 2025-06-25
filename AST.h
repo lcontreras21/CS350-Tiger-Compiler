@@ -632,10 +632,9 @@ class A_expList_ : public AST_node_ {
 public:
 	A_expList_(A_exp head, A_expList tail);
 	virtual string print_rep(int indent, bool with_attributes);
-	virtual string HERA_data();
+	string HERA_data();
+    string HERA_code();
 	virtual int init_result_reg();
-	A_exp _head;
-	A_expList _tail;
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int length();
@@ -653,8 +652,41 @@ public:
 	string reg_usage_s() { // return in string form, e.g. "R2"
 		return "R" + std::to_string(this->reg_usage());
 	}
+    string store_HERA_code(int SP_loc) {
+        string hera_code = _head->HERA_code()
+                         + "    STORE(" + _head->result_reg_s() + ", " + std::to_string(SP_loc) + ", FP_alt)\n";
+        if (_tail) {
+            hera_code += _tail->store_HERA_code(SP_loc + 1);
+        }
+        return hera_code;
+    }
+    Ty_ty compare_types(Symbol _func, int arg_counter, Ty_fieldList expected_types) {
+		if (expected_types == 0) {
+			EM_error("Function " + str(_func) + " has extra arguments. Please Check");
+			return Ty_Error(); 
+		}
+
+		Ty_ty head_type = _head->typecheck();
+		Ty_ty expected_type = expected_types->head->ty;
+		if (head_type != expected_type) {
+		    EM_error("Typechecking callExp: Arg " + std::to_string(arg_counter) + " type does not match in function "
+               + "call " + str(_func) + ". Got " + to_String(head_type) + " but expected " + to_String(expected_type));
+			return Ty_Error();
+		} 
+
+        if (_tail) {
+            return _tail->compare_types(_func, arg_counter + 1, expected_types->tail);
+        }
+        if (_tail == 0 && expected_types != 0) {
+            EM_error("Function " + str(_func) + " has too few arguments.");
+            return Ty_Error();
+        }
+        return Ty_Void();
+    }
 	int init_reg_usage();
 private:
+	A_exp _head;
+	A_expList _tail;
 	int stored_result_reg = -1;
 	int stored_reg_usage = -1;
 };

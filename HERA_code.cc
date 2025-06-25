@@ -183,17 +183,10 @@ string A_callExp_::HERA_code() {
     // • Issue the CALL instruction
     // • After the call, the return value can be retrieved from FP_alt +3, and SP decremented
 
+    //
     int args_length = _args ? _args->length() : 0;
     string unique_func_name = get_my_unique_function_name();
-
-	A_expList args = _args;
-    string args_hera_code = "";
-    for (int counter = 0; counter < (_args ? _args->length() : 0); counter++) {
-        int SP_location = counter + 3;  // Add three for SP initial parameter location
-		args_hera_code += args->_head->HERA_code() 
-					    + indent_math + "STORE(" + args->_head->result_reg_s() + ", " + std::to_string(SP_location) + ", FP_alt)\n";
-		args = args->_tail;
-	}
+    string args_hera_code = _args->store_HERA_code(3);
 
     ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
     string func_return_hera_code = "";
@@ -273,20 +266,22 @@ string A_ifExp_::HERA_code() {
 	return my_code;
 }
 
+string A_expList_::HERA_code() {
+    string code = _head->HERA_code();
+    if (_tail) {
+        code += _tail->HERA_code();
+    }
+    return code;
+}
+
 string A_seqExp_::HERA_code() {
     EM_debug("Compiling seqExp");
-	A_expList seq = _seq;
 	string my_code = "";
 
-	if (seq == 0) {
+	if (_seq == 0) {
 		return my_code;
 	}
-
-	// Iterate through A_expList _seq and add HERA_codes
-    while (seq != 0) {
-        my_code += seq->_head->HERA_code();
-        seq = seq->_tail;
-    }
+    my_code += _seq->HERA_code();
 
     // Move last exp to reg usage of seq if not already there
     if (_seq->result_reg() != result_reg()) {
@@ -419,15 +414,6 @@ string A_letExp_::HERA_code() {
 	string dec_SP_s = std::to_string(dec_SP);
     string current_letExp_counter = get_my_let_number_s();
 
-    string body_hera_code = "";
-	if (_body != 0) {
-		A_expList body = _body;
-		while (body != 0) {
-			body_hera_code = body_hera_code + body->_head->HERA_code();
-			body = body->_tail;
-		}
-	}
-
 	string output = "// Start of Let Expression " + current_letExp_counter + ". Stack starting at SP: " + std::to_string(current_SP) +  "\n"
                   + indent_math + "// Initializing " + dec_SP_s + " variable(s).\n"
                   // Increment the SP counter
@@ -436,7 +422,7 @@ string A_letExp_::HERA_code() {
                   + (_decs != 0 ? _decs->HERA_code() : "")
                   + indent_math + "// Finished declaring variables in Let Expression " + current_letExp_counter + ". Stack now at SP: " + std::to_string(dec_SP + current_SP) + "\n"
                   // Do the Body of the Let
-                  + body_hera_code
+                  + _body->HERA_code() 
                   // Move result to final reg if necessary
                   + (this->result_reg() != _body->result_reg() ? indent_math + "MOVE(" + this->result_reg_s() + ", " + _body->result_reg_s() + ")\n" : "")
                   // Decrement the SP counter

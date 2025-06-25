@@ -1,15 +1,7 @@
+#include "types.h"
 #include "util.h"
 #include "AST.h"
-#include "errormsg.h"
 #include "ST.h"
-//#include "typecheck.h"
-
-//
-// Change this comment to describe the attributes you'll be using
-//  to check types in tiger programs.
-//
-
-#define SYM_INFO_FOR_STDLIB
 
 // void typecheck(AST_node_ *root)
 // {
@@ -23,56 +15,6 @@
 // The bodies of other type checking functions,
 //  including any virtual functions you introduce into
 //  the AST classes, should go here.
-
-
-/* Methods with typecheck:
-Have ** on their name
-	AST_node_
-		A_exp_
-			A_literalExp_
-				A_leafExp_
-					A_nilExp_
-					A_intExp_**
-					A_boolExp_**
-					A_stringExp_**
-				A_recordExp_
-				A_arrayExp_
-			A_varExp_**
-			A_opExp_**
-			A_assignExp_**
-			A_letExp_
-			A_callExp_**
-			A_controlExp_
-				A_ifExp_**
-				A_whileExp_
-				A_forExp_**
-				A_breakExp_
-				A_seqExp_**
-		A_var_
-			A_simpleVar_**
-			A_fieldVar_
-			A_subscriptVar_
-		A_dec_
-			A_varDec_
-			A_functionDec_**
-			A_typeDec_
-			A_decList
-		A_fundec_**
-		A_expList_**
-		A_efield_
-		A_efieldList_
-		A_fundecList_**
-		A_namety_
-		A_nametyList_
-		A_field_**
-		A_fieldList_**
-		A_ty_
-			A_nameTy_
-			A_arrayty_
-			A_recordty_
-
-
-*/
 
 Ty_ty AST_node_::init_typecheck() {
 	EM_error("Typecheck on node not yet having typecheck method");
@@ -153,7 +95,6 @@ Ty_ty A_opExp_::init_typecheck() {
 
 Ty_ty A_callExp_::init_typecheck() {	
 	// have name _func and args _args
-	A_expList args_exps = _args;
 	// Look up name in ST function_library to get args as Ty_fieldList and iterate
 	// through to check if all are correct type
 	
@@ -173,34 +114,15 @@ Ty_ty A_callExp_::init_typecheck() {
 	// Get types of args in Ty_fieldList_ struct
 	Ty_fieldList arg_types = func_type_info->u.function.parameter_types;
 	// Simple Base case, if both are 0
-	if (arg_types == 0 and args_exps == 0) {
+	if (arg_types == 0 and _args == 0) {
 		return return_type;
 	}
-	// Iterate through arg_types and args_exps (A_expList _head _tail)
-	int arg_counter = 1;
-	while (args_exps != 0) {
-		// Base case if too little args in args_exps
-		if (arg_types == 0) {
-			EM_error("Function " + str(_func) + " has extra arguments. Please Check");
-			return Ty_Error(); 
-		}
-		// Check if types are the same
-		Ty_ty head_type = args_exps->_head->typecheck();
-		Ty_ty expected_type = arg_types->head->ty;
-		if (head_type != expected_type) {
-		   	EM_error("Typechecking callExp: Arg " + std::to_string(arg_counter) + " type does not match in function " +
-		   	         "call " + str(_func) + ". Got " + to_String(head_type) + " but expected " + to_String(expected_type));
-			return Ty_Error();
-		} 
-		arg_types = arg_types->tail;
-		args_exps = args_exps->_tail;
-		arg_counter++;
-	}
-	if (args_exps == 0 and arg_types != 0) {
-		// Too few arguments
-		EM_error("Function " + str(_func) + " has too few arguments.");
-		return Ty_Error();
-	}
+
+    Ty_ty args_typecheck = _args->compare_types(_func, 1, arg_types);
+    if (args_typecheck == Ty_Error()) {
+        return Ty_Error();
+    }
+
 	// If made it this far, then all types check out
 	return return_type;
 }
@@ -243,11 +165,7 @@ Ty_ty A_seqExp_::init_typecheck() {
 	if (seq == 0) {
 		return return_type;
 	} else {
-		while (seq != 0) {
-			return_type = seq->_head->typecheck();
-			seq = seq->_tail;
-		}
-		return return_type;
+		return _seq->typecheck();
 	}
 }
 
