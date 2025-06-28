@@ -223,7 +223,7 @@ public:
 	void EM_debug  (string message, bool fatal=false) {   ::EM_debug(message, this->pos()); }
 
     template<typename T, typename Ctx>
-    T accept(Visitor<T, Ctx>& visitor, Ctx& ctx) {
+    T accept(Visitor<T, Ctx>& visitor, Ctx ctx) {
         return acceptImpl(visitor, ctx);
     };
 	
@@ -273,10 +273,10 @@ private:
 	ST<var_info> my_variable_library = empty_var_info();
 	ST<function_info> my_function_library = empty_function_info();
 
-    virtual string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
+    virtual string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return "";
     };
-    virtual void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
+    virtual void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
     };
 };
 
@@ -327,11 +327,11 @@ public:
 private:
 	A_exp main_expr;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitRoot(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitRoot(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitRoot(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitRoot(this, ctx);
     };
 };
 
@@ -355,11 +355,11 @@ public:
 	A_nilExp_(A_pos p);
 	virtual string print_rep(int indent, bool with_attributes);
 private:
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitNilExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitNilExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitNilExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitNilExp(this, ctx);
     }
 };
 
@@ -375,11 +375,11 @@ public:
 private:
     bool value;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitBoolExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitBoolExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitBoolExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitBoolExp(this, ctx);
     }
 };
 
@@ -395,11 +395,11 @@ public:
 private:
 	int value;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitIntExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitIntExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitIntExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitIntExp(this, ctx);
     }
 };
 
@@ -416,11 +416,11 @@ private:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitStringExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitStringExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitStringExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitStringExp(this, ctx);
     }
 };
 
@@ -436,11 +436,11 @@ private:
 	Symbol _typ;
 	A_efieldList _fields;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitRecordExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitRecordExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitRecordExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitRecordExp(this, ctx);
     }
 };
 
@@ -457,11 +457,11 @@ private:
 	A_exp _size;
 	A_exp _init;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitArrayExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitArrayExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitArrayExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitArrayExp(this, ctx);
     }
 };
 
@@ -481,11 +481,11 @@ public:
 private:
 	A_var _var;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitVarExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitVarExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitVarExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitVarExp(this, ctx);
     }
 };
 
@@ -511,11 +511,11 @@ private:
 	A_exp _left;
 	A_exp _right;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitOpExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitOpExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitOpExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitOpExp(this, ctx);
     }
 };
 
@@ -536,11 +536,11 @@ private:
 	A_var _var;
 	A_exp _exp;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitAssignExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitAssignExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitAssignExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitAssignExp(this, ctx);
     }
 };
 
@@ -577,11 +577,11 @@ private:
 	ST<function_info> my_function_library_asked_by_decs = empty_function_info();
 	ST<function_info> my_function_library_asked_by_body = empty_function_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitLetExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitLetExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitLetExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitLetExp(this, ctx);
     }
 };
 
@@ -612,11 +612,11 @@ private:
 	Symbol _func;
 	A_expList _args;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitCallExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitCallExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitCallExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitCallExp(this, ctx);
     }
 };
 
@@ -643,11 +643,11 @@ private:
 	A_exp _then;
 	A_exp _else_or_null;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitIfExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitIfExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitIfExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitIfExp(this, ctx);
     }
 };
 
@@ -669,11 +669,11 @@ private:
 	A_exp _test;
 	A_exp _body;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitWhileExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitWhileExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitWhileExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitWhileExp(this, ctx);
     }
 };
 
@@ -706,11 +706,11 @@ private:
 	ST<var_info> my_variable_library_asked_by_body = empty_var_info();
 	ST<var_info> my_variable_library_asked_by_lo_hi = empty_var_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitForExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitForExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitForExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitForExp(this, ctx);
     }
 };
 
@@ -724,6 +724,13 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
+private:
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitBreakExp(this, ctx);
+    }
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitBreakExp(this, ctx);
+    }
 };
 
 class A_seqExp_ : public A_controlExp_ {
@@ -748,11 +755,11 @@ private:
 	int stored_result_reg = -1;
 	A_expList _seq;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitSeqExp(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitSeqExp(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitSeqExp(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitSeqExp(this, ctx);
     }
 };
 
@@ -768,18 +775,17 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 
     Symbol get_sym() const { return _sym; }
 private:
 	Symbol _sym;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitSimpleVar(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitSimpleVar(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitSimpleVar(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitSimpleVar(this, ctx);
     }
 };
 
@@ -794,11 +800,11 @@ private:
 	A_var _var;
 	Symbol _sym;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitFieldVar(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitFieldVar(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitFieldVar(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitFieldVar(this, ctx);
     }
 };
 
@@ -813,11 +819,11 @@ private:
 	A_var _var;
 	A_exp _exp;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitSubscriptVar(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitSubscriptVar(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitSubscriptVar(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitSubscriptVar(this, ctx);
     }
 };
 
@@ -887,11 +893,11 @@ private:
 	int stored_result_reg = -1;
 	int stored_reg_usage = -1;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitExpList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitExpList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitExpList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitExpList(this, ctx);
     }
 };
 
@@ -908,11 +914,11 @@ private:
 	Symbol _name;
 	A_exp _exp;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitEfield(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitEfield(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitEfield(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitEfield(this, ctx);
     }
 };
 
@@ -927,11 +933,11 @@ private:
 	A_efield _head;
 	A_efieldList _tail;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitEfieldList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitEfieldList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitEfieldList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitEfieldList(this, ctx);
     }
 };
 
@@ -982,11 +988,11 @@ private:
 	ST<function_info> my_function_library_asked_by_head = empty_function_info();
 	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitDecList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitDecList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitDecList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitDecList(this, ctx);
     }
 };
 
@@ -1026,11 +1032,11 @@ private:
 	// which is not necessary in the Haverford version of the labs,
 	// where we conservatively assume all variables escape
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitVarDec(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitVarDec(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitVarDec(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitVarDec(this, ctx);
     }
 };
 
@@ -1043,11 +1049,11 @@ public:
 private:
 	A_nametyList theTypes;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitTypeDec(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitTypeDec(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitTypeDec(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitTypeDec(this, ctx);
     }
 };
 
@@ -1076,11 +1082,11 @@ private:
     ST<function_info> my_function_library_asked_by_parent = empty_function_info();
 	ST<function_info> my_function_library_asked_by_functions = empty_function_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitFunctionDec(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitFunctionDec(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitFunctionDec(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitFunctionDec(this, ctx);
     }
 };
 
@@ -1111,11 +1117,11 @@ private:
 	ST<function_info> my_function_library_asked_by_head = empty_function_info();
 	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitFundecList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitFundecList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitFundecList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitFundecList(this, ctx);
     }
 };
 
@@ -1165,11 +1171,11 @@ private:
     ST<function_info> my_function_library_asked_by_parent = empty_function_info();
 	ST<function_info> my_function_library_asked_by_body = empty_function_info();
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitFundec(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitFundec(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitFundec(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitFundec(this, ctx);
     }
 };
 
@@ -1184,11 +1190,11 @@ private:
 	Symbol _name;
 	A_ty _ty;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitNamety(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitNamety(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitNamety(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitNamety(this, ctx);
     }
 };
 class A_nametyList_ : public AST_node_ {   // possibly this would be happier as a subclass of "A_dec_"?
@@ -1202,11 +1208,11 @@ private:
 	A_namety _head;
 	A_nametyList _tail;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitNametyList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitNametyList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitNametyList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitNametyList(this, ctx);
     }
 };
 
@@ -1231,11 +1237,11 @@ private:
 	A_field _head;
 	A_fieldList _tail;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitFieldList(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitFieldList(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitFieldList(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitFieldList(this, ctx);
     }
 };
 
@@ -1255,11 +1261,11 @@ private:
 	Symbol _name;
 	Symbol _typ;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitField(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitField(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitField(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitField(this, ctx);
     }
 };
 
@@ -1280,11 +1286,11 @@ public:
 private:
 	Symbol _name;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitNameTy(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitNameTy(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitNameTy(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitNameTy(this, ctx);
     }
 };
 
@@ -1297,11 +1303,11 @@ public:
 private:
 	A_fieldList _record;
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitRecordty(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitRecordty(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitRecordty(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitRecordty(this, ctx);
     }
 };
 
@@ -1314,11 +1320,11 @@ public:
 private:
 	Symbol _array;   // type of element in the array
 
-    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext& ctx) {
-        return visitor.visitArrayty(*this, ctx);
+    string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
+        return visitor.visitArrayty(this, ctx);
     }
-    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext& ctx) {
-        visitor.visitArrayty(*this, ctx);
+    void acceptImpl(Visitor<void, VoidContext>& visitor, VoidContext ctx) {
+        visitor.visitArrayty(this, ctx);
     }
 };
 
