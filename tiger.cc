@@ -1,3 +1,4 @@
+#include "visitors/visitor.h"
 #include <stdio.h>
 #include <iostream>
 using std::cout;
@@ -8,6 +9,8 @@ using std::endl;
 #include "AST.h"
 #include "ST.h"  /* to run ST_test */
 #include "tigerParseDriver.h"
+#include "visitors/print_visitor.h"
+#include "visitors/parent_pointer_visitor.h"
 
 int LOG_LEVEL = 1;
 
@@ -175,6 +178,10 @@ int main(int argc, char **argv)
 			if (show_ast) cerr << "Printing AST due to -da or -dA flag:" << endl << repr(driver.AST) << endl;
 
 			if (! EM_recorded_any_errors()) {
+                ParentPointerVisitor parent_visitor;
+                VoidContext parent_ctx;
+                driver.AST->accept(parent_visitor, parent_ctx);
+
 				// Typecheck first
 				EM_debug("Starting Typechecking", driver.AST->pos());
 				Ty_ty final_type = driver.AST->typecheck();

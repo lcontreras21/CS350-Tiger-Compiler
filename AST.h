@@ -206,11 +206,12 @@ public:
 	A_pos pos() { return stored_pos; }
 
 	// Each node will know its parent, except the root node (on which this is an error):
-	virtual AST_node_ *parent();	// get the parent node, after the 'set all parent nodes' pass
+	virtual AST_node_ *parent() {
+        return stored_parent;
+    };	// get the parent node, after the 'set all parent nodes' pass
 	// Those parent pointers are set by the set_parent... function below,
 	//    WHICH MUST ONLY BE CALLED FROM THE ROOT CONSTRUCTOR AND THEN RECURSIVELY
 	// (I don't know how to say that in C++ without a zillion "friend" definitions, though.)
-	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
 	virtual string print_rep(int indent, bool with_attributes) = 0;
 	virtual String attributes_for_printing();
@@ -263,11 +264,16 @@ public:
 	}
 	virtual Ty_ty init_typecheck();
 
+    void set_stored_parent(AST_node_* parent) {
+        stored_parent = parent;
+    }
 protected:  // so that derived class's set_parent should be able to get at stored_parent for "this" object ... Smalltalk allows this by default
 	AST_node_ *stored_parent = 0;
 
 private:
-	virtual AST_node_ *get_parent_without_checking();	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
+	virtual AST_node_ *get_parent_without_checking() {
+        return stored_parent;
+    };	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
 	Ty_ty stored_type = Ty_Placeholder();
 	ST<var_info> my_variable_library = empty_var_info();
@@ -316,11 +322,13 @@ public:
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
-	AST_node_ *parent();	// We should never call this
+	AST_node_ *parent() {
+        assert("parent pointers have been set" && stored_parent);
+        return stored_parent;
+    };	// We should never call this
 	string print_rep(int indent, bool with_attributes);
 	int get_my_letExp_number(AST_node_ *child);
 
-	virtual void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // should not be called, since it's in-line in the constructor
 	virtual int compute_depth();  // just for an example, not needed to compile
 
     AST_node_* get_main_expr() const { return main_expr; }
@@ -345,7 +353,6 @@ class A_leafExp_ : public A_literalExp_ {
 public:
 	A_leafExp_(A_pos p);
 
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);  // this one's easy, by definition :-)
 	virtual int compute_height();  // just for an example, not needed to compile
 	virtual int init_result_reg();
 };
@@ -474,7 +481,6 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 
     AST_node_* get_var() const;
@@ -500,7 +506,6 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int compute_height();  // just for an example, not needed to compile
 
     A_oper get_oper() const { return _oper; }
@@ -527,7 +532,6 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
 
     AST_node_* get_var() const;
@@ -557,7 +561,6 @@ A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	ST<function_info> set_my_function_library(AST_node_ *_parent_or_child);
 	ST<function_info> get_my_function_library(AST_node_ *_parent_or_child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
     int get_my_letExp_number(AST_node_ *child);
 	string get_my_let_number_s() {return std::to_string(my_let_number);}
@@ -593,7 +596,6 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	virtual string print_rep(int indent, bool with_attributes);
 
 	string get_my_unique_function_name() {
@@ -633,7 +635,6 @@ public:
 	virtual string HERA_data();
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
     AST_node_* get_test() const;
     AST_node_* get_then() const;
@@ -660,7 +661,6 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	virtual int am_i_in_loop(AST_node_ *child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
     AST_node_* get_test() const;
     AST_node_* get_body() const;
@@ -690,7 +690,6 @@ public:
 	virtual int calculate_my_SP(AST_node_ *child);
 	ST<var_info> set_my_variable_library(AST_node_ *_child);
 	ST<var_info> get_my_variable_library(AST_node_ *_child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
     Symbol get_var() const { return _var; }
     AST_node_* get_lo() const;
@@ -723,7 +722,6 @@ public:
 	virtual string HERA_data();
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 private:
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitBreakExp(this, ctx);
@@ -741,7 +739,6 @@ public:
 	virtual string HERA_data();
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int result_reg() {
 		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
 		return stored_result_reg;
@@ -836,7 +833,6 @@ public:
     string HERA_code();
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	int length();
 	int result_reg() {
 		if (this->stored_result_reg < 0) this->stored_result_reg = this->init_result_reg();
@@ -860,29 +856,7 @@ public:
         }
         return hera_code;
     }
-    Ty_ty compare_types(Symbol _func, int arg_counter, Ty_fieldList expected_types) {
-		if (expected_types == 0) {
-			EM_error("Function " + str(_func) + " has extra arguments. Please Check");
-			return Ty_Error(); 
-		}
-
-		Ty_ty head_type = _head->typecheck();
-		Ty_ty expected_type = expected_types->head->ty;
-		if (head_type != expected_type) {
-		    EM_error("Typechecking callExp: Arg " + std::to_string(arg_counter) + " type does not match in function "
-               + "call " + str(_func) + ". Got " + to_String(head_type) + " but expected " + to_String(expected_type));
-			return Ty_Error();
-		} 
-
-        if (_tail) {
-            return _tail->compare_types(_func, arg_counter + 1, expected_types->tail);
-        }
-        if (_tail == 0 && expected_types != 0) {
-            EM_error("Function " + str(_func) + " has too few arguments.");
-            return Ty_Error();
-        }
-        return Ty_Void();
-    }
+    Ty_ty compare_types(Symbol _func, int arg_counter, Ty_fieldList expected_types);
 	int init_reg_usage();
 
     AST_node_* get_head() const;
@@ -967,7 +941,6 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *_parent_or_child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
@@ -1009,7 +982,6 @@ public:
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	ST<function_info> get_my_function_library(AST_node_ *child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
     Symbol get_var() const { return _var; }
     Symbol get_typ() const { return _typ; }
@@ -1066,7 +1038,6 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
@@ -1097,7 +1068,6 @@ public:
 	virtual string HERA_code();
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 
 	ST<var_info> set_my_variable_library(AST_node_ *child);
 	ST<var_info> get_my_variable_library(AST_node_ *_parent_or_child);
@@ -1137,7 +1107,6 @@ public:
 	ST<var_info> get_my_variable_library(AST_node_ *child);
 	ST<function_info> set_my_function_library(AST_node_ *child);
 	ST<function_info> get_my_function_library(AST_node_ *child);
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	string store_HERA_code(int reg_count_to_replace, int offset);
 	string load_HERA_code(int reg_count_to_load, int offset);
 
@@ -1227,7 +1196,6 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	Ty_ty init_typecheck();
 	Ty_fieldList init_Ty_fieldList();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *parent);
 	int length();
 
@@ -1251,7 +1219,6 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 	Ty_ty init_typecheck();
 	Ty_field init_Ty_field();
-	void set_parent_pointers_for_me_and_my_descendants(AST_node_ *my_parent);
 	ST<var_info> set_my_variable_library(AST_node_ *parent);
 
     Symbol get_name() const { return _name; }
