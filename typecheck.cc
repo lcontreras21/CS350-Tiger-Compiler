@@ -108,15 +108,18 @@ Ty_ty A_callExp_::init_typecheck() {
 	// My defined struct to store info
 	function_info func_struct = lookup(_func, parent_function_library);
 	// Get Ty_Function
-	Ty_ty func_type_info = func_struct.type_of_function;
 	// Get return type of function
-	Ty_ty return_type = func_type_info->u.function.return_type;
+	Ty_ty return_type = func_struct.my_return_type();
 	// Get types of args in Ty_fieldList_ struct
-	Ty_fieldList arg_types = func_type_info->u.function.parameter_types;
+	Ty_fieldList arg_types = func_struct.my_args();
 	// Simple Base case, if both are 0
 	if (arg_types == 0 and _args == 0) {
 		return return_type;
-	}
+	} else if (arg_types != 0 and _args == 0) {
+        // No args but require args
+        EM_error("Function " + str(_func) + " has too few arguments.");
+        return Ty_Error();
+    }
 
     Ty_ty args_typecheck = _args->compare_types(_func, 1, arg_types);
     if (args_typecheck == Ty_Error()) {
@@ -127,7 +130,36 @@ Ty_ty A_callExp_::init_typecheck() {
 	return return_type;
 }
 
+Ty_ty A_expList_::compare_types(Symbol _func, int arg_counter, Ty_fieldList expected_types) {
+    if (expected_types == 0) {
+        EM_error("Function " + str(_func) + " has extra arguments. Please Check");
+        return Ty_Error(); 
+    }
+
+    Ty_ty head_type = _head->typecheck();
+    Ty_ty expected_type = expected_types->head->ty;
+    if (head_type != expected_type) {
+        EM_error("Typechecking callExp: Arg " + std::to_string(arg_counter) + " type does not match in function "
+           + "call " + str(_func) + ". Got " + to_String(head_type) + " but expected " + to_String(expected_type));
+        return Ty_Error();
+    } 
+
+    if (expected_types) {
+        expected_types = expected_types->tail;
+    }
+    
+    if (_tail) {
+        return _tail->compare_types(_func, arg_counter + 1, expected_types);
+    }
+    if (_tail == 0 && expected_types != 0) {
+        EM_error("Function " + str(_func) + " has too few arguments.");
+        return Ty_Error();
+    }
+    return Ty_Void();
+}
+
 Ty_ty A_ifExp_::init_typecheck() {
+    EM_debug("typechecking for A_ifExp_");
 	// exp1 is typed as an integer, exp2 and exp3 must have the same type which will be the type of the entire structure. The resulting type cannot be that of nil. 
 	// if Test is type bool that is also allowed, since it evaluates to nonzero or zero
 	// First check if the test is type int

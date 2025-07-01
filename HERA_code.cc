@@ -186,7 +186,7 @@ string A_callExp_::HERA_code() {
     //
     int args_length = _args ? _args->length() : 0;
     string unique_func_name = get_my_unique_function_name();
-    string args_hera_code = _args->store_HERA_code(3);
+    string args_hera_code = _args ? _args->store_HERA_code(3) : "";
 
     ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
     string func_return_hera_code = "";
