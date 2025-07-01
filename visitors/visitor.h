@@ -8,6 +8,7 @@
 #if ! defined VISITOR_H
 #define VISITOR_H 
 #include <iostream>
+#include "../ST.h"
 
 // Forward Declare these classes to avoid circular dependencies
 class AST_node_;
@@ -63,6 +64,10 @@ struct VoidContext : public Context {
     
     // ParentVisitor
     AST_node_* parent = 0;
+
+    // VariableLibraryVisitor
+    ST<var_info> local_variable_library = ST<var_info>();
+    int field_index = 0;  // used in A_fundec_ _args (A_fieldList_) attribute
 };
 
 template<typename T, typename Ctx>

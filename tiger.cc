@@ -9,7 +9,7 @@ using std::endl;
 #include "AST.h"
 #include "ST.h"  /* to run ST_test */
 #include "tigerParseDriver.h"
-#include "visitors/print_visitor.h"
+#include "visitors/variable_library_visitor.h"
 #include "visitors/parent_pointer_visitor.h"
 
 int LOG_LEVEL = 1;
@@ -181,6 +181,10 @@ int main(int argc, char **argv)
                 ParentPointerVisitor parent_visitor;
                 VoidContext parent_ctx;
                 driver.AST->accept(parent_visitor, parent_ctx);
+
+                VariableLibraryVisitor local_var_lib_visitor;
+                VoidContext variable_library_ctx;
+                driver.AST->accept(local_var_lib_visitor, variable_library_ctx);
 
 				// Typecheck first
 				EM_debug("Starting Typechecking", driver.AST->pos());

@@ -374,7 +374,7 @@ string A_varExp_::HERA_code() {
 string A_simpleVar_::HERA_code() {
     EM_debug("Compiling simpleVar " + Symbol_to_string(_sym));
 
-    ST<var_info> my_variable_library = stored_parent->get_my_variable_library(this);
+    ST<var_info> my_variable_library = local_variable_library;
 	// Two cases: In A_simpleVar_ or A_assignExp_
 	int inAssignExp = am_i_in_assignExp_(this);
 	// Returns register of new assignment value if in assignexp, otherwise < 0

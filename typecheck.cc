@@ -207,13 +207,14 @@ Ty_ty A_forExp_::init_typecheck() {
 }
 
 Ty_ty A_varExp_::init_typecheck() {
+    EM_debug("typechecking for A_varExp_");
 	return _var->typecheck();
 }
 
 Ty_ty A_simpleVar_::init_typecheck() {
-    EM_debug("Typechecking simpleVar: " + Symbol_to_string(_sym));
+    EM_debug("typechecking for A_simpleVar: " + Symbol_to_string(_sym));
 
-    ST<var_info> my_variable_library = get_my_variable_library(this);
+    ST<var_info> my_variable_library = local_variable_library;
 	// Lookup in symbol type what the stored type is
 	// If not in symbol table, return Ty_Error
 	if (is_name_there(_sym, my_variable_library)) {
