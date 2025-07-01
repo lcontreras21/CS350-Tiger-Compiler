@@ -22,19 +22,23 @@ Ty_ty AST_node_::init_typecheck() {
 }
 
 Ty_ty A_root_::init_typecheck() {
+    EM_debug("typechecking for A_root_");
 	Ty_ty result = main_expr->typecheck();
 	return result;
 }
 
 Ty_ty A_intExp_::init_typecheck() {
+    EM_debug("typechecking for A_intExp_");
 	return Ty_Int();
 }
 
 Ty_ty A_boolExp_::init_typecheck() {
+    EM_debug("typechecking for A_boolExp_");
 	return Ty_Bool();
 }
 
 Ty_ty A_stringExp_::init_typecheck() {
+    EM_debug("typechecking for A_stringExp_");
 	return Ty_String();
 }
 
@@ -50,6 +54,7 @@ static Ty_ty check_return_type(A_oper op) {
 }
 
 Ty_ty A_opExp_::init_typecheck() {
+    EM_debug("typechecking for A_opExp_");
 	Ty_ty left_type = _left->typecheck();
 	Ty_ty right_type = _right->typecheck();
 	Ty_ty return_type = check_return_type(_oper);
@@ -94,6 +99,7 @@ Ty_ty A_opExp_::init_typecheck() {
 }
 
 Ty_ty A_callExp_::init_typecheck() {	
+    EM_debug("typechecking for A_callExp_");
 	// have name _func and args _args
 	// Look up name in ST function_library to get args as Ty_fieldList and iterate
 	// through to check if all are correct type
@@ -191,6 +197,7 @@ Ty_ty A_ifExp_::init_typecheck() {
 }
 
 Ty_ty A_seqExp_::init_typecheck() {
+    EM_debug("typechecking for A_seqExp_");
 	// return Ty_Void if _seq is 0, else return type of last item
 	Ty_ty return_type = Ty_Void();
 	A_expList seq = _seq;
@@ -202,6 +209,7 @@ Ty_ty A_seqExp_::init_typecheck() {
 }
 
 Ty_ty A_whileExp_::init_typecheck() {
+    EM_debug("typechecking for A_whileExp_");
 	// _test must be type int
 	// _body must be type void
 	if (_test->typecheck() == Ty_Int() || _test->typecheck() == Ty_Bool()) {
@@ -218,10 +226,12 @@ Ty_ty A_whileExp_::init_typecheck() {
 }
 
 Ty_ty A_breakExp_::init_typecheck() {
+    EM_debug("typechecking for A_breakExp_");
 	return Ty_Void();
 }
 
 Ty_ty A_forExp_::init_typecheck() {
+    EM_debug("typechecking for A_forExp_");
 	// _lo, _hi must be Ty_Int()
 	// _body must return Ty_Void()
 	Ty_ty _body_type = _body->typecheck();
@@ -259,6 +269,7 @@ Ty_ty A_simpleVar_::init_typecheck() {
 }
 
 Ty_ty A_expList_::init_typecheck() {
+    EM_debug("typechecking for A_expList_");
 	Ty_ty head_type = _head->typecheck();
 	if (_tail == 0) {
 		return head_type;
@@ -270,6 +281,7 @@ Ty_ty A_expList_::init_typecheck() {
 int let_counter = 0;
 
 Ty_ty A_letExp_::init_typecheck() {
+    EM_debug("typechecking for A_letExp_");
     // TODO Move this to a function call
     if (this->my_let_number < 0) {
         this->my_let_number = let_counter;
@@ -291,7 +303,7 @@ Ty_ty A_letExp_::init_typecheck() {
 }
 
 Ty_ty A_decList_::init_typecheck() {
-    EM_debug("Typechecking decList head");
+    EM_debug("typechecking for A_decList_");
 
 	Ty_ty head_type = _head->typecheck();
 	if (_tail != 0) {
@@ -303,7 +315,7 @@ Ty_ty A_decList_::init_typecheck() {
 
 
 Ty_ty A_varDec_::init_typecheck() {
-    EM_debug("Typechecking varDec " + Symbol_to_string(_var));
+    EM_debug("typechecking for A_varDec " + Symbol_to_string(_var));
 
 	// If no _typ available, return type of _init
 	Ty_ty implicit_type = _init->typecheck();
@@ -331,6 +343,7 @@ Ty_ty A_varDec_::init_typecheck() {
 }
 
 Ty_ty A_assignExp_::init_typecheck() {
+    EM_debug("typechecking for A_assignExp_");
 	// Make sure type of _exp matches type initially stored in ST?
 	// Or can type info be overwritten?
 	if (_exp->typecheck() != _var->typecheck()) {
@@ -341,11 +354,12 @@ Ty_ty A_assignExp_::init_typecheck() {
 }
 
 Ty_ty A_functionDec_::init_typecheck() {
-    EM_debug("Typechecking FunctionDec");
+    EM_debug("typechecking for A_functionDec_");
     return theFunctions->typecheck();
 }
 
 Ty_ty A_fundecList_::init_typecheck() {
+    EM_debug("typechecking for A_fundecList_");
 	// Go through each fundec
 	_head->typecheck();
 	if (_tail != 0) {
@@ -355,7 +369,7 @@ Ty_ty A_fundecList_::init_typecheck() {
 }
 
 Ty_ty A_fundec_::init_typecheck() {
-    EM_debug("Typechecking fundec '" + Symbol_to_string(_name) + "' params");
+    EM_debug("typechecking for A_fundec_ '" + Symbol_to_string(_name) + "' params");
     if (_params) {
         Ty_ty param_type = _params->typecheck();
         if (param_type == Ty_Error()) {
@@ -385,6 +399,7 @@ Ty_ty A_fundec_::init_typecheck() {
 
 
 Ty_ty A_fieldList_::init_typecheck() {
+    EM_debug("typechecking for A_fieldList_");
 	// Go through each field
 	Ty_ty curr_type = _head->typecheck();
 	if (_tail != 0) {
@@ -394,6 +409,7 @@ Ty_ty A_fieldList_::init_typecheck() {
 }
 
 Ty_ty A_field_::init_typecheck() {
+    EM_debug("typechecking for A_field_");
 	// Have to be added to Symbol Table on First Pass but not on second
 	if (firstPass) {
 		firstPass = false;
