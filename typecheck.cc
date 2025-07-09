@@ -105,7 +105,7 @@ Ty_ty A_callExp_::init_typecheck() {
 	// through to check if all are correct type
 	
 	// First Check if _func is in symbol table is there
-	ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+	ST<function_info> parent_function_library = local_function_library;
 	if (not is_name_there(_func, parent_function_library)) {
 		EM_error("Function " + str(_func) + " is not in Tiger Standard Library. Define or check again");
 	   return Ty_Error();
@@ -328,7 +328,7 @@ Ty_ty A_varDec_::init_typecheck() {
 			type_info type_struct = lookup(_typ, type_library);
 			Ty_ty return_type = type_struct.my_type();
 			if (return_type != implicit_type) {
-				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type. " +
+				EM_error("Var " + Symbol_to_string(_var) + " declared type does not match the initialization type, got: " + repr(implicit_type) +
 				         "Not adding to Variable Symbol Table.");
 				return Ty_Error();
 			} else {

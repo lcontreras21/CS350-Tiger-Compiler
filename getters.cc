@@ -131,6 +131,9 @@ AST_node_* A_fundecList_::get_tail() const {
 AST_node_* A_fundec_::get_params() const {
     return _params;
 }
+A_fieldList_* A_fundec_::cast_params() const {
+    return _params;
+}
 AST_node_* A_fundec_::get_body() const {
     return _body;
 }
@@ -150,6 +153,13 @@ AST_node_* A_fieldList_::get_head() const {
     return _head;
 }
 AST_node_* A_fieldList_::get_tail() const {
+    return _tail;
+}
+
+A_field_* A_fieldList_::cast_head() const {
+    return _head;
+}
+A_fieldList_* A_fieldList_::cast_tail() const {
     return _tail;
 }
 

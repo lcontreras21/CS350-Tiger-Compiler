@@ -188,7 +188,7 @@ string A_callExp_::HERA_code() {
     string unique_func_name = get_my_unique_function_name();
     string args_hera_code = _args ? _args->store_HERA_code(3) : "";
 
-    ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+    ST<function_info> parent_function_library = local_function_library;
     string func_return_hera_code = "";
 	if (is_name_there(_func, parent_function_library)) {
 		function_info func_struct = lookup(_func, parent_function_library);
@@ -517,7 +517,8 @@ string A_fundec_::HERA_code() {
 		• Restore saved registers, including FP_alt and PC_ret, and decrement SP
 		• RETURN from the function
 	*/
-    EM_debug("Compiling fundec: second pass");
+    //
+    EM_debug("Compiling fundec");
 
     string unique_func_name = get_my_unique_function_name();
     string load_reg_str = load_HERA_code(_body->result_reg(), 3 + (_params ? _params->length() : 0));

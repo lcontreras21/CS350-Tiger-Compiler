@@ -60,6 +60,11 @@ struct StringContext : public Context {
     int indent = 0;
 };
 
+enum FunctionPass {
+    FirstPass,
+    SecondPass,
+};
+
 struct VoidContext : public Context {
     
     // ParentVisitor
@@ -68,6 +73,10 @@ struct VoidContext : public Context {
     // VariableLibraryVisitor
     ST<var_info> local_variable_library = ST<var_info>();
     int field_index = 0;  // used in A_fundec_ _args (A_fieldList_) attribute
+
+    // FunctionLibraryVisitor
+    ST<function_info> local_function_library = tiger_library;
+    FunctionPass curr_pass = FirstPass;   
 };
 
 template<typename T, typename Ctx>

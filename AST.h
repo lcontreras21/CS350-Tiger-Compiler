@@ -239,16 +239,7 @@ public:
 	virtual int compute_height();  // just for an example, not needed to compile
 	int depth();   // example we'll play with in class, not actually needed to compile
 	virtual int compute_depth();   // just for an example, not needed to compile
-	virtual ST<function_info> set_my_function_library(AST_node_ *child);
 	virtual int get_my_letExp_number(AST_node_ *child);
-
-	// Override in decList/fundecList and decs when its children or parent asking
-    virtual ST<function_info> get_my_function_library(AST_node_ *child) {
-        if (is_name_there(to_Symbol("Empty"), this->my_function_library)) {
-            this->my_function_library = set_my_function_library(child);
-        }
-        return this->my_function_library;
-    }
 
 	Ty_ty typecheck() {
 		if (this->stored_type == Ty_Placeholder()) this->stored_type = this->init_typecheck();
@@ -262,9 +253,13 @@ public:
     void set_local_variable_library(ST<var_info> library) {
         local_variable_library = library;
     }
+    void set_local_function_library(ST<function_info> library) {
+        local_function_library = library;
+    }
 protected:  // so that derived class's set_parent should be able to get at stored_parent for "this" object ... Smalltalk allows this by default
 	AST_node_ *stored_parent = 0;
     ST<var_info> local_variable_library;
+    ST<function_info> local_function_library;
 
 private:
 	virtual AST_node_ *get_parent_without_checking() {
@@ -272,7 +267,6 @@ private:
     };	// NOT FOR GENERAL USE: get the parent node, either before or after the 'set all parent nodes' pass, but note it will be incorrect if done before (this is usually just done for assertions)
 	A_pos stored_pos;
 	Ty_ty stored_type = Ty_Placeholder();
-	ST<function_info> my_function_library = empty_function_info();
 
     virtual string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return "";
@@ -281,6 +275,9 @@ private:
     };
     virtual ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return ST<var_info>();
+    };
+    virtual ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return ST<function_info>();
     };
 };
 
@@ -318,7 +315,6 @@ public:
 	int am_i_in_loop(AST_node_ *child);
 	int calculate_my_SP(AST_node_ *_parent_or_child);
 	virtual int am_i_in_assignExp_(AST_node_ *child);
-	ST<function_info> set_my_function_library(AST_node_ *child);
 	AST_node_ *parent() {
         assert("parent pointers have been set" && stored_parent);
         return stored_parent;
@@ -339,6 +335,9 @@ private:
         visitor.visitRoot(this, ctx);
     };
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitRoot(this, ctx);
+    };
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitRoot(this, ctx);
     };
 };
@@ -371,6 +370,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitNilExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitNilExp(this, ctx);
+    }
 };
 
 
@@ -394,6 +396,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitBoolExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitBoolExp(this, ctx);
+    }
 };
 
 class A_intExp_ : public A_leafExp_ {
@@ -415,6 +420,9 @@ private:
         visitor.visitIntExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitIntExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitIntExp(this, ctx);
     }
 };
@@ -441,6 +449,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitStringExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitStringExp(this, ctx);
+    }
 };
 
 
@@ -462,6 +473,9 @@ private:
         visitor.visitRecordExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitRecordExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitRecordExp(this, ctx);
     }
 };
@@ -488,6 +502,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitArrayExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitArrayExp(this, ctx);
+    }
 };
 
 
@@ -512,6 +529,9 @@ private:
         visitor.visitVarExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitVarExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitVarExp(this, ctx);
     }
 };
@@ -546,6 +566,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitOpExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitOpExp(this, ctx);
+    }
 };
 
 class A_assignExp_ : public A_exp_ {
@@ -573,6 +596,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitAssignExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitAssignExp(this, ctx);
+    }
 };
 
 class A_letExp_ : public A_exp_ {
@@ -584,8 +610,6 @@ A_letExp_(A_pos pos, A_decList decs, A_expList body);
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	ST<function_info> set_my_function_library(AST_node_ *_parent_or_child);
-	ST<function_info> get_my_function_library(AST_node_ *_parent_or_child);
 
     int get_my_letExp_number(AST_node_ *child);
 	string get_my_let_number_s() {return std::to_string(my_let_number);}
@@ -597,10 +621,6 @@ private:
 	A_decList _decs;
 	A_expList _body;
 
-	ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_decs = empty_function_info();
-	ST<function_info> my_function_library_asked_by_body = empty_function_info();
-
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitLetExp(this, ctx);
     }
@@ -608,6 +628,9 @@ private:
         visitor.visitLetExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitLetExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitLetExp(this, ctx);
     }
 };
@@ -623,7 +646,7 @@ public:
 	virtual string print_rep(int indent, bool with_attributes);
 
 	string get_my_unique_function_name() {
-        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        ST<function_info> parent_function_library = local_function_library;
         if (not is_name_there(_func, parent_function_library)) {
             EM_error("Function " + str(_func) + " is not in Tiger Standard Library. Define or check again");
         }
@@ -645,6 +668,9 @@ private:
         visitor.visitCallExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitCallExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitCallExp(this, ctx);
     }
 };
@@ -680,6 +706,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitIfExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitIfExp(this, ctx);
+    }
 };
 
 class A_whileExp_ : public A_controlExp_ {
@@ -706,6 +735,9 @@ private:
         visitor.visitWhileExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitWhileExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitWhileExp(this, ctx);
     }
 };
@@ -741,6 +773,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitForExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitForExp(this, ctx);
+    }
 };
 
 
@@ -760,6 +795,9 @@ private:
         visitor.visitBreakExp(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitBreakExp(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitBreakExp(this, ctx);
     }
 };
@@ -794,6 +832,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitSeqExp(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitSeqExp(this, ctx);
+    }
 };
 
 class A_var_ : public AST_node_ {
@@ -823,6 +864,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitSimpleVar(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitSimpleVar(this, ctx);
+    }
 };
 
 class A_fieldVar_ : public A_var_ {
@@ -845,6 +889,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitFieldVar(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitFieldVar(this, ctx);
+    }
 };
 
 class A_subscriptVar_ : public A_var_ {
@@ -865,6 +912,9 @@ private:
         visitor.visitSubscriptVar(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitSubscriptVar(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitSubscriptVar(this, ctx);
     }
 };
@@ -921,6 +971,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitExpList(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitExpList(this, ctx);
+    }
 };
 
 // The componends of a A_recordExp, e.g. point{X = 4, Y = 12}
@@ -945,6 +998,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitEfield(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitEfield(this, ctx);
+    }
 };
 
 class A_efieldList_ : public AST_node_ {
@@ -965,6 +1021,9 @@ private:
         visitor.visitEfieldList(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitEfieldList(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitEfieldList(this, ctx);
     }
 };
@@ -994,8 +1053,6 @@ public:
 	virtual int init_result_reg();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	ST<function_info> set_my_function_library(AST_node_ *child);
-	ST<function_info> get_my_function_library(AST_node_ *child);
 	int length();
 
     AST_node_* get_head() const;
@@ -1004,10 +1061,6 @@ private:
 	A_dec _head;
 	A_decList _tail;
 
-    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_head = empty_function_info();
-	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
-
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitDecList(this, ctx);
     }
@@ -1015,6 +1068,9 @@ private:
         visitor.visitDecList(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitDecList(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitDecList(this, ctx);
     }
 };
@@ -1028,8 +1084,6 @@ public:
 	Ty_ty init_typecheck();
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	ST<function_info> set_my_function_library(AST_node_ *child);
-	ST<function_info> get_my_function_library(AST_node_ *child);
 
     Symbol get_var() const { return _var; }
     Symbol get_typ() const { return _typ; }
@@ -1038,10 +1092,6 @@ private:
 	Symbol _var;
 	Symbol _typ;
 	A_exp _init;
-
-    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_init = empty_function_info();
-
 
 	// Appel had this here:
 	//	bool escape;
@@ -1056,6 +1106,9 @@ private:
         visitor.visitVarDec(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitVarDec(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitVarDec(this, ctx);
     }
 };
@@ -1078,6 +1131,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitTypeDec(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitTypeDec(this, ctx);
+    }
 };
 
 class A_functionDec_: public A_dec_ {
@@ -1090,15 +1146,9 @@ public:
 	virtual int init_result_reg();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
 
-	ST<function_info> set_my_function_library(AST_node_ *child);
-	ST<function_info> get_my_function_library(AST_node_ *child);
-
     AST_node_* get_theFunctions() const;
 private:
 	A_fundecList theFunctions;
-
-    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_functions = empty_function_info();
 
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitFunctionDec(this, ctx);
@@ -1107,6 +1157,9 @@ private:
         visitor.visitFunctionDec(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitFunctionDec(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitFunctionDec(this, ctx);
     }
 };
@@ -1119,18 +1172,11 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 
-	ST<function_info> set_my_function_library(AST_node_ *child);
-	ST<function_info> get_my_function_library(AST_node_ *child);
-
     AST_node_* get_head() const;
     AST_node_* get_tail() const;
 private:
 	A_fundec _head;
 	A_fundecList _tail;
-
-    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_head = empty_function_info();
-	ST<function_info> my_function_library_asked_by_tail = empty_function_info();
 
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitFundecList(this, ctx);
@@ -1139,6 +1185,9 @@ private:
         visitor.visitFundecList(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitFundecList(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitFundecList(this, ctx);
     }
 };
@@ -1151,14 +1200,12 @@ public:
 	virtual string HERA_data();
 	Ty_ty init_typecheck();
 	virtual int calculate_my_SP(AST_node_ *_parent_or_child);
-	ST<function_info> set_my_function_library(AST_node_ *child);
-	ST<function_info> get_my_function_library(AST_node_ *child);
 	string store_HERA_code(int reg_count_to_replace, int offset);
 	string load_HERA_code(int reg_count_to_load, int offset);
 
 
 	string get_my_unique_function_name() {
-        ST<function_info> parent_function_library = stored_parent->get_my_function_library(this);
+        ST<function_info> parent_function_library = local_function_library;
         if (not is_name_there(_name, parent_function_library)) {
             EM_error("Function " + str(_name) + " is not in Tiger Standard Library. Define or check again");
         }
@@ -1169,6 +1216,7 @@ public:
 
     Symbol get_name() const { return _name; }
     AST_node_* get_params() const;
+    A_fieldList_* cast_params() const;
     Symbol get_result() const { return _result; }
     AST_node_* get_body() const;
 private:
@@ -1181,9 +1229,6 @@ private:
 	Symbol _result;
 	A_exp _body;
 
-    ST<function_info> my_function_library_asked_by_parent = empty_function_info();
-	ST<function_info> my_function_library_asked_by_body = empty_function_info();
-
     string acceptImpl(Visitor<string, StringContext>& visitor, StringContext ctx) {
         return visitor.visitFundec(this, ctx);
     }
@@ -1191,6 +1236,9 @@ private:
         visitor.visitFundec(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitFundec(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitFundec(this, ctx);
     }
 };
@@ -1215,6 +1263,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitNamety(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitNamety(this, ctx);
+    }
 };
 class A_nametyList_ : public AST_node_ {   // possibly this would be happier as a subclass of "A_dec_"?
 public:
@@ -1236,6 +1287,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitNametyList(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitNametyList(this, ctx);
+    }
 };
 
 
@@ -1248,11 +1302,12 @@ public:
 	A_fieldList_(A_field head, A_fieldList tail);
 	virtual string print_rep(int indent, bool with_attributes);
 	Ty_ty init_typecheck();
-	Ty_fieldList init_Ty_fieldList();
 	int length();
 
     AST_node_* get_head() const;
     AST_node_* get_tail() const;
+    A_field_* cast_head() const;
+    A_fieldList_* cast_tail() const;
 private:
 	A_field _head;
 	A_fieldList _tail;
@@ -1266,6 +1321,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitFieldList(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitFieldList(this, ctx);
+    }
 };
 
 class A_field_ : public AST_node_ {
@@ -1273,7 +1331,6 @@ public:
 	A_field_(A_pos pos, Symbol name, Symbol type_or_0_pointer_for_no_type_in_declaration);
 	virtual string print_rep(int indent, bool with_attributes);
 	Ty_ty init_typecheck();
-	Ty_field init_Ty_field();
 
     Symbol get_name() const { return _name; }
     Symbol get_typ() const { return _typ; }
@@ -1289,6 +1346,9 @@ private:
         visitor.visitField(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitField(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitField(this, ctx);
     }
 };
@@ -1319,6 +1379,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitNameTy(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitNameTy(this, ctx);
+    }
 };
 
 class A_recordty_ : public A_ty_ {
@@ -1339,6 +1402,9 @@ private:
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitRecordty(this, ctx);
     }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitRecordty(this, ctx);
+    }
 };
 
 class A_arrayty_ : public A_ty_ {
@@ -1357,6 +1423,9 @@ private:
         visitor.visitArrayty(this, ctx);
     }
     ST<var_info> acceptImpl(Visitor<ST<var_info>, VoidContext>& visitor, VoidContext ctx) {
+        return visitor.visitArrayty(this, ctx);
+    }
+    ST<function_info> acceptImpl(Visitor<ST<function_info>, VoidContext>& visitor, VoidContext ctx) {
         return visitor.visitArrayty(this, ctx);
     }
 };
