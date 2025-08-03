@@ -77,6 +77,12 @@ struct VoidContext : public Context {
     // FunctionLibraryVisitor
     ST<function_info> local_function_library = tiger_library;
     FunctionPass curr_pass = FirstPass;   
+
+    // TypecheckVisitor
+    bool for_callExp = false;
+    Ty_fieldList func_call_args;
+    int arg_counter;
+    string callExp_name;
 };
 
 template<typename T, typename Ctx>

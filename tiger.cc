@@ -1,4 +1,3 @@
-#include "visitors/visitor.h"
 #include <stdio.h>
 #include <iostream>
 using std::cout;
@@ -9,8 +8,10 @@ using std::endl;
 #include "AST.h"
 #include "ST.h"  /* to run ST_test */
 #include "tigerParseDriver.h"
+#include "visitors/visitor.h"
 #include "visitors/function_library_visitor.h"
 #include "visitors/parent_pointer_visitor.h"
+#include "visitors/typecheck_visitor.h"
 #include "visitors/variable_library_visitor.h"
 
 int LOG_LEVEL = 1;
@@ -191,10 +192,12 @@ int main(int argc, char **argv)
                 VoidContext variable_library_ctx;
                 driver.AST->accept(local_var_lib_visitor, variable_library_ctx);
 
-				// Typecheck first
 				EM_debug("Starting Typechecking", driver.AST->pos());
-				Ty_ty final_type = driver.AST->typecheck();
-				EM_debug("Finished Typechecking and got final type: " + to_String(final_type)  + "\n", driver.AST->pos());
+                TypecheckLibraryVisitor typecheck_visitor;
+                VoidContext typecheck_ctx;
+                Ty_ty visitor_type = driver.AST->accept(typecheck_visitor, typecheck_ctx);
+
+				EM_debug("Finished Typechecking and got final type: " + to_String(visitor_type)  + "\n", driver.AST->pos());
 				String code = "#include <Tiger-stdlib-stack-data.hera>\n\n";
 				code = code + driver.AST->HERA_data();
 				EM_debug("Finished compiling HERA_data\n", driver.AST->pos());

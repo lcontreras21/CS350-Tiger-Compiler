@@ -142,10 +142,10 @@ string A_opExp_::HERA_code() {
 		string end_label = "end_of_comp_" + std::to_string(this_comp_counter);
 
 		// Int Comparisons
-		if (_left->typecheck() == Ty_Int()) {
+		if (_left->get_local_type() == Ty_Int()) {
 			// Handle Comparison Operations
 			output = output + indent_math + "CMP(" + left_reg_s + ", " + right_reg_s + ")\n"; 
-		} else if (_left->typecheck() == Ty_String()) {
+		} else if (_left->get_local_type() == Ty_String()) {
 			// String comparison. Function call to tstrcmp
             int SP_counter = calculate_my_SP(this);
             // TODO: replace opExp node having tstrcmp to a callExp node
@@ -374,7 +374,7 @@ string A_varExp_::HERA_code() {
 string A_simpleVar_::HERA_code() {
     EM_debug("Compiling simpleVar " + Symbol_to_string(_sym));
 
-    ST<var_info> my_variable_library = local_variable_library;
+    ST<var_info> my_variable_library = get_local_variable_library();
 	// Two cases: In A_simpleVar_ or A_assignExp_
 	int inAssignExp = am_i_in_assignExp_(this);
 	// Returns register of new assignment value if in assignexp, otherwise < 0
