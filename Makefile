@@ -1,7 +1,5 @@
 # https://makefiletutorial.com/#makefile-cookbook
 
-# TODO: figure out how to resolve /home/courses/
-
 ### Directories and Filenames
 BUILD_DIR := ./Debug
 TARGET_EXEC := ${BUILD_DIR}/tiger 
@@ -10,7 +8,7 @@ SRC_DIRS := ./src
 # Every folder in ./src will need to be passed to GCC so that it can find header files
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 # Add a prefix to INC_DIRS. So moduleA would become -ImoduleA. GCC understands this -I flag
-INC_FLAGS := $(addprefix -I,$(INC_DIRS)) -I/home/courses/include
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 ### Compiler and Flags
 # Program for compiling C++ programs
@@ -18,9 +16,9 @@ CXX := g++
 # Extra flags to give to the C++ compiler
 CXXFLAGS := $(INC_FLAGS) -MMD -MP -std=c++1y -g -Wall -Wno-sign-compare -Wno-unused-function -Wno-unused-variable -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 # Extra flags to give to compilers when they are supposed to invoke the linker
-LDFLAGS := -L/home/courses/lib
+# LDFLAGS := -L/home/courses/lib
 # Extra libraries to give to compilers when they are supposed to invoke the linker
-LDLIBS := -lcourses
+# LDLIBS := -lcourses
 
 ### Flex/Bison Sources
 BISON := bison
