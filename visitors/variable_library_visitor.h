@@ -267,9 +267,9 @@ struct VariableLibraryVisitor : Visitor<ST<var_info>, VoidContext> {
         ctx.local_variable_library = local_var_lib;
         accept(node->get_init(), ctx);
 
-
         int my_SP = node->calculate_my_SP(node);
-        ST<var_info> declared_variable_library = ST<var_info>(node->get_var(), var_info(node->get_init()->typecheck(), my_SP, true));
+        var_info new_var_info = var_info(node->get_init()->get_local_type(), my_SP, true);
+        ST<var_info> declared_variable_library = ST<var_info>(node->get_var(), new_var_info);
         return declared_variable_library;
     }
     ST<var_info> visitFunctionDec(A_functionDec_* node, VoidContext ctx) {
